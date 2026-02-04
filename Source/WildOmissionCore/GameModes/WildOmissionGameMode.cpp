@@ -487,11 +487,32 @@ AChunkManager* AWildOmissionGameMode::GetChunkManager() const
 	return ChunkManager;
 }
 
+ATimeOfDayManager* AWildOmissionGameMode::GetTimeOfDayManager() const
+{
+	return TimeOfDayManager;
+}
+
 AWeatherManager* AWildOmissionGameMode::GetWeatherManager() const
 {
 	return WeatherManager;
 }
 
+AAnimalSpawnManager* AWildOmissionGameMode::GetAnimalSpawnManager() const
+{
+	return AnimalSpawnManager;
+}
+
+AMonsterSpawnManager* AWildOmissionGameMode::GetMonsterSpawnManager() const
+{
+	return MonsterSpawnManager;
+}
+
+AGameChatManager* AWildOmissionGameMode::GetGameChatManager() const
+{
+	return ChatManager;
+}
+
+//TODO possible nullptr
 void AWildOmissionGameMode::LogPlayerInventoryComponents()
 {
 	// Get all the players in the current world
@@ -529,6 +550,7 @@ void AWildOmissionGameMode::LogPlayerInventoryComponents()
 	}
 }
 
+//TODO possible nullptr
 void AWildOmissionGameMode::LogPlayerInventorySlots()
 {
 	// Get all the players in the current world
@@ -640,6 +662,7 @@ void AWildOmissionGameMode::SpawnHumanAtStartSpot(AController* Controller)
 	}
 }
 
+//TODO possible nullptr
 void AWildOmissionGameMode::SpawnHumanAtBed(AController* Controller)
 {
 	AWildOmissionPlayerController* WOPlayerController = Cast<AWildOmissionPlayerController>(Controller);

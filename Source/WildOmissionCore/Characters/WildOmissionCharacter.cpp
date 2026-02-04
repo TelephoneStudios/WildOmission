@@ -28,6 +28,8 @@
 
 // Wild Omission Stuff
 #include "WildOmissionCore/UI/Player/PlayerHUDWidget.h"
+#include "GameChatManager.h"
+#include "WildOmissionCore/GameModes/WildOmissionGameMode.h"
 #include "WildOmissionGameUserSettings.h"
 #include "Deployables/ItemContainerBase.h"
 #include "Ragdolls/LootableRagdoll.h"
@@ -717,6 +719,17 @@ void AWildOmissionCharacter::HandleDeath()
 
 	OurController->Save();
 	OurController->Client_ShowDeathMenu();
+
+	// Game chat manager send death message
+	AWildOmissionGameMode* WildOmissionGameMode = Cast<AWildOmissionGameMode>(World->GetAuthGameMode());
+	if (WildOmissionGameMode == nullptr)
+	{
+		return;
+	}
+
+	//TODO Get the chat manager from the game mode
+
+	//TODO Send a death chat message
 
 	// Get all attached actors
 	TArray<AActor*> AttachedActors;
