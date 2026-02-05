@@ -18,7 +18,7 @@ public:
 	// Sets default values for this actor's properties
 	AGameChatManager();
 	
-	void SendMessage(APlayerState* SenderPlayerState, const FString& Message, bool ConnectionUpdate = false);
+	void SendMessage(APlayerState* SenderPlayerState, const FString& Message, const TEnumAsByte<EChatMessageType>& MessageType = EChatMessageType::STANDARD);
 
 	static void SetGameChatManager(AGameChatManager* NewInstance);
 	static AGameChatManager* GetGameChatManager();

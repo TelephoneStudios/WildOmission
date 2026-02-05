@@ -72,7 +72,7 @@ void UGameChatWidget::RefreshMessages()
 	{
 		const FChatMessage& Message = Messages[i];
 
-		if (Message.ConnectionUpdate == true && Message.SenderName == OurPlayerNetName)
+		if (Message.MessageType == EChatMessageType::CONNECTION_UPDATE && Message.SenderName == OurPlayerNetName)
 		{
 			continue;
 		}

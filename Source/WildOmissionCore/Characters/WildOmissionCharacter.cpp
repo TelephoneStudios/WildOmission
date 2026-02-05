@@ -727,9 +727,15 @@ void AWildOmissionCharacter::HandleDeath()
 		return;
 	}
 
-	//TODO Get the chat manager from the game mode
+	// Get the GameChatManager from the GameMode
+	AGameChatManager* GameChatManager = WildOmissionGameMode->GetGameChatManager();
+	if (GameChatManager == nullptr)
+	{
+		return;
+	}
 
-	//TODO Send a death chat message
+	// Send the death notification
+	GameChatManager->SendMessage(this->GetPlayerState(), TEXT("has died."), EChatMessageType::DEATH_NOTIFICTION);
 
 	// Get all attached actors
 	TArray<AActor*> AttachedActors;

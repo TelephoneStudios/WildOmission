@@ -623,7 +623,7 @@ void AWildOmissionPlayerController::Server_SendMessage_Implementation(APlayerSta
 		return;
 	}
 
-	ChatManager->SendMessage(Sender, Message, false);
+	ChatManager->SendMessage(Sender, Message, EChatMessageType::STANDARD);
 }
 
 bool AWildOmissionPlayerController::Server_KickPlayer_Validate(APlayerController* PlayerControllerToKick)

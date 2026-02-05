@@ -203,7 +203,7 @@ void AWildOmissionGameMode::PostLogin(APlayerController* NewPlayer)
 		return;
 	}
 
-	ChatManager->SendMessage(NewPlayerState, TEXT("Has Joined The Game."), true);
+	ChatManager->SendMessage(NewPlayerState, TEXT("Has Joined The Game."), EChatMessageType::CONNECTION_UPDATE);
 }
 
 void AWildOmissionGameMode::Logout(AController* Exiting)
@@ -221,7 +221,7 @@ void AWildOmissionGameMode::Logout(AController* Exiting)
 		return;
 	}
 
-	ChatManager->SendMessage(ExitingPlayerState, TEXT("Has Left The Game."), true);
+	ChatManager->SendMessage(ExitingPlayerState, TEXT("Has Left The Game."), EChatMessageType::CONNECTION_UPDATE);
 }
 
 void AWildOmissionGameMode::SpawnHumanForController(APlayerController* Controller)
