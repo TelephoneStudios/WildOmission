@@ -4,8 +4,6 @@
 #include "Actors/HarvestableResource.h"
 #include "Components/InventoryComponent.h"
 #include "Kismet/KismetMathLibrary.h"
-#include "ChunkManager.h"
-#include "Components/ChunkInvokerComponent.h"
 #include "NavModifierComponent.h"
 #include "NiagaraSystem.h"
 #include "NiagaraComponent.h"
@@ -184,18 +182,18 @@ void AHarvestableResource::BeginPlay()
 
 	//AChunkManager::HandleActorRenderDistanceVisibility(GetWorld(), this);
 
-	// Get Chunk Manager
-	AChunkManager* ChunkManager = AChunkManager::GetChunkManager();
-	if (ChunkManager == nullptr)
-	{
-		return;
-	}
+	//// Get Chunk Manager
+	//AChunkManager* ChunkManager = AChunkManager::GetChunkManager();
+	//if (ChunkManager == nullptr)
+	//{
+	//	return;
+	//}
 
-	// Get Surface Type at location
-	const uint8 SurfaceType = ChunkManager->GetSurfaceTypeAtLocation(this->GetActorLocation());
+	//// Get Surface Type at location
+	//const uint8 SurfaceType = ChunkManager->GetSurfaceTypeAtLocation(this->GetActorLocation());
 
-	// Set property acordingly
-	MeshComponent->SetDefaultCustomPrimitiveDataFloat(0, static_cast<float>(SurfaceType == 6));
+	//// Set property acordingly
+	//MeshComponent->SetDefaultCustomPrimitiveDataFloat(0, static_cast<float>(SurfaceType == 6));
 }
 
 void AHarvestableResource::Multi_PlayDestructionEffects_Implementation()

@@ -7,7 +7,6 @@
 #include "Components/BuildAnchorComponent.h"
 #include "Interfaces/SavableObject.h"
 #include "Interfaces/DurabilityInterface.h"
-#include "Enums/ToolType.h"
 #include "Interfaces/DamagedByWind.h"
 #include "Deployable.generated.h"
 

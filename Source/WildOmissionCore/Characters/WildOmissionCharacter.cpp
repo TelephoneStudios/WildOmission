@@ -153,7 +153,7 @@ AWildOmissionCharacter::AWildOmissionCharacter()
 	static ConstructorHelpers::FClassFinder<UHumanAnimInstance> PlayerArmsAnimBlueprintClass(TEXT("/Game/WildOmissionCore/Characters/Human/Animation/ABP_Human_FirstPerson"));
 	if (PlayerArmsAnimBlueprintClass.Succeeded())
 	{
-		FirstPersonArmsMeshComponent->SetAnimClass(PlayerArmsAnimBlueprintClass.Class);
+		FirstPersonArmsMeshComponent->SetAnimInstanceClass(PlayerArmsAnimBlueprintClass.Class);
 	}
 	
 	static ConstructorHelpers::FObjectFinder<USkeletalMesh> PlayerThirdPersonMeshObject(TEXT("/Game/WildOmissionCore/Art/Characters/SK_Human"));
@@ -165,7 +165,7 @@ AWildOmissionCharacter::AWildOmissionCharacter()
 	static ConstructorHelpers::FClassFinder<UHumanAnimInstance> PlayerThirdPersonAnimBlueprintClass(TEXT("/Game/WildOmissionCore/Characters/Human/Animation/ABP_Human_ThirdPerson"));
 	if (PlayerThirdPersonAnimBlueprintClass.Succeeded())
 	{
-		ThirdPersonMeshComponent->SetAnimClass(PlayerThirdPersonAnimBlueprintClass.Class);
+		ThirdPersonMeshComponent->SetAnimInstanceClass(PlayerThirdPersonAnimBlueprintClass.Class);
 	}
 	
 	static ConstructorHelpers::FClassFinder<ALootableRagdoll> PlayerRagdollBlueprint(TEXT("/Game/WildOmissionCore/Characters/Human/BP_Human_Ragdoll"));

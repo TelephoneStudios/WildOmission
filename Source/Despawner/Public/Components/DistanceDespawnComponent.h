@@ -17,15 +17,7 @@ public:
 	// Sets default values for this component's properties
 	UDistanceDespawnComponent();
 
-	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-
-	FOnDespawnConditionMetSignature OnDespawnConditionMet;
-
 private:	
-	UPROPERTY()
-	float ConditionCheckCounter;
 
-	UFUNCTION()
-	void CheckDespawnConditions();
 
 };
