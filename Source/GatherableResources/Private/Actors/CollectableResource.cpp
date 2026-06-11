@@ -4,7 +4,6 @@
 #include "Actors/CollectableResource.h"
 #include "Components/InventoryComponent.h"
 #include "Components/InventoryManipulatorComponent.h"
-#include "ChunkManager.h"
 #include "Components/ChunkInvokerComponent.h"
 #include "NavModifierComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -106,18 +105,18 @@ void ACollectableResource::BeginPlay()
 
 	//AChunkManager::HandleActorRenderDistanceVisibility(GetWorld(), this);
 
-	// Get Chunk Manager
-	AChunkManager* ChunkManager = AChunkManager::GetChunkManager();
-	if (ChunkManager == nullptr)
-	{
-		return;
-	}
+	//// Get Chunk Manager
+	//AChunkManager* ChunkManager = AChunkManager::GetChunkManager();
+	//if (ChunkManager == nullptr)
+	//{
+	//	return;
+	//}
 
-	// Get Surface Type at location
-	const uint8 SurfaceType = ChunkManager->GetSurfaceTypeAtLocation(this->GetActorLocation());
-	
-	// Set property acordingly
-	MeshComponent->SetDefaultCustomPrimitiveDataFloat(0, static_cast<float>(SurfaceType == 6));
+	//// Get Surface Type at location
+	//const uint8 SurfaceType = ChunkManager->GetSurfaceTypeAtLocation(this->GetActorLocation());
+	//
+	//// Set property acordingly
+	//MeshComponent->SetDefaultCustomPrimitiveDataFloat(0, static_cast<float>(SurfaceType == 6));
 }
 
 void ACollectableResource::Multi_PlayCollectEffects_Implementation()

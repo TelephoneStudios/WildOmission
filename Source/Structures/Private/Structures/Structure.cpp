@@ -2,7 +2,6 @@
 
 
 #include "Structures/Structure.h"
-#include "ChunkManager.h"
 
 AStructure::AStructure()
 {
@@ -19,9 +18,8 @@ AStructure::AStructure()
 
 bool AStructure::IsNetRelevantFor(const AActor* RealViewer, const AActor* ViewTarget, const FVector& SrcLocation) const
 {
-	Super::IsNetRelevantFor(RealViewer, ViewTarget, SrcLocation);
-
-	return AChunkManager::IsActorNetRelevent(this, ViewTarget);
+	// TODO find a work around for this
+	return Super::IsNetRelevantFor(RealViewer, ViewTarget, SrcLocation);; //AChunkManager::IsActorNetRelevent(this, ViewTarget);
 }
 
 FName AStructure::GetIdentifier() const

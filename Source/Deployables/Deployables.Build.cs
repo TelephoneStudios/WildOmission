@@ -9,5 +9,7 @@ public class Deployables : ModuleRules
         PublicDependencyModuleNames.AddRange(new string[] { "Engine", "UMG", "Durability", "Inventory", "SavableObject" });
         PrivateDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "InputCore", "SlateCore", "NavigationSystem",
             "Niagara", "Interaction", "Locks", "Weather" });
+
+        CircularlyReferencedDependentModules.AddRange(new string[] { "WorldGeneration" });
     }
 }

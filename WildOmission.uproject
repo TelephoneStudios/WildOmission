@@ -222,6 +222,14 @@
 			]
 		},
 		{
+			"Name": "Structures",
+			"Type": "Runtime",
+			"LoadingPhase": "Default",
+			"AdditionalDependencies": [
+				"CoreUObject"
+			]
+		},
+		{
 			"Name": "DedicatedServer",
 			"Type": "Runtime",
 			"LoadingPhase": "Default",

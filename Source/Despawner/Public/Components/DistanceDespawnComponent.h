@@ -17,7 +17,8 @@ public:
 	// Sets default values for this component's properties
 	UDistanceDespawnComponent();
 
-private:	
+	FOnDespawnConditionMetSignature OnDespawnConditionMet;
 
+private:	
 
 };

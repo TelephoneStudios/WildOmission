@@ -15,7 +15,6 @@
 #include "NavModifierComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "Engine/DamageEvents.h"
-#include "ChunkManager.h"
 #include "UObject/ConstructorHelpers.h"
 
 static UNiagaraSystem* DustSystem = nullptr;
