@@ -7,6 +7,7 @@ public class Structures: ModuleRules
     public Structures(ReadOnlyTargetRules Target) : base(Target)
     {
         PublicDependencyModuleNames.AddRange(new string[] { "Engine" });
-        PrivateDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "SavableObject" });
+        PrivateDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "SavableObject", "Deployables" });
+        CircularlyReferencedDependentModules.AddRange(new string[] { "Deployables" });
     }
 }

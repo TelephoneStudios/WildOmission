@@ -6,6 +6,7 @@
 #include "Components/ChunkInvokerComponent.h"
 #include "Interfaces/DamagedByWind.h"
 #include "Interfaces/InteractsWithTornado.h"
+#include "Engine/OverlapResult.h"
 #include "Log.h"
 
 // Sets default values

@@ -195,7 +195,7 @@ void AWildOmissionGameMode::PostLogin(APlayerController* NewPlayer)
 	}
 
 	const bool IsNewPlayerHost = NewWildOmissionPlayer->IsHost();
-	const bool IsNewPlayerAdministrator = ServerAdministrators->IsAdministrator(NewPlayerState->GetUniqueId().ToString());
+	const bool IsNewPlayerAdministrator = ServerAdministrators->IsAdministrator(NewPlayerState->GetUniqueId()->ToString());
 	NewWildOmissionPlayer->SetAdministrator(IsNewPlayerHost || IsNewPlayerAdministrator);
 
 	if (ChatManager == nullptr || (GetWorld() && GetWorld()->IsPlayInEditor()))
@@ -586,8 +586,8 @@ void AWildOmissionGameMode::ProcessMultiplayerJoinAchievement(AWildOmissionPlaye
 	const FString LifeUniqueId  = TEXT("76561198242206838");
 	const FString TyceUniqueId  = TEXT("76561199063735949");
 
-	const FString NewPlayerUniqueId = NewPlayerState->GetUniqueId().ToString();
-	const FString HostPlayerUniqueId = HostPlayerState->GetUniqueId().ToString();
+	const FString NewPlayerUniqueId = NewPlayerState->GetUniqueId()->ToString();
+	const FString HostPlayerUniqueId = HostPlayerState->GetUniqueId()->ToString();
 
 	if (HostPlayerUniqueId == LarchUniqueId || NewPlayerUniqueId == LarchUniqueId)
 	{

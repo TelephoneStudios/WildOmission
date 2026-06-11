@@ -216,7 +216,7 @@ FString UBuilderComponent::GetOwnerUniqueID() const
 		return TEXT("");
 	}
 
-	return OwnerPlayerState->GetUniqueId().ToString();
+	return OwnerPlayerState->GetUniqueId()->ToString();
 }
 
 void UBuilderComponent::OnToolCupboardWidgetTeardown()

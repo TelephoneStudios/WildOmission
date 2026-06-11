@@ -5,6 +5,7 @@
 #include "NiagaraSystem.h"
 #include "NiagaraFunctionLibrary.h"
 #include "Engine/DamageEvents.h"
+#include "Engine/OverlapResult.h"
 #include "Kismet/GameplayStatics.h"
 
 ARocketProjectile::ARocketProjectile()

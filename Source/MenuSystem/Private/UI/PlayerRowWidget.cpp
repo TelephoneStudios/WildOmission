@@ -53,7 +53,7 @@ void UPlayerRowWidget::Setup(const FString& Name, const FString& InUniqueID)
 		return;
 	}
 
-	if (OwningPlayerState->GetUniqueId().ToString() == InUniqueID || !ServerAdministrator->IsAdministrator())
+	if (OwningPlayerState->GetUniqueId()->ToString() == InUniqueID || !ServerAdministrator->IsAdministrator())
 	{
 		KickButton->SetIsEnabled(false);
 		KickButton->SetVisibility(ESlateVisibility::Collapsed);
@@ -98,7 +98,7 @@ APlayerController* UPlayerRowWidget::GetPlayerControllerForThis() const
 
 	for (APlayerState* PlayerState : GameState->PlayerArray)
 	{
-		if (PlayerState == nullptr || PlayerState->GetUniqueId().ToString() != UniqueID)
+		if (PlayerState == nullptr || PlayerState->GetUniqueId()->ToString() != UniqueID)
 		{
 			continue;
 		}

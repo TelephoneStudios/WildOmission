@@ -4,6 +4,7 @@
 #include "WindSuckerComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Engine/DamageEvents.h"
+#include "Engine/OverlapResult.h"
 
 // Sets default values for this component's properties
 UWindSuckerComponent::UWindSuckerComponent()

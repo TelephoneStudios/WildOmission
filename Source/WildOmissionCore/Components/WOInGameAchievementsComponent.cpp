@@ -115,7 +115,7 @@ void UWOInGameAchievementsComponent::OnKilledAnotherPlayer(APlayerController* Ki
 		return;
 	}
 
-	FString KilledPlayerUniqueId = KilledPlayerState->GetUniqueId().ToString();
+	FString KilledPlayerUniqueId = KilledPlayerState->GetUniqueId()->ToString();
 	if (KilledPlayerUniqueId == TEXT("76561198277223961"))
 	{
 		this->UnlockAchievement(ACH_BITE_THE_HAND);

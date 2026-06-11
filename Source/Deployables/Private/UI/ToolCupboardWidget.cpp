@@ -92,7 +92,7 @@ bool UToolCupboardWidget::AreWeAuthorized() const
 		return false;
 	}
 
-	return ToolCupboard->IsPlayerAuthorized(OwnerPlayerState->GetUniqueId().ToString());
+	return ToolCupboard->IsPlayerAuthorized(OwnerPlayerState->GetUniqueId()->ToString());
 }
 
 void UToolCupboardWidget::RefreshUI()

@@ -174,7 +174,7 @@ bool ALock::IsAuthorized(APawn* PlayerPawn) const
 		return false;
 	}
 
-	return IsAuthorized(OwnerPlayerState->GetUniqueId().ToString());
+	return IsAuthorized(OwnerPlayerState->GetUniqueId()->ToString());
 }
 
 UStaticMesh* ALock::GetStaticMesh() const

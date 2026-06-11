@@ -4,7 +4,6 @@
 #include "Actors/CollectableResource.h"
 #include "Components/InventoryComponent.h"
 #include "Components/InventoryManipulatorComponent.h"
-#include "Components/ChunkInvokerComponent.h"
 #include "NavModifierComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "NiagaraSystem.h"
@@ -20,7 +19,7 @@ ACollectableResource::ACollectableResource()
 	PrimaryActorTick.bCanEverTick = false;
 	bReplicates = true;
 	bAlwaysRelevant = false;
-	NetUpdateFrequency = 5.0f;
+	SetNetUpdateFrequency(5.0f);
 	NetDormancy = DORM_DormantAll;
 	
 	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComponent"));
@@ -48,9 +47,8 @@ ACollectableResource::ACollectableResource()
 
 bool ACollectableResource::IsNetRelevantFor(const AActor* RealViewer, const AActor* ViewTarget, const FVector& SrcLocation) const
 {
-	Super::IsNetRelevantFor(RealViewer, ViewTarget, SrcLocation);
-
-	return AChunkManager::IsActorNetRelevent(this, ViewTarget);
+	//TODO find alternative
+	return Super::IsNetRelevantFor(RealViewer, ViewTarget, SrcLocation);//AChunkManager::IsActorNetRelevent(this, ViewTarget);
 }
 
 void ACollectableResource::Interact(AActor* Interactor)

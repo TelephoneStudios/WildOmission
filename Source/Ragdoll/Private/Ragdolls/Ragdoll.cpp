@@ -14,7 +14,7 @@ ARagdoll::ARagdoll()
 	PrimaryActorTick.bCanEverTick = true;
 	bReplicates = true;
 	SetReplicateMovement(true);
-	NetUpdateFrequency = 2.0f;
+	SetNetUpdateFrequency(2.0f);
 	
 	RagdollRootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RagdollRootComponent"));
 	RootComponent = RagdollRootComponent;

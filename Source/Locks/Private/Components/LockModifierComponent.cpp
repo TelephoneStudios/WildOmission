@@ -171,7 +171,7 @@ FString ULockModifierComponent::GetOwnerUniqueID() const
 		return TEXT("");
 	}
 
-	return OwnerPlayerState->GetUniqueId().ToString();
+	return OwnerPlayerState->GetUniqueId()->ToString();
 }
 
 void ULockModifierComponent::Client_OpenKeypadMenu_Implementation(ALock* Lock, const uint8& LockOperation)

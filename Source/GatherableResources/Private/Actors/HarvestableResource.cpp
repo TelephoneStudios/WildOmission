@@ -11,6 +11,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Net/UnrealNetwork.h"
+#include "ChunkManager.h"
 #include "Log.h"
 
 // Sets default values
@@ -20,7 +21,7 @@ AHarvestableResource::AHarvestableResource()
 	PrimaryActorTick.bCanEverTick = false;
 	bReplicates = true;
 	bAlwaysRelevant = false;
-	NetUpdateFrequency = 5.0f;
+	SetNetUpdateFrequency(5.0f);
 	NetDormancy = ENetDormancy::DORM_DormantAll;
 
 	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMeshComponent"));
@@ -180,20 +181,20 @@ void AHarvestableResource::BeginPlay()
 {
 	Super::BeginPlay();
 
-	//AChunkManager::HandleActorRenderDistanceVisibility(GetWorld(), this);
+	AChunkManager::HandleActorRenderDistanceVisibility(GetWorld(), this);
 
-	//// Get Chunk Manager
-	//AChunkManager* ChunkManager = AChunkManager::GetChunkManager();
-	//if (ChunkManager == nullptr)
-	//{
-	//	return;
-	//}
+	// Get Chunk Manager
+	AChunkManager* ChunkManager = AChunkManager::GetChunkManager();
+	if (ChunkManager == nullptr)
+	{
+		return;
+	}
 
-	//// Get Surface Type at location
-	//const uint8 SurfaceType = ChunkManager->GetSurfaceTypeAtLocation(this->GetActorLocation());
+	// Get Surface Type at location
+	const uint8 SurfaceType = ChunkManager->GetSurfaceTypeAtLocation(this->GetActorLocation());
 
-	//// Set property acordingly
-	//MeshComponent->SetDefaultCustomPrimitiveDataFloat(0, static_cast<float>(SurfaceType == 6));
+	// Set property acordingly
+	MeshComponent->SetDefaultCustomPrimitiveDataFloat(0, static_cast<float>(SurfaceType == 6));
 }
 
 void AHarvestableResource::Multi_PlayDestructionEffects_Implementation()

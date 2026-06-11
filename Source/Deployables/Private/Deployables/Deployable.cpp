@@ -26,7 +26,7 @@ ADeployable::ADeployable()
 	PrimaryActorTick.bCanEverTick = false;
 	bReplicates = true;
 	bAlwaysRelevant = false;
-	NetUpdateFrequency = 5.0f;
+	SetNetUpdateFrequency(5.0f);
 	NetDormancy = DORM_DormantAll;
 
 	DeployableRootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("DeployableRootComponent"));

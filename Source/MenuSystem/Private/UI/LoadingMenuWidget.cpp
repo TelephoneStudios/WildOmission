@@ -63,7 +63,7 @@ void ULoadingMenuWidget::SetLoadingStep(const FString& StepName, const int32& St
 	}
 	else
 	{
-		StepText = FString::Printf(TEXT("%s: %i%"), *StepName, StepPercent);
+		StepText = FString::Printf(TEXT("%s: %i"), *StepName, StepPercent);
 	}
 
 	SubtitleTextBlock->SetText(FText::FromString(StepText));

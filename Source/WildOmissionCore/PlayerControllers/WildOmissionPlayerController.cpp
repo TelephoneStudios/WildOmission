@@ -82,7 +82,7 @@ FPlayerSaveData AWildOmissionPlayerController::SavePlayer()
 		return PlayerSaveData;
 	}
 
-	PlayerSaveData.UniqueID = CurrentPlayerState->GetUniqueId().ToString();
+	PlayerSaveData.UniqueID = CurrentPlayerState->GetUniqueId()->ToString();
 	PlayerSaveData.GameMode = GameModeIndex;
 	PlayerSaveData.BedUniqueID = BedUniqueID;
 	PlayerSaveData.BedChunkLocation = BedChunkLocation;
@@ -150,7 +150,7 @@ FString AWildOmissionPlayerController::GetUniqueID() const
 
 	if (PlayerState)
 	{
-		ID = PlayerState->GetUniqueId().ToString();
+		ID = PlayerState->GetUniqueId()->ToString();
 	}
 
 	return ID;

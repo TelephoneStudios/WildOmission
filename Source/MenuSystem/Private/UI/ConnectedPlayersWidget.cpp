@@ -57,7 +57,7 @@ void UConnectedPlayersWidget::Refresh()
 		}
 
 		// Create Row Per Player
-		PlayerRow->Setup(PlayerState->GetPlayerName(), PlayerState->GetUniqueId().ToString());
+		PlayerRow->Setup(PlayerState->GetPlayerName(), PlayerState->GetUniqueId()->ToString());
 		PlayerRow->OnRequestRefresh.AddDynamic(this, &UConnectedPlayersWidget::Refresh);
 		ConnectedPlayersPanel->AddChild(PlayerRow);
 	}
