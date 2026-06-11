@@ -8,13 +8,11 @@ public class WildOmissionServerTarget : TargetRules
 	public WildOmissionServerTarget(TargetInfo Target) : base(Target)
 	{
 		Type = TargetType.Server;
-		DefaultBuildSettings = BuildSettingsVersion.V4;
+		DefaultBuildSettings = BuildSettingsVersion.V6;
 		IncludeOrderVersion = EngineIncludeOrderVersion.Latest;
         
 		bUseLoggingInShipping = true;
-		bUsesSteam = true;
-        bUseIris = true;
-
+	
 		ExtraModuleNames.AddRange( new string[] { "WildOmissionCore" } );
 
         // The name of your game as you set it on the Steamworks webpage.
