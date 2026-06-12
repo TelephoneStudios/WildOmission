@@ -22,7 +22,7 @@ ATimeOfDayManager::ATimeOfDayManager()
 	PrimaryActorTick.bCanEverTick = true;
 	bReplicates = true;
 	bAlwaysRelevant = true;
-	NetUpdateFrequency = 1.0f;
+	SetNetUpdateFrequency(1.0f);
 
 	DirectionalLight = nullptr;
 	NormalizedProgressThroughDay = 0.0f;

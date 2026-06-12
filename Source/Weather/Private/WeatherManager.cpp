@@ -23,8 +23,8 @@ AWeatherManager::AWeatherManager()
 	PrimaryActorTick.bCanEverTick = true;
 	bReplicates = true;
 	bAlwaysRelevant = true;
-	NetUpdateFrequency = 2.0f;
-	
+	SetNetUpdateFrequency(2.0f);
+
 	SaveComponent = CreateDefaultSubobject<UWeatherSaveComponent>(TEXT("SaveComponent"));
 
 	StormsDisabled = false;

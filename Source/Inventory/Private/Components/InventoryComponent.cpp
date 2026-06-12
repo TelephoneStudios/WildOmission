@@ -58,7 +58,7 @@ void UInventoryComponent::BeginPlay()
 	}
 
 	// Initialize slots
-	ServerState.Slots.SetNum(SlotCount, false);
+	ServerState.Slots.SetNum(SlotCount, EAllowShrinking::No);
 	for (int32 i = 0; i < SlotCount; ++i)
 	{
 		ServerState.Slots[i].Index = i;

@@ -45,7 +45,7 @@ AChunk::AChunk()
 	PrimaryActorTick.bCanEverTick = true;
 
 	bReplicates = true;
-	NetUpdateFrequency = 2.0f;
+	SetNetUpdateFrequency(2.0f);
 	NetDormancy = ENetDormancy::DORM_DormantAll;
 	
 	MeshComponent = CreateDefaultSubobject<UProceduralMeshComponent>(TEXT("MeshComponent"));

@@ -4,12 +4,12 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Structs/ItemData.h"
 #include "CraftingRecipeCategoryButton.generated.h"
 
 class UCraftingMenuWidget;
 class UButton;
 class UTextBlock;
-enum EItemCategory;
 
 UCLASS()
 class UCraftingRecipeCategoryButton : public UUserWidget
