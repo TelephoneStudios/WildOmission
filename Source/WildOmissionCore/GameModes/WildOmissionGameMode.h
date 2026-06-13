@@ -6,17 +6,6 @@
 #include "GameFramework/GameModeBase.h"
 #include "WildOmissionGameMode.generated.h"
 
-// TODO oh hell no
-class ASaveManager;
-class AChunkManager;
-class ATimeOfDayManager;
-class AWeatherManager;
-class AAnimalSpawnManager;
-class AMonsterSpawnManager;
-class AGameChatManager;
-class AWildOmissionCharacter;
-class AWildOmissionPlayerController;
-
 UCLASS()
 class WILDOMISSIONCORE_API AWildOmissionGameMode : public AGameModeBase
 {
@@ -67,9 +56,9 @@ public:
 	UFUNCTION(BlueprintCallable, Exec)
 	void GiveAllPlayersAchievement(const FString& AchievementID);
 
-	ASaveManager* GetSaveManager() const;
-	AChunkManager* GetChunkManager() const;
-	AWeatherManager* GetWeatherManager() const;
+	class ASaveManager* GetSaveManager() const;
+	class AChunkManager* GetChunkManager() const;
+	class AWeatherManager* GetWeatherManager() const;
 
 	UFUNCTION(Exec)
 	void LogPlayerInventoryComponents();
@@ -86,25 +75,25 @@ private:
 	uint8 GameMode = 0;
 
 	UPROPERTY()
-	ASaveManager* SaveManager;
+	class ASaveManager* SaveManager;
 
 	UPROPERTY()
-	AChunkManager* ChunkManager;
+	class AChunkManager* ChunkManager;
 	
 	UPROPERTY()
-	ATimeOfDayManager* TimeOfDayManager;
+	class ATimeOfDayManager* TimeOfDayManager;
 	
 	UPROPERTY()
-	AWeatherManager* WeatherManager;
+	class AWeatherManager* WeatherManager;
 
 	UPROPERTY()
-	AAnimalSpawnManager* AnimalSpawnManager;
+	class AAnimalSpawnManager* AnimalSpawnManager;
 
 	UPROPERTY()
-	AMonsterSpawnManager* MonsterSpawnManager;
+	class AMonsterSpawnManager* MonsterSpawnManager;
 	
 	UPROPERTY()
-	AGameChatManager* ChatManager;
+	class AGameChatManager* ChatManager;
 
 	void ProcessMultiplayerJoinAchievement(class AWildOmissionPlayerController* NewWildOmissionPlayer);
 
