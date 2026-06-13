@@ -4,6 +4,7 @@
 #include "Actors/CollectableResource.h"
 #include "Components/InventoryComponent.h"
 #include "Components/InventoryManipulatorComponent.h"
+#include "ChunkManager.h"
 #include "NavModifierComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "NiagaraSystem.h"
@@ -47,8 +48,9 @@ ACollectableResource::ACollectableResource()
 
 bool ACollectableResource::IsNetRelevantFor(const AActor* RealViewer, const AActor* ViewTarget, const FVector& SrcLocation) const
 {
-	//TODO find alternative
-	return Super::IsNetRelevantFor(RealViewer, ViewTarget, SrcLocation);//AChunkManager::IsActorNetRelevent(this, ViewTarget);
+	Super::IsNetRelevantFor(RealViewer, ViewTarget, SrcLocation);
+	
+	return AChunkManager::IsActorNetRelevent(this, ViewTarget);
 }
 
 void ACollectableResource::Interact(AActor* Interactor)
