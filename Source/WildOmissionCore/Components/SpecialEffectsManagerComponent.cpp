@@ -116,14 +116,27 @@ void USpecialEffectsManagerComponent::HandleNightTimeGamma()
 		NightGammaStrength = FMath::Clamp(NightGammaStrength - (0.1f * World->GetDeltaSeconds()), 0.0f, 1.0f);
 	}
 	
+	bool AutoExposureEnabled = false;
 	UWildOmissionGameUserSettings* UserSettings = UWildOmissionGameUserSettings::GetWildOmissionGameUserSettings();
 	if (UserSettings)
 	{
+		AutoExposureEnabled = UserSettings->GetAutoExposureEnabled();
+
 		float GammaAddition = FMath::Lerp(0.0f, 0.3f, NightGammaStrength);
 		float ColorGammaValue = (UserSettings->GetGamma() / 100.0f) + GammaAddition;
 		OwnerCamera->PostProcessSettings.ColorGamma = FVector4(ColorGammaValue, ColorGammaValue, ColorGammaValue, ColorGammaValue);
 	}
-	OwnerCamera->PostProcessSettings.AutoExposureBias = FMath::Lerp(0.5f, -4.0f, NightGammaStrength);
+	
+	// process exposure bias differently if auto exposure is turned off
+	// so it's not pitch black at night
+	if (AutoExposureEnabled)
+	{
+		OwnerCamera->PostProcessSettings.AutoExposureBias = FMath::Lerp(0.5f, -4.0f, NightGammaStrength);
+	}
+	else
+	{
+		OwnerCamera->PostProcessSettings.AutoExposureBias = FMath::Lerp(1.0f, 4.0f, NightGammaStrength);
+	}
 }
 
 void USpecialEffectsManagerComponent::HandleLowHealthEffects()
