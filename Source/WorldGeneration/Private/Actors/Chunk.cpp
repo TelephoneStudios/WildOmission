@@ -42,7 +42,7 @@ const static FColor RESERVED_VERTEX_COLOR = FColor(0, 0, 0);
 AChunk::AChunk()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 
 	bReplicates = true;
 	NetUpdateFrequency = 2.0f;
@@ -100,7 +100,12 @@ void AChunk::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (HasAuthority())
+	FTimerDelegate TimerDelegate;
+	TimerDelegate.BindUObject(this, &AChunk::UpdateVisibility);
+	GetWorldTimerManager().SetTimer(UpdateVisibilityTimerHandle, TimerDelegate, 1.0f, true);
+
+	// So I'm not actually so sure what purpose the code below serves if its being ignored by the server
+	/*if (HasAuthority())
 	{
 		return;
 	}
@@ -117,14 +122,14 @@ void AChunk::BeginPlay()
 
 	ChunkLoc = GetChunkLocation();
 
-	ChunkManager->AddSpawnedChunk(SpawnedChunk);
+	ChunkManager->AddSpawnedChunk(SpawnedChunk);*/
 }
 
 void AChunk::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	Super::EndPlay(EndPlayReason);
-
-	if (HasAuthority())
+	
+	/*if (HasAuthority())
 	{
 		return;
 	}
@@ -139,7 +144,7 @@ void AChunk::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	SpawnedChunk.GridLocation = this->GetChunkLocation();
 	SpawnedChunk.Chunk = this;
 
-	ChunkManager->RemoveSpawnedChunk(SpawnedChunk);
+	ChunkManager->RemoveSpawnedChunk(SpawnedChunk);*/
 }
 
 bool AChunk::IsNetRelevantFor(const AActor* RealViewer, const AActor* ViewTarget, const FVector& SrcLocation) const
@@ -155,49 +160,6 @@ void AChunk::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimePr
 
 	DOREPLIFETIME_CONDITION(AChunk, HeightData, COND_InitialOnly);
 	DOREPLIFETIME_CONDITION(AChunk, SurfaceData, COND_InitialOnly);
-}
-
-void AChunk::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-	
-	UWorld* World = GetWorld();
-	if (World == nullptr)
-	{
-		return;
-	}
-
-	APlayerController* LocalPlayerController = World->GetFirstPlayerController();
-	if (LocalPlayerController == nullptr)
-	{
-		return;
-	}
-
-	APawn* LocalPawn = LocalPlayerController->GetPawn();
-	if (LocalPawn == nullptr)
-	{
-		return;
-	}
-
-	UChunkInvokerComponent* ChunkInvoker = LocalPawn->FindComponentByClass<UChunkInvokerComponent>();
-	if (ChunkInvoker == nullptr)
-	{
-		return;
-	}
-
-	const FVector FlattenedInvokerLocation(ChunkInvoker->GetComponentLocation().X, ChunkInvoker->GetComponentLocation().Y, 0.0f);
-	const FVector FlattenedChunkLocation(this->GetActorLocation().X, this->GetActorLocation().Y, 0.0f);
-
-	float Distance = FVector::Distance(FlattenedInvokerLocation, FlattenedChunkLocation);
-
-	if (Distance >= ChunkInvoker->GetRenderDistanceCentimeters())
-	{
-		SetChunkHidden(true);
-	}
-	else
-	{
-		SetChunkHidden(false);
-	}
 }
 
 void AChunk::Generate(const TArray<FChunkData>& Neighbors)
@@ -627,6 +589,47 @@ bool AChunk::IsWithinThreshold(const TArray<float>& TestValues, float MinThresho
 	}
 
 	return true;
+}
+
+void AChunk::UpdateVisibility()
+{
+	UWorld* World = GetWorld();
+	if (World == nullptr)
+	{
+		return;
+	}
+
+	APlayerController* LocalPlayerController = World->GetFirstPlayerController();
+	if (LocalPlayerController == nullptr)
+	{
+		return;
+	}
+
+	APawn* LocalPawn = LocalPlayerController->GetPawn();
+	if (LocalPawn == nullptr)
+	{
+		return;
+	}
+
+	UChunkInvokerComponent* ChunkInvoker = LocalPawn->FindComponentByClass<UChunkInvokerComponent>();
+	if (ChunkInvoker == nullptr)
+	{
+		return;
+	}
+
+	const FVector FlattenedInvokerLocation(ChunkInvoker->GetComponentLocation().X, ChunkInvoker->GetComponentLocation().Y, 0.0f);
+	const FVector FlattenedChunkLocation(this->GetActorLocation().X, this->GetActorLocation().Y, 0.0f);
+
+	float Distance = FVector::Distance(FlattenedInvokerLocation, FlattenedChunkLocation);
+
+	if (Distance >= ChunkInvoker->GetRenderDistanceCentimeters())
+	{
+		SetChunkHidden(true);
+	}
+	else
+	{
+		SetChunkHidden(false);
+	}
 }
 
 //***************************************************************************************
