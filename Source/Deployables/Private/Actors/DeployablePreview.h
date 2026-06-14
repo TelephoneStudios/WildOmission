@@ -22,6 +22,8 @@ public:
 	void Update(bool IsSpawnValid);
 
 	bool IsOverlappingInvalidObject() const;
+	bool MustBeGrounded() const;
+	bool IsGrounded() const;
 
 private:
 	UPROPERTY(VisibleAnywhere)
@@ -30,10 +32,8 @@ private:
 	UPROPERTY()
 	ADeployable* PreviewingDeployable;
 
-
-	bool InvalidOverlap;
-
-	int32 OverlapCount;
+	int32 InvalidOverlapCount;
+	int32 GroundOverlapCount;
 
 	UFUNCTION()
 	void OnMeshBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
