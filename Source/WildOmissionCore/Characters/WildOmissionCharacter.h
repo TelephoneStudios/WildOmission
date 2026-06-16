@@ -138,6 +138,12 @@ private:
 
 	UPROPERTY(VisibleAnywhere)
 	class ULockModifierComponent* LockModifierComponent;
+	
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UCameraShakeBase> WalkCameraShake;
+	
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UCameraShakeBase> RunCameraShake;
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UCameraShakeBase> JumpCameraShake;
@@ -168,6 +174,9 @@ private:
 
 	UPROPERTY()
 	bool bSprintButtonHeld;
+
+	UPROPERTY()
+	bool bGrounded;
 
 	UPROPERTY()
 	bool bUnderwater;
@@ -256,7 +265,16 @@ private:
 	class UInputAction* ToggleChatAction;
 
 	bool LookUpInverted;
+
+	UFUNCTION()
+	void StartMovementViewBobbing();
 	
+	UFUNCTION()
+	void UpdateMovementViewBobbingState();
+
+	UFUNCTION()
+	void StopMovementViewBobbing();
+
 	UFUNCTION()
 	void MoveForward();
 
