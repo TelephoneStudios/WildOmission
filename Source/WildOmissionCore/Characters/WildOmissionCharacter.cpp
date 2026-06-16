@@ -983,6 +983,8 @@ void AWildOmissionCharacter::MoveRight()
 	}
 }
 
+// We actually have to do this because build in methods 
+// of detecting user input didn't work for view bobbing
 void AWildOmissionCharacter::OnMoveForwardPressed()
 {
 	bMoveForwardHeld = true;
@@ -1063,8 +1065,6 @@ void AWildOmissionCharacter::UpdateMovementViewBobbingState()
 	}
 
 	// Handle starting walk/run view bobbing
-	// TODO need a way to detect if player is moving or not, velocity is flawed because it will be zero the moment the input is pressed
-	// and this getpendingmovementinputvector also isn't working
 	if (bGrounded && IsMovementButtonHeld())
 	{
 		UWildOmissionGameUserSettings* UserSettings = UWildOmissionGameUserSettings::GetWildOmissionGameUserSettings();
