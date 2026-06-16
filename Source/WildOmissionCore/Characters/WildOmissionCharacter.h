@@ -71,6 +71,9 @@ public:
 	bool IsUnderwater() const;
 
 	UFUNCTION()
+	bool IsMovementButtonHeld() const;
+
+	UFUNCTION()
 	UCameraComponent* GetFirstPersonCameraComponent();
 
 	UFUNCTION(BlueprintCallable)
@@ -275,6 +278,7 @@ private:
 	UFUNCTION()
 	void StopMovementViewBobbing();
 
+
 	UFUNCTION()
 	void MoveForward();
 
@@ -286,6 +290,35 @@ private:
 
 	UFUNCTION()
 	void MoveRight();
+
+	UPROPERTY()
+	bool bMoveForwardHeld;
+	UPROPERTY()
+	bool bMoveBackwardHeld;
+	UPROPERTY()
+	bool bMoveLeftHeld;
+	UPROPERTY()
+	bool bMoveRightHeld;
+
+	UFUNCTION()
+	void OnMoveForwardPressed();
+	UFUNCTION()
+	void OnMoveForwardReleased();
+
+	UFUNCTION()
+	void OnMoveBackwardPressed();
+	UFUNCTION()
+	void OnMoveBackwardReleased();
+
+	UFUNCTION()
+	void OnMoveLeftPressed();
+	UFUNCTION()
+	void OnMoveLeftReleased();
+
+	UFUNCTION()
+	void OnMoveRightPressed();
+	UFUNCTION()
+	void OnMoveRightReleased();
 
 	UFUNCTION()
 	void Look(const struct FInputActionValue& Value);

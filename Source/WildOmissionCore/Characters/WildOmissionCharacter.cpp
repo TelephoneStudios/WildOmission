@@ -851,15 +851,15 @@ void AWildOmissionCharacter::SetupPlayerInputComponent(UInputComponent* PlayerIn
 	EnhancedInputComponent->BindAction(MoveLeftAction, ETriggerEvent::Triggered, this, &AWildOmissionCharacter::MoveLeft);
 	EnhancedInputComponent->BindAction(MoveRightAction, ETriggerEvent::Triggered, this, &AWildOmissionCharacter::MoveRight);
 	
-	EnhancedInputComponent->BindAction(MoveForwardAction, ETriggerEvent::Started, this, &AWildOmissionCharacter::UpdateMovementViewBobbingState);
-	EnhancedInputComponent->BindAction(MoveBackwardAction, ETriggerEvent::Started, this, &AWildOmissionCharacter::UpdateMovementViewBobbingState);
-	EnhancedInputComponent->BindAction(MoveLeftAction, ETriggerEvent::Started, this, &AWildOmissionCharacter::UpdateMovementViewBobbingState);
-	EnhancedInputComponent->BindAction(MoveRightAction, ETriggerEvent::Started, this, &AWildOmissionCharacter::UpdateMovementViewBobbingState);
+	EnhancedInputComponent->BindAction(MoveForwardAction, ETriggerEvent::Started, this, &AWildOmissionCharacter::OnMoveForwardPressed);
+	EnhancedInputComponent->BindAction(MoveBackwardAction, ETriggerEvent::Started, this, &AWildOmissionCharacter::OnMoveBackwardPressed);
+	EnhancedInputComponent->BindAction(MoveLeftAction, ETriggerEvent::Started, this, &AWildOmissionCharacter::OnMoveLeftPressed);
+	EnhancedInputComponent->BindAction(MoveRightAction, ETriggerEvent::Started, this, &AWildOmissionCharacter::OnMoveRightPressed);
 
-	EnhancedInputComponent->BindAction(MoveForwardAction, ETriggerEvent::Completed, this, &AWildOmissionCharacter::UpdateMovementViewBobbingState);
-	EnhancedInputComponent->BindAction(MoveBackwardAction, ETriggerEvent::Completed, this, &AWildOmissionCharacter::UpdateMovementViewBobbingState);
-	EnhancedInputComponent->BindAction(MoveLeftAction, ETriggerEvent::Completed, this, &AWildOmissionCharacter::UpdateMovementViewBobbingState);
-	EnhancedInputComponent->BindAction(MoveRightAction, ETriggerEvent::Completed, this, &AWildOmissionCharacter::UpdateMovementViewBobbingState);
+	EnhancedInputComponent->BindAction(MoveForwardAction, ETriggerEvent::Completed, this, &AWildOmissionCharacter::OnMoveForwardReleased);
+	EnhancedInputComponent->BindAction(MoveBackwardAction, ETriggerEvent::Completed, this, &AWildOmissionCharacter::OnMoveBackwardReleased);
+	EnhancedInputComponent->BindAction(MoveLeftAction, ETriggerEvent::Completed, this, &AWildOmissionCharacter::OnMoveLeftReleased);
+	EnhancedInputComponent->BindAction(MoveRightAction, ETriggerEvent::Completed, this, &AWildOmissionCharacter::OnMoveRightReleased);
 
 	EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AWildOmissionCharacter::Look);
 	EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Started, this, &AWildOmissionCharacter::OnSprintButtonPressed);
@@ -982,6 +982,55 @@ void AWildOmissionCharacter::MoveRight()
 		AddMovementInput(UKismetMathLibrary::GetRightVector(GetControlRotation()), 1.0f);
 	}
 }
+
+void AWildOmissionCharacter::OnMoveForwardPressed()
+{
+	bMoveForwardHeld = true;
+	UpdateMovementViewBobbingState();
+}
+
+void AWildOmissionCharacter::OnMoveForwardReleased()
+{
+	bMoveForwardHeld = false;
+	UpdateMovementViewBobbingState();
+}
+
+void AWildOmissionCharacter::OnMoveBackwardPressed()
+{
+	bMoveBackwardHeld = true;
+	UpdateMovementViewBobbingState();
+}
+
+void AWildOmissionCharacter::OnMoveBackwardReleased()
+{
+	bMoveBackwardHeld = false;
+	UpdateMovementViewBobbingState();
+}
+
+void AWildOmissionCharacter::OnMoveLeftPressed()
+{
+	bMoveLeftHeld = true;
+	UpdateMovementViewBobbingState();
+}
+
+void AWildOmissionCharacter::OnMoveLeftReleased()
+{
+	bMoveLeftHeld = false;
+	UpdateMovementViewBobbingState();
+}
+
+void AWildOmissionCharacter::OnMoveRightPressed()
+{
+	bMoveRightHeld = true;
+	UpdateMovementViewBobbingState();
+}
+
+void AWildOmissionCharacter::OnMoveRightReleased()
+{
+	bMoveRightHeld = false;
+	UpdateMovementViewBobbingState();
+}
+
 void AWildOmissionCharacter::StartMovementViewBobbing()
 {
 	APlayerController* PlayerController = Cast<APlayerController>(GetController());
@@ -1016,7 +1065,7 @@ void AWildOmissionCharacter::UpdateMovementViewBobbingState()
 	// Handle starting walk/run view bobbing
 	// TODO need a way to detect if player is moving or not, velocity is flawed because it will be zero the moment the input is pressed
 	// and this getpendingmovementinputvector also isn't working
-	if (bGrounded && !GetPendingMovementInputVector().IsNearlyZero())
+	if (bGrounded && IsMovementButtonHeld())
 	{
 		UWildOmissionGameUserSettings* UserSettings = UWildOmissionGameUserSettings::GetWildOmissionGameUserSettings();
 		if (UserSettings && UserSettings->GetCameraShakeEnabled())
@@ -1414,6 +1463,11 @@ bool AWildOmissionCharacter::IsAiming() const
 bool AWildOmissionCharacter::IsUnderwater() const
 {
 	return bUnderwater;
+}
+
+bool AWildOmissionCharacter::IsMovementButtonHeld() const
+{
+	return bMoveForwardHeld || bMoveBackwardHeld || bMoveLeftHeld || bMoveRightHeld;
 }
 
 UCameraComponent* AWildOmissionCharacter::GetFirstPersonCameraComponent()
