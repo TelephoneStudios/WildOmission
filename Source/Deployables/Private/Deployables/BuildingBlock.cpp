@@ -11,12 +11,13 @@ ABuildingBlock::ABuildingBlock()
 
 void ABuildingBlock::Upgrade()
 {
-	if (UpgradedTier == nullptr)
+	UWorld* World = GetWorld();
+	if (UpgradedTier == nullptr || World == nullptr)
 	{
 		return;
 	}
 
-	ABuildingBlock* SpawnedBuildingBlock = GetWorld()->SpawnActor<ABuildingBlock>(UpgradedTier, this->GetActorLocation(), this->GetActorRotation());
+	ABuildingBlock* SpawnedBuildingBlock = World->SpawnActor<ABuildingBlock>(UpgradedTier, this->GetActorLocation(), this->GetActorRotation());
 	if (SpawnedBuildingBlock == nullptr)
 	{
 		return;

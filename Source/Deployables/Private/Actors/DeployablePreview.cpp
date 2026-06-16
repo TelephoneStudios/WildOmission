@@ -22,8 +22,8 @@ ADeployablePreview::ADeployablePreview()
 	CollisionCheckMeshComponent->SetGenerateOverlapEvents(true);
 	CollisionCheckMeshComponent->SetRelativeScale3D(FVector(0.9f));
 
-	InvalidOverlap = false;
-	OverlapCount = 0;
+	InvalidOverlapCount = 0;
+	GroundOverlapCount = 0;
 
 	PreviewingDeployable = nullptr;
 	PreviewMaterial = nullptr;
@@ -82,19 +82,44 @@ void ADeployablePreview::Setup(UStaticMesh* PreviewMesh)
 void ADeployablePreview::Update(bool IsSpawnValid)
 {
 	GetStaticMeshComponent()->SetScalarParameterValueOnMaterials(TEXT("Valid"), IsSpawnValid);
+	UE_LOG(LogTemp, Warning, TEXT("%i grounded"), IsGrounded());
 }
 
 bool ADeployablePreview::IsOverlappingInvalidObject() const
 {
-	return InvalidOverlap;
+	return InvalidOverlapCount > 0;
+}
+
+bool ADeployablePreview::MustBeGrounded() const
+{
+	if (PreviewingDeployable == nullptr)
+	{
+		return false;
+	}
+
+	return PreviewingDeployable->CanSpawnOnGround() && !PreviewingDeployable->CanSpawnOnFloor();
+}
+
+bool ADeployablePreview::IsGrounded() const
+{
+	return GroundOverlapCount > 0;
 }
 
 void ADeployablePreview::OnMeshBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 
 	if (OtherActor == nullptr
-		|| OtherComponent == nullptr
-		|| OtherComponent->ComponentHasTag(TEXT("Water")) 
+		|| OtherComponent == nullptr)
+	{
+		return;
+	}
+
+	if (OtherComponent->ComponentHasTag(TEXT("Ground")))
+	{
+		GroundOverlapCount++;
+	}
+
+	if (OtherComponent->ComponentHasTag(TEXT("Water")) 
 		|| PreviewingDeployable == nullptr
 		|| (OtherComponent->ComponentHasTag(TEXT("Ground")) && PreviewingDeployable->CanSpawnOnGround()) 
 		|| (OtherActor->ActorHasTag(TEXT("Wall")) && PreviewingDeployable->CanSpawnOnWall()) 
@@ -105,16 +130,23 @@ void ADeployablePreview::OnMeshBeginOverlap(UPrimitiveComponent* OverlappedCompo
 		return;
 	}
 
-	OverlapCount++;
-	
-	InvalidOverlap = true;
+	InvalidOverlapCount++;
 }
 
 void ADeployablePreview::OnMeshEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex)
 {
 	if (OtherActor == nullptr
-		|| OtherComponent == nullptr
-		|| OtherComponent->ComponentHasTag(TEXT("Water"))
+		|| OtherComponent == nullptr)
+	{
+		return;
+	}
+	
+	if (OtherComponent->ComponentHasTag(TEXT("Ground")))
+	{
+		GroundOverlapCount--;
+	}
+
+	if (OtherComponent->ComponentHasTag(TEXT("Water"))
 		|| PreviewingDeployable == nullptr
 		|| (OtherComponent->ComponentHasTag(TEXT("Ground")) && PreviewingDeployable->CanSpawnOnGround())
 		|| (OtherActor->ActorHasTag(TEXT("Wall")) && PreviewingDeployable->CanSpawnOnWall())
@@ -125,12 +157,5 @@ void ADeployablePreview::OnMeshEndOverlap(UPrimitiveComponent* OverlappedCompone
 		return;
 	}
 
-	OverlapCount--;
-	
-	if (OverlapCount > 0)
-	{
-		return;
-	}
-
-	InvalidOverlap = false;
+	InvalidOverlapCount--;
 }

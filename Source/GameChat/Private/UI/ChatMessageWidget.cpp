@@ -11,13 +11,24 @@ void UChatMessageWidget::Setup(UGameChatWidget* InParent, const FChatMessage& In
 {
 	ParentChatWidget = InParent;
 
-	FString PlayerNameString = FString::Printf(TEXT("%s: "), *InChatMessage.SenderName);
+	// Only give the name text a colon if it's a standard message
+	const FString PlayerNameString = InChatMessage.MessageType == EChatMessageType::STANDARD ? FString::Printf(TEXT("%s: "), *InChatMessage.SenderName) 
+		: FString::Printf(TEXT("%s "), *InChatMessage.SenderName);
 	PlayerNameText->SetText(FText::FromString(PlayerNameString));
 
 	MessageText->SetText(FText::FromString(InChatMessage.Message));
 	TimeRecieved = InChatMessage.TimeRecieved;
 
-	FUIColor* NameColor = InChatMessage.SenderIsAdminisrator ? UUIColors::GetBaseColor(TEXT("Blue")) : UUIColors::GetBaseColor(TEXT("Red"));
+	// Assign the default color to white incase 
+	// this is a conection update or a death notification
+	FUIColor* NameColor = UUIColors::GetBaseColor(TEXT("White"));
+
+	// Only set the chat message sender color if it's a standard message
+	if (InChatMessage.MessageType == EChatMessageType::STANDARD)
+	{
+		NameColor = InChatMessage.SenderIsAdminisrator ? UUIColors::GetBaseColor(TEXT("Blue")) : UUIColors::GetBaseColor(TEXT("Red"));
+	}
+
 	if (NameColor == nullptr)
 	{
 		return;

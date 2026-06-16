@@ -44,7 +44,7 @@ void AGameChatManager::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	Instance = nullptr;
 }
 
-void AGameChatManager::SendMessage(APlayerState* SenderPlayerState, const FString& Message, bool ConnectionUpdate)
+void AGameChatManager::SendMessage(APlayerState* SenderPlayerState, const FString& Message, const TEnumAsByte<EChatMessageType>& MessageType)
 {
 	if (SenderPlayerState == nullptr || Message.IsEmpty())
 	{
@@ -63,7 +63,7 @@ void AGameChatManager::SendMessage(APlayerState* SenderPlayerState, const FStrin
 	ChatMessage.SenderName = SenderPlayerState->GetPlayerName();
 	ChatMessage.Message = Message;
 	ChatMessage.SenderIsAdminisrator = ServerAdministrator->IsAdministrator();
-	ChatMessage.ConnectionUpdate = ConnectionUpdate;
+	ChatMessage.MessageType = MessageType;
 
 	UE_LOG(LogGameChat, Display, TEXT("%s: %s"), *ChatMessage.SenderName, *ChatMessage.Message)
 

@@ -78,8 +78,14 @@ bool ADeployableItem::GetPlacementTransform(FTransform& OutPlacementTransform)
 			return false;
 		}
 
-		const bool ValidSpawn = HitBuildAnchor->GetType() == DeployableActorClass.GetDefaultObject()->CanSpawnOnBuildAnchor() && !InvalidOverlap;
-		
+		const bool CompatibleBuildAnchor = HitBuildAnchor->GetType() == DeployableActorClass.GetDefaultObject()->CanSpawnOnBuildAnchor() && !InvalidOverlap;
+		const bool InvalidGrounding = PreviewActor->MustBeGrounded() && !PreviewActor->IsGrounded();
+		if (!CompatibleBuildAnchor || InvalidGrounding)
+		{
+			OutPlacementTransform = HitBuildAnchor->GetCorrectedTransform();
+			return false;
+		}
+
 		if (DeployableActorClass.GetDefaultObject()->CanRotate())
 		{
 			float FacePlayerYaw = GetFacePlayerRotation(HitBuildAnchor->GetComponentLocation()).Yaw;

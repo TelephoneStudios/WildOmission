@@ -28,6 +28,8 @@
 
 // Wild Omission Stuff
 #include "WildOmissionCore/UI/Player/PlayerHUDWidget.h"
+#include "GameChatManager.h"
+#include "WildOmissionCore/GameModes/WildOmissionGameMode.h"
 #include "WildOmissionGameUserSettings.h"
 #include "Deployables/ItemContainerBase.h"
 #include "Ragdolls/LootableRagdoll.h"
@@ -111,6 +113,7 @@ AWildOmissionCharacter::AWildOmissionCharacter()
 
 	bSprinting = false;
 	bSprintButtonHeld = false;
+	bGrounded = true;
 	bUnderwater = false;
 	
 	UCharacterMovementComponent* CharacterMovementComponent = GetCharacterMovement();
@@ -457,6 +460,10 @@ void AWildOmissionCharacter::BeginDestroy()
 void AWildOmissionCharacter::Jump()
 {
 	Super::Jump();
+	
+	bGrounded = false;
+
+	StopMovementViewBobbing();
 
 	UWildOmissionGameUserSettings* UserSettings = UWildOmissionGameUserSettings::GetWildOmissionGameUserSettings();
 	APlayerController* PlayerController = Cast<APlayerController>(GetController());
@@ -469,6 +476,10 @@ void AWildOmissionCharacter::Jump()
 void AWildOmissionCharacter::Landed(const FHitResult& HitResult)
 {
 	Super::Landed(HitResult);
+	
+	bGrounded = true;
+
+	UpdateMovementViewBobbingState();
 
 	if (!HasAuthority())
 	{
@@ -718,6 +729,23 @@ void AWildOmissionCharacter::HandleDeath()
 	OurController->Save();
 	OurController->Client_ShowDeathMenu();
 
+	// Game chat manager send death message
+	AWildOmissionGameMode* WildOmissionGameMode = Cast<AWildOmissionGameMode>(World->GetAuthGameMode());
+	if (WildOmissionGameMode == nullptr)
+	{
+		return;
+	}
+
+	// Get the GameChatManager from the GameMode
+	AGameChatManager* GameChatManager = WildOmissionGameMode->GetGameChatManager();
+	if (GameChatManager == nullptr)
+	{
+		return;
+	}
+
+	// Send the death notification
+	GameChatManager->SendMessage(this->GetPlayerState(), TEXT("has died."), EChatMessageType::DEATH_NOTIFICTION);
+
 	// Get all attached actors
 	TArray<AActor*> AttachedActors;
 	GetAttachedActors(AttachedActors);
@@ -822,6 +850,17 @@ void AWildOmissionCharacter::SetupPlayerInputComponent(UInputComponent* PlayerIn
 	EnhancedInputComponent->BindAction(MoveBackwardAction, ETriggerEvent::Triggered, this, &AWildOmissionCharacter::MoveBackward);
 	EnhancedInputComponent->BindAction(MoveLeftAction, ETriggerEvent::Triggered, this, &AWildOmissionCharacter::MoveLeft);
 	EnhancedInputComponent->BindAction(MoveRightAction, ETriggerEvent::Triggered, this, &AWildOmissionCharacter::MoveRight);
+	
+	EnhancedInputComponent->BindAction(MoveForwardAction, ETriggerEvent::Started, this, &AWildOmissionCharacter::OnMoveForwardPressed);
+	EnhancedInputComponent->BindAction(MoveBackwardAction, ETriggerEvent::Started, this, &AWildOmissionCharacter::OnMoveBackwardPressed);
+	EnhancedInputComponent->BindAction(MoveLeftAction, ETriggerEvent::Started, this, &AWildOmissionCharacter::OnMoveLeftPressed);
+	EnhancedInputComponent->BindAction(MoveRightAction, ETriggerEvent::Started, this, &AWildOmissionCharacter::OnMoveRightPressed);
+
+	EnhancedInputComponent->BindAction(MoveForwardAction, ETriggerEvent::Completed, this, &AWildOmissionCharacter::OnMoveForwardReleased);
+	EnhancedInputComponent->BindAction(MoveBackwardAction, ETriggerEvent::Completed, this, &AWildOmissionCharacter::OnMoveBackwardReleased);
+	EnhancedInputComponent->BindAction(MoveLeftAction, ETriggerEvent::Completed, this, &AWildOmissionCharacter::OnMoveLeftReleased);
+	EnhancedInputComponent->BindAction(MoveRightAction, ETriggerEvent::Completed, this, &AWildOmissionCharacter::OnMoveRightReleased);
+
 	EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AWildOmissionCharacter::Look);
 	EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Started, this, &AWildOmissionCharacter::OnSprintButtonPressed);
 	EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this, &AWildOmissionCharacter::OnSprintButtonReleased);
@@ -944,6 +983,126 @@ void AWildOmissionCharacter::MoveRight()
 	}
 }
 
+// We actually have to do this because build in methods 
+// of detecting user input didn't work for view bobbing
+void AWildOmissionCharacter::OnMoveForwardPressed()
+{
+	bMoveForwardHeld = true;
+	UpdateMovementViewBobbingState();
+}
+
+void AWildOmissionCharacter::OnMoveForwardReleased()
+{
+	bMoveForwardHeld = false;
+	UpdateMovementViewBobbingState();
+}
+
+void AWildOmissionCharacter::OnMoveBackwardPressed()
+{
+	bMoveBackwardHeld = true;
+	UpdateMovementViewBobbingState();
+}
+
+void AWildOmissionCharacter::OnMoveBackwardReleased()
+{
+	bMoveBackwardHeld = false;
+	UpdateMovementViewBobbingState();
+}
+
+void AWildOmissionCharacter::OnMoveLeftPressed()
+{
+	bMoveLeftHeld = true;
+	UpdateMovementViewBobbingState();
+}
+
+void AWildOmissionCharacter::OnMoveLeftReleased()
+{
+	bMoveLeftHeld = false;
+	UpdateMovementViewBobbingState();
+}
+
+void AWildOmissionCharacter::OnMoveRightPressed()
+{
+	bMoveRightHeld = true;
+	UpdateMovementViewBobbingState();
+}
+
+void AWildOmissionCharacter::OnMoveRightReleased()
+{
+	bMoveRightHeld = false;
+	UpdateMovementViewBobbingState();
+}
+
+void AWildOmissionCharacter::StartMovementViewBobbing()
+{
+	APlayerController* PlayerController = Cast<APlayerController>(GetController());
+	if (PlayerController == nullptr || !IsLocallyControlled()
+		|| WalkCameraShake == nullptr || RunCameraShake == nullptr)
+	{
+		return;
+	}
+
+	if (bGrounded)
+	{
+		UWildOmissionGameUserSettings* UserSettings = UWildOmissionGameUserSettings::GetWildOmissionGameUserSettings();
+		if (UserSettings && UserSettings->GetCameraShakeEnabled())
+		{
+			IsSprinting() ?
+				PlayerController->ClientStartCameraShake(RunCameraShake)
+				: PlayerController->ClientStartCameraShake(WalkCameraShake);
+		}
+	}
+}
+
+void AWildOmissionCharacter::UpdateMovementViewBobbingState()
+{
+	APlayerController* PlayerController = Cast<APlayerController>(GetController());
+	UCharacterMovementComponent* CharacterMovementComponent = GetCharacterMovement();
+	if (PlayerController == nullptr || CharacterMovementComponent == nullptr || !IsLocallyControlled() 
+		|| WalkCameraShake == nullptr || RunCameraShake == nullptr)
+	{
+		return;
+	}
+
+	// Handle starting walk/run view bobbing
+	if (bGrounded && IsMovementButtonHeld())
+	{
+		UWildOmissionGameUserSettings* UserSettings = UWildOmissionGameUserSettings::GetWildOmissionGameUserSettings();
+		if (UserSettings && UserSettings->GetCameraShakeEnabled())
+		{
+			if (IsSprinting())
+			{
+				PlayerController->ClientStopCameraShake(WalkCameraShake);
+				PlayerController->ClientStartCameraShake(RunCameraShake);
+			}
+			else
+			{
+				PlayerController->ClientStopCameraShake(RunCameraShake);
+				PlayerController->ClientStartCameraShake(WalkCameraShake);
+			}
+		}
+	}
+	// Handle stopping walk/run view bobbing
+	else
+	{
+		PlayerController->ClientStopCameraShake(WalkCameraShake);
+		PlayerController->ClientStopCameraShake(RunCameraShake);
+	}
+}
+
+void AWildOmissionCharacter::StopMovementViewBobbing()
+{
+	APlayerController* PlayerController = Cast<APlayerController>(GetController());
+	if (PlayerController == nullptr || !IsLocallyControlled()
+		|| WalkCameraShake == nullptr || RunCameraShake == nullptr)
+	{
+		return;
+	}
+
+	PlayerController->ClientStopCameraShake(WalkCameraShake);
+	PlayerController->ClientStopCameraShake(RunCameraShake);
+}
+
 void AWildOmissionCharacter::Look(const FInputActionValue& Value)
 {
 	if (PlayerHUDWidget == nullptr || PlayerHUDWidget->IsMenuOpen() || AimComponent == nullptr)
@@ -980,10 +1139,11 @@ void AWildOmissionCharacter::StartSprinting()
 	{
 		return;
 	}
-
+	
 	Server_Sprint(true);
 	bSprinting = true;
 	RefreshDesiredMovementSpeed();
+	UpdateMovementViewBobbingState();
 }
 
 void AWildOmissionCharacter::StopSprinting()
@@ -996,6 +1156,7 @@ void AWildOmissionCharacter::StopSprinting()
 	Server_Sprint(false);
 	bSprinting = false;
 	RefreshDesiredMovementSpeed();
+	UpdateMovementViewBobbingState();
 }
 
 void AWildOmissionCharacter::StartCrouching()
@@ -1302,6 +1463,11 @@ bool AWildOmissionCharacter::IsAiming() const
 bool AWildOmissionCharacter::IsUnderwater() const
 {
 	return bUnderwater;
+}
+
+bool AWildOmissionCharacter::IsMovementButtonHeld() const
+{
+	return bMoveForwardHeld || bMoveBackwardHeld || bMoveLeftHeld || bMoveRightHeld;
 }
 
 UCameraComponent* AWildOmissionCharacter::GetFirstPersonCameraComponent()

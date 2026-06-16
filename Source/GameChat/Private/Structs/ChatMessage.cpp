@@ -9,14 +9,17 @@ FChatMessage::FChatMessage()
 	Message = TEXT("");
 	SenderIsAdminisrator = false;
 	TimeRecieved = 0.0f;
-	ConnectionUpdate = false;
+	MessageType = EChatMessageType::STANDARD;
 }
 
-FChatMessage::FChatMessage(const FString& InSenderName, const FString& InMessage, const bool& InSenderIsAdministrator, const double& InTimeRecieved, const bool& InConnectionUpdate)
+FChatMessage::FChatMessage(
+	const FString& InSenderName, const FString& InMessage,
+	const bool& InSenderIsAdministrator, const double& InTimeRecieved,
+	const TEnumAsByte<EChatMessageType>& InMessageType)
 {
 	SenderName = InSenderName;
 	Message = InMessage;
 	SenderIsAdminisrator = InSenderIsAdministrator;
 	TimeRecieved = InTimeRecieved;
-	ConnectionUpdate = InConnectionUpdate;
+	MessageType = InMessageType;
 }
