@@ -222,6 +222,15 @@
 			]
 		},
 		{
+			"Name": "SteamHelpers",
+			"Type": "Runtime",
+			"LoadingPhase": "Default",
+			"AdditionalDependencies": [
+				"CoreUObject",
+				"Engine"
+			]
+		},
+		{
 			"Name": "DedicatedServer",
 			"Type": "Runtime",
 			"LoadingPhase": "Default",

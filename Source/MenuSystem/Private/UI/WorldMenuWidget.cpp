@@ -42,6 +42,8 @@ void UWorldMenuWidget::NativeConstruct()
 	DifficultyMultiOptionBox->AddOption(TEXT("Normal"));
 	DifficultyMultiOptionBox->AddOption(TEXT("Hard"));
 
+	// TODO when user switches to creative mode have bring up a prompt that explains that
+	// in order to play creative mode they must purchase the creative mode dlc
 	GameModeMultiOptionBox->AddOption(TEXT("Survival"));
 	GameModeMultiOptionBox->AddOption(TEXT("Creative"));
 
@@ -72,7 +74,9 @@ void UWorldMenuWidget::Open(const FString& InWorldName)
 
 	// Get Save File and select options
 	DifficultyMultiOptionBox->SetSelectedIndex(SaveFile->Difficulty.GetIntValue());
-	GameModeMultiOptionBox->SetSelectedIndex(SaveFile->GameMode);
+
+	// TODO once creative dlc is made we will handle creative mode stuff here
+	GameModeMultiOptionBox->SetSelectedIndex(0); // for now we are hardcoding it to survival until creative mode dlc
 
 	// Set the seed text block
 	SeedTextBlock->SetText(FText::FromString(FString::Printf(TEXT("Seed: %i"), SaveFile->Seed)));
