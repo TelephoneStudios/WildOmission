@@ -47,8 +47,7 @@ void UWorldMenuWidget::NativeConstruct()
 	DifficultyMultiOptionBox->AddOption(TEXT("Normal"));
 	DifficultyMultiOptionBox->AddOption(TEXT("Hard"));
 
-	// TODO when user switches to creative mode have bring up a prompt that explains that
-	// in order to play creative mode they must purchase the creative mode dlc
+	// In order to play creative mode they must purchase the creative mode dlc
 	GameModeMultiOptionBox->AddOption(TEXT("Survival"));
 	GameModeMultiOptionBox->AddOption(TEXT("Creative"));
 

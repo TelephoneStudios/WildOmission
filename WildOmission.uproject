@@ -67,6 +67,11 @@
 			"LoadingPhase": "Default"
 		},
 		{
+			"Name": "CreativeMode",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		},
+		{
 			"Name": "CustomUI",
 			"Type": "Runtime",
 			"LoadingPhase": "Default",
