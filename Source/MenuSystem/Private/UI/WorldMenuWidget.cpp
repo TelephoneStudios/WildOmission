@@ -178,6 +178,7 @@ void UWorldMenuWidget::OnGameModeSelectionChanged(const FString& NewValue)
 	{
 		// Make sure play button is enabled
 		PlayButton->SetIsEnabled(true);
+		PlayButtonTextBlock->SetColorAndOpacity(FSlateColor(FColor::White));
 		PlayButtonTextBlock->SetText(FText::FromString(TEXT("Play")));
 		return;
 	}
@@ -189,6 +190,7 @@ void UWorldMenuWidget::OnGameModeSelectionChanged(const FString& NewValue)
 		
 		// Disable and explain why they can't play
 		PlayButton->SetIsEnabled(false);
+		PlayButtonTextBlock->SetColorAndOpacity(FSlateColor(FColor::Red));
 		PlayButtonTextBlock->SetText(FText::FromString(TEXT("Creative Mode DLC required in order to play creative!")));
 	}
 }
