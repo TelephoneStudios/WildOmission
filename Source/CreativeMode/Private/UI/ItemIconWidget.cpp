@@ -5,14 +5,21 @@
 #include "Components/Button.h"
 #include "Components/Border.h"
 #include "UI/CreativeMenuWidget.h"
+#include "Components/InventoryComponent.h"
 #include "Structs/ItemData.h"
 #include "Color/UIColors.h"
 
-void UItemIconWidget::Setup(UCreativeMenuWidget* InParentMenu)
+void UItemIconWidget::Setup(UCreativeMenuWidget* InParentMenu, const FName& InItemID)
 {
 	ParentMenu = InParentMenu;
+	
+	ItemID = InItemID;
 
-	//ItemIconBorder->SetBrushFromMaterial(ParentEntry.YieldItemData->Thumbnail);
+	FItemData* ItemData = UInventoryComponent::GetItemData(ItemID);
+	if (ItemData)
+	{
+		ItemIconBorder->SetBrushFromMaterial(ItemData->Thumbnail);
+	}
 
 	ItemButton->OnClicked.AddDynamic(this, &UItemIconWidget::OnClicked);
 }
@@ -24,7 +31,7 @@ bool UItemIconWidget::IsSelected() const
 		return false;
 	}
 
-	return false; //ParentMenu->GetSelectedRecipe() == ParentEntry.RecipeID;
+	return ParentMenu->GetSelectedItem() == this->ItemID;
 }
 
 void UItemIconWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
@@ -54,15 +61,6 @@ void UItemIconWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 			BackgroundBorder->SetBrushColor(White->Default - FLinearColor(0.0f,0.0f,0.0f,0.7f));
 		}
 	}
-
-	//if (IsCraftable())
-	//{
-	//	RecipeIconBorder->SetBrushColor(FLinearColor(1.0f, 1.0f, 1.0f, 1.0f));
-	//}
-	//else
-	//{
-	//	RecipeIconBorder->SetBrushColor(FLinearColor(1.0f, 1.0f, 1.0f, 0.5f));
-	//}
 }
 
 void UItemIconWidget::NativeOnMouseEnter(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
@@ -81,5 +79,5 @@ void UItemIconWidget::NativeOnMouseLeave(const FPointerEvent& InMouseEvent)
 
 void UItemIconWidget::OnClicked()
 {
-	//ParentMenu->SetSelectedRecipe(ParentEntry.RecipeID);
+	ParentMenu->SetSelectedItem(this->ItemID);
 }

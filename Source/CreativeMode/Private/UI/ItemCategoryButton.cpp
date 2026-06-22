@@ -63,16 +63,16 @@ void UItemCategoryButton::NativeTick(const FGeometry& MyGeometry, float InDeltaT
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
 
-	//if (ParentCraftingMenu && ParentCraftingMenu->GetCategoryFilter() == Category)
-	//{
-	//	FUIColor* Blue = UUIColors::GetBaseColor(TEXT("Blue"));
-	//	Button->SetBackgroundColor(Blue->Default * FLinearColor(1.0f, 1.0f, 1.0f, 0.5f));
-	//}
-	//else
-	//{
-	//	FUIColor* LightGray = UUIColors::GetBaseColor(TEXT("LightGray"));
-	//	Button->SetBackgroundColor(LightGray->Default * FLinearColor(1.0f, 1.0f, 1.0f, 0.5f));
-	//}
+	if (ParentCreativeMenu && ParentCreativeMenu->GetCategoryFilter() == Category)
+	{
+		FUIColor* Blue = UUIColors::GetBaseColor(TEXT("Blue"));
+		Button->SetBackgroundColor(Blue->Default * FLinearColor(1.0f, 1.0f, 1.0f, 0.5f));
+	}
+	else
+	{
+		FUIColor* LightGray = UUIColors::GetBaseColor(TEXT("LightGray"));
+		Button->SetBackgroundColor(LightGray->Default * FLinearColor(1.0f, 1.0f, 1.0f, 0.5f));
+	}
 }
 
 void UItemCategoryButton::OnClicked()

@@ -15,14 +15,14 @@
 
 UCreativeMenuWidget::UCreativeMenuWidget(const FObjectInitializer& ObjectInitializer) : UUserWidget(ObjectInitializer)
 {
-	//ConstructorHelpers::FClassFinder<UItemIconWidget> ItemIconWidgetBlueprint(TEXT("/Game/CreativeMode/UI/WBP_ItemIcon"));
+	ConstructorHelpers::FClassFinder<UItemIconWidget> ItemIconWidgetBlueprint(TEXT("/Game/CreativeMode/UI/WBP_ItemIcon"));
 
-	//if (ItemIconWidgetBlueprint.Class == nullptr)
-	//{
-		//return;
-	//}
+	if (ItemIconWidgetBlueprint.Class == nullptr)
+	{
+		return;
+	}
 
-	//ItemIconWidgetClass = ItemIconWidgetBlueprint.Class;
+	ItemIconWidgetClass = ItemIconWidgetBlueprint.Class;
 }
 
 void UCreativeMenuWidget::NativeConstruct()
@@ -77,109 +77,111 @@ FName UCreativeMenuWidget::GetSelectedItem() const
 
 void UCreativeMenuWidget::RefreshItemList()
 {
-	/*TArray<FCraftingRecipeEntry> RecipeEntries;
-	for (const FName& RecipeID : UCraftingComponent::GetAllRecipes())
+	TArray<FName> ItemList;
+	for (const FName& ItemID : UInventoryComponent::GetAllItems())
 	{
-		FItemData* YieldItemData = UInventoryComponent::GetItemData(RecipeID);
-		if (YieldItemData == nullptr || (CategoryFilter != EItemCategory::All && YieldItemData->Category != CategoryFilter))
+		FItemData* ItemData = UInventoryComponent::GetItemData(ItemID);
+		if (ItemData == nullptr || (CategoryFilter != EItemCategory::All && ItemData->Category != CategoryFilter))
 		{
 			continue;
 		}
-
-		FCraftingRecipeEntry Entry;
-		Entry.RecipeID = RecipeID;
-		Entry.CanCraft = CanCraftRecipe(RecipeID);
-		Entry.IngredientPercentage = GetRecipeIngredientPercentage(RecipeID);
-		Entry.YieldItemData = UInventoryComponent::GetItemData(RecipeID);
-
-		RecipeEntries.Add(Entry);
+		
+		ItemList.Add(ItemID);
 	}
 	
-	RecipeEntries.Sort();
+	//ItemList.Sort();
 
-	RecipesWrapBox->ClearChildren();
-	for (int32 i = 0; i < RecipeEntries.Num(); i++)
+	ItemsWrapBox->ClearChildren();
+	for (int32 i = 0; i < ItemList.Num(); i++)
 	{
-		const FCraftingRecipeEntry& RecipeEntry = RecipeEntries[i];
+		const FName& ItemID = ItemList[i];
 
-		URecipeIconWidget* NewRecipeIcon = CreateWidget<URecipeIconWidget>(this, RecipeIconWidgetClass);
-		if (NewRecipeIcon == nullptr)
+		UItemIconWidget* NewItemIcon = CreateWidget<UItemIconWidget>(this, ItemIconWidgetClass);
+		if (NewItemIcon == nullptr)
 		{
 			continue;
 		}
 
-		NewRecipeIcon->Setup(this, RecipeEntry);
-		RecipesWrapBox->AddChild(NewRecipeIcon);
-	}*/
-
+		NewItemIcon->Setup(this, ItemID);
+		ItemsWrapBox->AddChild(NewItemIcon);
+	}
 }
 
 void UCreativeMenuWidget::RefreshDetailsPanel()
 {
-	//if (SelectedRecipe == FName())
-	//{
-	//	ClearDetailsPanel();
-	//	return;
-	//}
+	if (SelectedItem == FName())
+	{
+		ClearDetailsPanel();
+		return;
+	}
 
-	//FCraftingRecipe* RecipeData = UCraftingComponent::GetRecipe(SelectedRecipe);
-	//if (RecipeData == nullptr)
-	//{
-	//	return;
-	//}
+	FItemData* SelectedItemData = UInventoryComponent::GetItemData(SelectedItem);
+	if (SelectedItemData == nullptr)
+	{
+		return;
+	}
 
-	//FItemData* RecipeYieldItemData = UInventoryComponent::GetItemData(SelectedRecipe);
-	//if (RecipeYieldItemData == nullptr)
-	//{
-	//	return;
-	//}
+	SelectedItemNameTextBlock->SetText(FText::FromString(SelectedItemData->DisplayName));
+	
+	SelectedItemDescriptionTextBlock->SetText(FText::FromString(SelectedItemData->Description));
 
-	//SelectedRecipeNameTextBlock->SetText(FText::FromString(RecipeYieldItemData->DisplayName));
-	//
-	//SelectedRecipeDescriptionTextBlock->SetText(FText::FromString(RecipeYieldItemData->Description));
+	SelectedItemIconImage->SetBrushFromMaterial(SelectedItemData->Thumbnail);
+	SelectedItemIconImage->SetColorAndOpacity(FLinearColor(1.0f, 1.0f, 1.0f, 1.0f));
 
-	//SelectedRecipeIconImage->SetBrushFromMaterial(RecipeYieldItemData->Thumbnail);
-	//SelectedRecipeIconImage->SetColorAndOpacity(FLinearColor(1.0f, 1.0f, 1.0f, 1.0f));
-	//
-	//FString RecipeYieldQuantityString;
-
-	//if (RecipeData->YieldQuantity > 1)
-	//{
-	//	RecipeYieldQuantityString = FString::Printf(TEXT("x%i"), RecipeData->YieldQuantity);
-	//}
-
-	//SelectedRecipeYieldTextBlock->SetText(FText::FromString(RecipeYieldQuantityString));
-
-	//RefreshIngredientList();
-
-	//CraftButton->SetIsEnabled(CanCraftRecipe(SelectedRecipe));
+	const FString StackButtonString = FString::Printf(TEXT("Give Stack (x%i)"), SelectedItemData->StackSize);
+	GiveStackButtonTextBlock->SetText(FText::FromString(StackButtonString));
 }
 
 void UCreativeMenuWidget::ClearDetailsPanel()
 {
-	//SelectedRecipeNameTextBlock->SetText(FText::FromString(FString()));
-	//
-	//SelectedRecipeDescriptionTextBlock->SetText(FText::FromString(FString()));
+	SelectedItemNameTextBlock->SetText(FText::FromString(FString()));
+	
+	SelectedItemDescriptionTextBlock->SetText(FText::FromString(FString()));
 
-	//SelectedRecipeIconImage->SetColorAndOpacity(FLinearColor(0.0f, 0.0f, 0.0f, 0.0f));
-
-	//CraftButton->SetIsEnabled(false);
-
-	//IngredientListBox->ClearChildren();
-}
+	SelectedItemIconImage->SetColorAndOpacity(FLinearColor(0.0f, 0.0f, 0.0f, 0.0f));}
 
 void UCreativeMenuWidget::GiveItemSingle()
 {
-	/*UCraftingComponent* OwnerCraftingComponent = GetOwningPlayerPawn()->FindComponentByClass<UCraftingComponent>();
-	if (OwnerCraftingComponent == nullptr)
+	if (!GetOwningPlayerPawn())
 	{
 		return;
 	}
-	
-	OwnerCraftingComponent->Server_CraftItem(SelectedRecipe);*/
+
+	UInventoryComponent* OwnerInventoryComponent = GetOwningPlayerPawn()->GetComponentByClass<UInventoryComponent>();
+	if (OwnerInventoryComponent == nullptr)
+	{
+		return;
+	}
+
+	FInventoryItem ItemToAdd;
+	ItemToAdd.Name = SelectedItem;
+	ItemToAdd.Quantity = 1;
+
+	OwnerInventoryComponent->AddItem(ItemToAdd);
 }
 
 void UCreativeMenuWidget::GiveItemStack()
 {
+	if (!GetOwningPlayerPawn())
+	{
+		return;
+	}
 
+	UInventoryComponent* OwnerInventoryComponent = GetOwningPlayerPawn()->GetComponentByClass<UInventoryComponent>();
+	if (OwnerInventoryComponent == nullptr)
+	{
+		return;
+	}
+
+	FItemData* SelectedItemData = UInventoryComponent::GetItemData(SelectedItem);
+	if (SelectedItemData == nullptr)
+	{
+		return;
+	}
+
+	FInventoryItem ItemToAdd;
+	ItemToAdd.Name = SelectedItem;
+	ItemToAdd.Quantity = SelectedItemData->StackSize;
+
+	OwnerInventoryComponent->AddItem(ItemToAdd);
 }

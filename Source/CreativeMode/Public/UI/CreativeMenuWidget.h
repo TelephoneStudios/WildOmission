@@ -49,6 +49,9 @@ private:
 	
 	UPROPERTY(Meta = (BindWidget))
 	class UTextBlock* SelectedItemNameTextBlock;
+
+	UPROPERTY(Meta = (BindWidget))
+	class UTextBlock* GiveStackButtonTextBlock;
 	
 	UPROPERTY(Meta = (BindWidget))
 	class UImage* SelectedItemIconImage;

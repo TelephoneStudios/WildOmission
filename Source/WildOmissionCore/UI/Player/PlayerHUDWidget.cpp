@@ -26,9 +26,11 @@ UPlayerHUDWidget::UPlayerHUDWidget(const FObjectInitializer& ObjectInitializer) 
 	OpenSecondaryButtonTextBlock = nullptr;
 	InventoryMenu = nullptr;
 	CraftingPanel = nullptr;
+	CreativePanel = nullptr;
 	OpenInventoryButton = nullptr;
 	CreativeOpenInventoryButton = nullptr;
 	CraftingMenu = nullptr;
+	CreativeMenu = nullptr;
 	Chat = nullptr;
 	NotificationPanel = nullptr;
 	BrandingTextBlock = nullptr;

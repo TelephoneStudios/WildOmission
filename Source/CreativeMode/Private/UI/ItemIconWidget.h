@@ -13,7 +13,7 @@ class UItemIconWidget : public UUserWidget, public IUserObjectListEntry
 	GENERATED_BODY()
 	
 public:
-	void Setup(class UCreativeMenuWidget* InParentMenu);
+	void Setup(class UCreativeMenuWidget* InParentMenu, const FName& InItemID);
 	
 	UFUNCTION(BlueprintCallable)
 	bool IsSelected() const;
@@ -37,6 +37,7 @@ private:
 	class UCreativeMenuWidget* ParentMenu;
 
 	bool Hovering = false;
+	FName ItemID;
 
 	UFUNCTION()
 	void OnClicked();

@@ -225,6 +225,18 @@ void UInventoryComponent::SpawnWorldItem(UWorld* WorldContextObject, const FInve
 	WorldItem->AddImpulse(PhysicsImpulse);
 }
 
+TArray<FName> UInventoryComponent::GetAllItems()
+{
+	if (ItemDataTable == nullptr)
+	{
+		UE_LOG(LogInventory, Display, TEXT("Cannot get all item data, the item data table is missing."));
+		TArray<FName> OutEmptyList;
+		return OutEmptyList;
+	}
+
+	return ItemDataTable->GetRowNames();
+}
+
 void UInventoryComponent::OnLoadComplete_Implementation()
 {
 	if (ServerState.Slots.Num() < SlotCount)
