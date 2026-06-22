@@ -62,6 +62,12 @@ void AWildOmissionGameMode::InitGame(const FString& MapName, const FString& Opti
 		return;
 	}
 
+	// TODO this is only here for testing creative mode, remove later
+	if (World->WorldType == EWorldType::PIE)
+	{
+		GameMode = 1;
+	}
+
 	SaveManager = World->SpawnActor<ASaveManager>();
 	ASaveManager::SetSaveManager(SaveManager);
 
