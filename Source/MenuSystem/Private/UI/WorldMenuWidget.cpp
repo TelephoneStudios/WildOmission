@@ -80,8 +80,16 @@ void UWorldMenuWidget::Open(const FString& InWorldName)
 	// Get Save File and select options
 	DifficultyMultiOptionBox->SetSelectedIndex(SaveFile->Difficulty.GetIntValue());
 
-	// TODO once creative dlc is made we will handle creative mode stuff here
-	GameModeMultiOptionBox->SetSelectedIndex(0); // for now we are hardcoding it to survival until creative mode dlc
+	if (HasCreativeMode)
+	{
+		// load game mode normally
+		GameModeMultiOptionBox->SetSelectedIndex(SaveFile->GameMode);
+	}
+	else
+	{
+		// if we don't have creative make it set to survival
+		GameModeMultiOptionBox->SetSelectedIndex(0);
+	}
 
 	// Set the seed text block
 	SeedTextBlock->SetText(FText::FromString(FString::Printf(TEXT("Seed: %i"), SaveFile->Seed)));
