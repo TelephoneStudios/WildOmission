@@ -224,7 +224,7 @@ void UPlayerHUDWidget::ToggleSecondaryMenu(bool ForceOpen)
 			SwitchToCraftingMenu();
 		}
 	}
-	else if (IsCraftingMenuOpen())
+	else if (IsCraftingMenuOpen() || IsCreativeMenuOpen())
 	{
 		SwitchToInventoryMenu();
 		CloseMenuPanel();
@@ -260,7 +260,7 @@ void UPlayerHUDWidget::ToggleChatMenu()
 
 bool UPlayerHUDWidget::IsMenuOpen() const
 {
-	return IsInventoryMenuOpen() || IsCraftingMenuOpen() || IsChatMenuOpen();
+	return IsInventoryMenuOpen() || IsCraftingMenuOpen() || IsCreativeMenuOpen() || IsChatMenuOpen();
 }
 
 bool UPlayerHUDWidget::IsInventoryMenuOpen() const
@@ -271,6 +271,11 @@ bool UPlayerHUDWidget::IsInventoryMenuOpen() const
 bool UPlayerHUDWidget::IsCraftingMenuOpen() const
 {
 	return MenuSwitcher->GetActiveWidget() == CraftingPanel;
+}
+
+bool UPlayerHUDWidget::IsCreativeMenuOpen() const
+{
+	return MenuSwitcher->GetActiveWidget() == CreativePanel;
 }
 
 bool UPlayerHUDWidget::IsChatMenuOpen() const

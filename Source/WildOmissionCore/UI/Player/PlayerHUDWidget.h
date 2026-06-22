@@ -47,6 +47,9 @@ public:
 	bool IsCraftingMenuOpen() const;
 
 	UFUNCTION(BlueprintCallable)
+	bool IsCreativeMenuOpen() const;
+
+	UFUNCTION(BlueprintCallable)
 	bool IsChatMenuOpen() const;
 
 	class UInventoryMenuWidget* GetInventoryMenu() const;
