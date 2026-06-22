@@ -8,6 +8,7 @@
 #include "Components/VerticalBox.h"
 #include "Components/VerticalBoxSlot.h"
 #include "Components/Button.h"
+#include "Components/WidgetSwitcher.h"
 #include "ItemCategoryButton.h"
 #include "ItemIconWidget.h"
 #include "Components/InventoryComponent.h"
@@ -40,6 +41,8 @@ void UCreativeMenuWidget::NativeConstruct()
 	SortByButton_Ammo->Setup(this, EItemCategory::Ammo);
 	SortByButton_Medical->Setup(this, EItemCategory::Medical);
 	SortByButton_Clothing->Setup(this, EItemCategory::Clothing);
+
+	SwitchMenuButton->OnClicked.AddDynamic(this, &UCreativeMenuWidget::SwitchMenu);
 
 	GiveSingleButton->OnClicked.AddDynamic(this, &UCreativeMenuWidget::GiveItemSingle);
 	GiveStackButton->OnClicked.AddDynamic(this, &UCreativeMenuWidget::GiveItemStack);
@@ -81,7 +84,7 @@ void UCreativeMenuWidget::RefreshItemList()
 	for (const FName& ItemID : UInventoryComponent::GetAllItems())
 	{
 		FItemData* ItemData = UInventoryComponent::GetItemData(ItemID);
-		if (ItemData == nullptr || (CategoryFilter != EItemCategory::All && ItemData->Category != CategoryFilter))
+		if (ItemData == nullptr || (CategoryFilter != EItemCategory::All && ItemData->Category != CategoryFilter) || ItemData->HiddenInCreativeMode)
 		{
 			continue;
 		}
@@ -138,7 +141,24 @@ void UCreativeMenuWidget::ClearDetailsPanel()
 	
 	SelectedItemDescriptionTextBlock->SetText(FText::FromString(FString()));
 
-	SelectedItemIconImage->SetColorAndOpacity(FLinearColor(0.0f, 0.0f, 0.0f, 0.0f));}
+	SelectedItemIconImage->SetColorAndOpacity(FLinearColor(0.0f, 0.0f, 0.0f, 0.0f));
+}
+
+void UCreativeMenuWidget::SwitchMenu()
+{
+	if (MenuSwitcher->GetActiveWidget() == ItemMenu)
+	{
+		// switch to commands menu
+		MenuSwitcher->SetActiveWidget(CommandsMenu);
+		SwitchMenuButtonTextBlock->SetText(FText::FromString(TEXT("Items")));
+	}
+	else
+	{
+		// switch to item menu
+		MenuSwitcher->SetActiveWidget(ItemMenu);
+		SwitchMenuButtonTextBlock->SetText(FText::FromString(TEXT("Commands")));
+	}
+}
 
 void UCreativeMenuWidget::GiveItemSingle()
 {

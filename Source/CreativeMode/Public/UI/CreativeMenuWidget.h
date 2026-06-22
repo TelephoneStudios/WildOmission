@@ -65,6 +65,21 @@ private:
 	UPROPERTY(Meta = (BindWidget))
 	class UButton* GiveStackButton;
 
+	UPROPERTY(Meta = (BindWidget))
+	class UButton* SwitchMenuButton;
+
+	UPROPERTY(Meta = (BindWidget))
+	class UTextBlock* SwitchMenuButtonTextBlock;
+
+	UPROPERTY(Meta = (BindWidget))
+	class UWidgetSwitcher* MenuSwitcher;
+
+	UPROPERTY(Meta = (BindWidget))
+	class UWidget* ItemMenu;
+
+	UPROPERTY(Meta = (BindWidget))
+	class UWidget* CommandsMenu;
+
 	UPROPERTY()
 	TSubclassOf<class UItemIconWidget> ItemIconWidgetClass;
 	
@@ -76,6 +91,9 @@ private:
 
 	void RefreshDetailsPanel();
 	void ClearDetailsPanel();
+
+	UFUNCTION()
+	void SwitchMenu();
 
 	UFUNCTION()
 	void GiveItemSingle();
