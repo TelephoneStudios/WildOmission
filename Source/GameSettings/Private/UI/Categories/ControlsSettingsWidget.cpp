@@ -20,6 +20,7 @@ UControlsSettingsWidget::UControlsSettingsWidget(const FObjectInitializer& Objec
 	SprintKeyOptionBox = nullptr;
 	CrouchKeyOptionBox = nullptr;
 	JumpKeyOptionBox = nullptr;
+	FlyKeyOptionBox = nullptr;
 
 	PrimaryKeyOptionBox = nullptr;
 	SecondaryKeyOptionBox = nullptr;
@@ -62,6 +63,7 @@ void UControlsSettingsWidget::OnApply()
 	UserSettings->SetSprintKey(SprintKeyOptionBox->GetSelectedKey());
 	UserSettings->SetCrouchKey(CrouchKeyOptionBox->GetSelectedKey());
 	UserSettings->SetJumpKey(JumpKeyOptionBox->GetSelectedKey());
+	UserSettings->SetFlyKey(FlyKeyOptionBox->GetSelectedKey());
 
 	UserSettings->SetPrimaryKey(PrimaryKeyOptionBox->GetSelectedKey());
 	UserSettings->SetSecondaryKey(SecondaryKeyOptionBox->GetSelectedKey());
@@ -99,6 +101,7 @@ void UControlsSettingsWidget::OnRefresh()
 	SprintKeyOptionBox->OnValueChangedNoParams.RemoveDynamic(this, &UControlsSettingsWidget::OnApply);
 	CrouchKeyOptionBox->OnValueChangedNoParams.RemoveDynamic(this, &UControlsSettingsWidget::OnApply);
 	JumpKeyOptionBox->OnValueChangedNoParams.RemoveDynamic(this, &UControlsSettingsWidget::OnApply);
+	FlyKeyOptionBox->OnValueChangedNoParams.RemoveDynamic(this, &UControlsSettingsWidget::OnApply);
 
 	PrimaryKeyOptionBox->OnValueChangedNoParams.RemoveDynamic(this, &UControlsSettingsWidget::OnApply);
 	SecondaryKeyOptionBox->OnValueChangedNoParams.RemoveDynamic(this, &UControlsSettingsWidget::OnApply);
@@ -128,6 +131,7 @@ void UControlsSettingsWidget::OnRefresh()
 	SprintKeyOptionBox->SetSelectedKey(UserSettings->GetSprintKey());
 	CrouchKeyOptionBox->SetSelectedKey(UserSettings->GetCrouchKey());
 	JumpKeyOptionBox->SetSelectedKey(UserSettings->GetJumpKey());
+	FlyKeyOptionBox->SetSelectedKey(UserSettings->GetFlyKey());
 
 	PrimaryKeyOptionBox->SetSelectedKey(UserSettings->GetPrimaryKey());
 	SecondaryKeyOptionBox->SetSelectedKey(UserSettings->GetSecondaryKey());
@@ -149,6 +153,7 @@ void UControlsSettingsWidget::OnRefresh()
 	SprintKeyOptionBox->OnValueChangedNoParams.AddDynamic(this, &UControlsSettingsWidget::OnApply);
 	CrouchKeyOptionBox->OnValueChangedNoParams.AddDynamic(this, &UControlsSettingsWidget::OnApply);
 	JumpKeyOptionBox->OnValueChangedNoParams.AddDynamic(this, &UControlsSettingsWidget::OnApply);
+	FlyKeyOptionBox->OnValueChangedNoParams.AddDynamic(this, &UControlsSettingsWidget::OnApply);
 
 	PrimaryKeyOptionBox->OnValueChangedNoParams.AddDynamic(this, &UControlsSettingsWidget::OnApply);
 	SecondaryKeyOptionBox->OnValueChangedNoParams.AddDynamic(this, &UControlsSettingsWidget::OnApply);

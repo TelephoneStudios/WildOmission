@@ -39,6 +39,8 @@ private:
 	class UKeyOptionBox* CrouchKeyOptionBox;
 	UPROPERTY(Meta = (BindWidget))
 	class UKeyOptionBox* JumpKeyOptionBox;
+	UPROPERTY(Meta = (BindWidget))
+	class UKeyOptionBox* FlyKeyOptionBox;
 
 	UPROPERTY(Meta = (BindWidget))
 	class UKeyOptionBox* PrimaryKeyOptionBox;
