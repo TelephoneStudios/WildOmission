@@ -16,7 +16,7 @@
 #include "Log.h"
 
 static const int32 CreativeModeAppID = 4877470;
-static const bool HasCreativeMode = USteamHelperFunctionLibrary::IsDLCInstalled(CreativeModeAppID);
+static bool HasCreativeMode = false;
 
 UWorldMenuWidget::UWorldMenuWidget(const FObjectInitializer& ObjectInitializer) : UUserWidget(ObjectInitializer)
 {
@@ -79,6 +79,8 @@ void UWorldMenuWidget::Open(const FString& InWorldName)
 
 	// Get Save File and select options
 	DifficultyMultiOptionBox->SetSelectedIndex(SaveFile->Difficulty.GetIntValue());
+
+	HasCreativeMode = USteamHelperFunctionLibrary::IsDLCInstalled(CreativeModeAppID);
 
 	if (HasCreativeMode)
 	{
