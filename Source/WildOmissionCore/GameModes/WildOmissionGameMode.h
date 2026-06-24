@@ -107,6 +107,9 @@ private:
 	UPROPERTY()
 	TArray<class AWildOmissionPlayerController*> SleepingPlayers;
 
+	UFUNCTION()
+	void OnSleepTimerCompleted();
+
 	void ProcessMultiplayerJoinAchievement(class AWildOmissionPlayerController* NewWildOmissionPlayer);
 
 	void SpawnHumanAtStartSpot(AController* Controller);

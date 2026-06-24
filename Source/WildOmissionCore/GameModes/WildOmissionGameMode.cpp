@@ -557,10 +557,11 @@ void AWildOmissionGameMode::OnPlayerSleep(AWildOmissionPlayerController* Sleepin
 
 	if (SleepingPlayers.Num() == PlayerCount)
 	{
-		// Set time morning
-		TimeOfDayManager->SetTimeOfDay(0);
-		UE_LOG(LogTemp, Warning, TEXT("Sleep AT LAST!!!!"));
-		SleepingPlayers.Empty();
+		// Start countdown
+		FTimerHandle SleepTimerHandle;
+		FTimerDelegate SleepTimerDelegate;
+		SleepTimerDelegate.BindUObject(this, &AWildOmissionGameMode::OnSleepTimerCompleted);
+		World->GetTimerManager().SetTimer(SleepTimerHandle, SleepTimerDelegate, 3.0f, false);
 	}
 }
 
@@ -624,6 +625,26 @@ void AWildOmissionGameMode::LogPlayerInventorySlots()
 			GEngine->AddOnScreenDebugMessage(INDEX_NONE, 10.0f, FColor::Orange, FString::Printf(TEXT("Index: %i, Item: %s, Quantity: %i"), Slot.Index, *Slot.Item.Name.ToString(), Slot.Item.Quantity));
 		}
 		GEngine->AddOnScreenDebugMessage(INDEX_NONE, 10.0f, FColor::Green, FString::Printf(TEXT("Player: "), *Character->GetActorNameOrLabel()));
+	}
+}
+
+void AWildOmissionGameMode::OnSleepTimerCompleted()
+{
+	UWorld* World = GetWorld();
+	if (World == nullptr)
+	{
+		return;
+	}
+
+	// Check if all players are still alseep
+	int32 PlayerCount = World->GetNumPlayerControllers();
+	if (SleepingPlayers.Num() == PlayerCount)
+	{
+		// Set time morning
+		TimeOfDayManager->SetTimeOfDay(0);
+		UE_LOG(LogTemp, Warning, TEXT("Sleep AT LAST!!!!"));
+		SleepingPlayers.Empty();
+		// Wake players up
 	}
 }
 
