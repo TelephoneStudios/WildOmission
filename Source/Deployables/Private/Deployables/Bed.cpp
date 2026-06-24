@@ -11,8 +11,6 @@ ABed::ABed()
 	SpawnPointComponent = CreateDefaultSubobject<USceneComponent>(TEXT("SpawnPointComponent"));
 	SpawnPointComponent->SetupAttachment(MeshComponent);
 
-	NormalizedNightThreshold = .5f;
-
 	UniqueID = -1;
 }
 
@@ -74,10 +72,8 @@ FString ABed::PromptText()
 	{
 		return TEXT("ERROR");
 	}
-	// only sleep within the time of .5 and 0;
-	const float NormalizedTimeOfDay = TimeOfDayManager->GetNormalizedProgressThroughDay();
 
-	if (NormalizedTimeOfDay > NormalizedNightThreshold)
+	if (TimeOfDayManager->IsNight())
 	{
 		// Sleep prompt
 		return TEXT("sleep");

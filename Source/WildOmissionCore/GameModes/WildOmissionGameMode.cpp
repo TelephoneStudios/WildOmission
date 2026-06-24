@@ -419,7 +419,7 @@ void AWildOmissionGameMode::SetTime(float NormalizedTime)
 		return;
 	}
 
-	TimeOfDayManager->SetNormalizedProgressThroughDay(NormalizedTime);
+	TimeOfDayManager->SetTimeOfDay(NormalizedTime);
 }
 
 void AWildOmissionGameMode::Weather(const FString& WeatherToSet)

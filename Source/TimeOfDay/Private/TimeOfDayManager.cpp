@@ -25,7 +25,7 @@ ATimeOfDayManager::ATimeOfDayManager()
 	NetUpdateFrequency = 1.0f;
 
 	DirectionalLight = nullptr;
-	NormalizedProgressThroughDay = 0.0f;
+	TimeOfDay = 0.0f;
 	DaysPlayed = 0;
 
 	TimeFrozen = false;
@@ -97,19 +97,19 @@ void ATimeOfDayManager::OnRep_DaysPlayed()
 	SetDaysPlayed(DaysPlayed);
 }
 
-void ATimeOfDayManager::OnRep_NormalizedProgressThroughDay()
+void ATimeOfDayManager::OnRep_TimeOfDay()
 {
-	SetNormalizedProgressThroughDay(NormalizedProgressThroughDay);
+	SetTimeOfDay(TimeOfDay);
 	HandleDelegates();
 }
 
 void ATimeOfDayManager::HandleDelegates()
 {
 	// Sunrise = 0, Noon = .25, Sunset = .5, Midnight = .75
-	const bool SunriseConditionValid = NormalizedProgressThroughDay > 0 && NormalizedProgressThroughDay < 0.05f;
-	const bool NoonConditionValid = NormalizedProgressThroughDay > 0.25f && NormalizedProgressThroughDay < 0.3f;
-	const bool SunsetConditionValid = NormalizedProgressThroughDay > 0.5f && NormalizedProgressThroughDay < 0.55f;
-	const bool MidnightConditionValid = NormalizedProgressThroughDay > 0.75f && NormalizedProgressThroughDay < 0.8f;
+	const bool SunriseConditionValid = TimeOfDay > 0 && TimeOfDay < 0.05f;
+	const bool NoonConditionValid = TimeOfDay > 0.25f && TimeOfDay < 0.3f;
+	const bool SunsetConditionValid = TimeOfDay > 0.5f && TimeOfDay < 0.55f;
+	const bool MidnightConditionValid = TimeOfDay > 0.75f && TimeOfDay < 0.8f;
 	if (!SunriseBroadcasted && OnTimeSunrise.IsBound() && SunriseConditionValid)
 	{
 		OnTimeSunrise.Broadcast();
@@ -158,15 +158,15 @@ void ATimeOfDayManager::Tick(float DeltaTime)
 		return;
 	}
 
-	NormalizedProgressThroughDay += (DAY_NIGHT_SPEED * DeltaTime / 360.0f);
-	if (NormalizedProgressThroughDay >= 1.0f)
+	TimeOfDay += (DAY_NIGHT_SPEED * DeltaTime / 360.0f);
+	if (TimeOfDay >= 1.0f)
 	{
 		DaysPlayed += 1;
-		NormalizedProgressThroughDay = 0.0f;
+		TimeOfDay = 0.0f;
 	}
 
 	OnRep_DaysPlayed();
-	OnRep_NormalizedProgressThroughDay();
+	OnRep_TimeOfDay();
 }
 
 void ATimeOfDayManager::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -174,7 +174,7 @@ void ATimeOfDayManager::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(ATimeOfDayManager, DaysPlayed);
-	DOREPLIFETIME(ATimeOfDayManager, NormalizedProgressThroughDay);
+	DOREPLIFETIME(ATimeOfDayManager, TimeOfDay);
 }
 
 void ATimeOfDayManager::SetDaysPlayed(int32 InDaysPlayed)
@@ -188,9 +188,9 @@ int32 ATimeOfDayManager::GetDaysPlayed() const
 	return DaysPlayed;
 }
 
-void ATimeOfDayManager::SetNormalizedProgressThroughDay(float InProgress)
+void ATimeOfDayManager::SetTimeOfDay(float InNormalizedTime)
 {
-	NormalizedProgressThroughDay = InProgress;
+	TimeOfDay = InNormalizedTime;
 	
 	if (DirectionalLight == nullptr)
 	{
@@ -198,12 +198,12 @@ void ATimeOfDayManager::SetNormalizedProgressThroughDay(float InProgress)
 	}
 
 	DirectionalLight->SetActorRotation(FRotator(0.0f, 180.0f, 180.0f));
-	DirectionalLight->AddActorLocalRotation(FRotator(NormalizedProgressThroughDay * 360.0f, 0.0f, 0.0f));
+	DirectionalLight->AddActorLocalRotation(FRotator(TimeOfDay * 360.0f, 0.0f, 0.0f));
 }
 
-float ATimeOfDayManager::GetNormalizedProgressThroughDay() const
+float ATimeOfDayManager::GetTimeOfDay() const
 {
-	return NormalizedProgressThroughDay;
+	return TimeOfDay;
 }
 
 void ATimeOfDayManager::SetTimeFrozen(bool InTimeFrozen)
@@ -218,15 +218,10 @@ bool ATimeOfDayManager::IsTimeFrozen() const
 
 bool ATimeOfDayManager::IsDay() const
 {
-	if (DirectionalLight == nullptr)
-	{
-		return false;
-	}
-
-	return DirectionalLight->GetActorRotation().Pitch < 0.0f;
+	return !IsNight();
 }
 
 bool ATimeOfDayManager::IsNight() const
 {
-	return !IsDay();
+	return TimeOfDay > 0.5f;
 }

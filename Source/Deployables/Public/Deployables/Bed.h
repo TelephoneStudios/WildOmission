@@ -31,9 +31,6 @@ public:
 
 	int32 GetUniqueID() const;
 
-	UPROPERTY(EditDefaultsOnly)
-	float NormalizedNightThreshold;
-
 private:
 	UPROPERTY(VisibleAnywhere)
 	USceneComponent* SpawnPointComponent;

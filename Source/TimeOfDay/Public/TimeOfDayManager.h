@@ -32,8 +32,11 @@ public:
 	void SetDaysPlayed(int32 InDaysPlayed);
 	int32 GetDaysPlayed() const;
 
-	void SetNormalizedProgressThroughDay(float InProgress);
-	float GetNormalizedProgressThroughDay() const;
+	// Sets the time, time is normalized (0 is morning, .25 is noon, .5 is dusk, .75 is midnight)
+	void SetTimeOfDay(float InNormalizedTime);
+
+	// Returns a normalized value of the time (0 is morning, .25 is noon, .5 is dusk, .75 is midnight)
+	float GetTimeOfDay() const;
 	
 	void SetTimeFrozen(bool InTimeFrozen);
 	bool IsTimeFrozen() const;
@@ -58,8 +61,8 @@ private:
 	
 	UPROPERTY(Replicated, ReplicatedUsing = OnRep_DaysPlayed)
 	int32 DaysPlayed;
-	UPROPERTY(Replicated, ReplicatedUsing = OnRep_NormalizedProgressThroughDay)
-	float NormalizedProgressThroughDay;
+	UPROPERTY(Replicated, ReplicatedUsing = OnRep_TimeOfDay)
+	float TimeOfDay;
 
 	void CalculateMoonPhase();
 
@@ -67,7 +70,7 @@ private:
 	void OnRep_DaysPlayed();
 
 	UFUNCTION()
-	void OnRep_NormalizedProgressThroughDay();
+	void OnRep_TimeOfDay();
 	
 	bool TimeFrozen;
 
