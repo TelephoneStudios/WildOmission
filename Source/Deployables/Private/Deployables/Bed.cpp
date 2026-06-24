@@ -3,12 +3,15 @@
 
 #include "Deployables/Bed.h"
 #include "Interfaces/BedController.h"
+#include "TimeOfDayManager.h"
 #include "Net/UnrealNetwork.h"
 
 ABed::ABed()
 {
 	SpawnPointComponent = CreateDefaultSubobject<USceneComponent>(TEXT("SpawnPointComponent"));
 	SpawnPointComponent->SetupAttachment(MeshComponent);
+
+	NormalizedNightThreshold = .5f;
 
 	UniqueID = -1;
 }
@@ -42,19 +45,50 @@ void ABed::Interact(AActor* Interactor)
 	}
 
 	BedController->SetCurrentBed(this->UniqueID, this->GetChunkLocation());
+
+	ATimeOfDayManager* TimeOfDayManager = ATimeOfDayManager::GetTimeOfDayManager();
+	if (TimeOfDayManager == nullptr)
+	{
+		return;
+	}
+
+	// if its night, sleep
 }
 
 FString ABed::PromptText()
 {
-	IBedController* BedController = Cast<IBedController>(GetWorld()->GetFirstPlayerController());
+	UWorld* World = GetWorld();
+	if (World == nullptr)
+	{
+		return TEXT("ERROR");
+	}
+
+	IBedController* BedController = Cast<IBedController>(World->GetFirstPlayerController());
 	if (BedController == nullptr)
 	{
 		return TEXT("ERROR");
 	}
 
-	const bool IsCurrentSpawnPoint = BedController->GetBedUniqueID() == this->UniqueID;
+	ATimeOfDayManager* TimeOfDayManager = ATimeOfDayManager::GetTimeOfDayManager();
+	if (TimeOfDayManager == nullptr)
+	{
+		return TEXT("ERROR");
+	}
+	// only sleep within the time of .5 and 0;
+	const float NormalizedTimeOfDay = TimeOfDayManager->GetNormalizedProgressThroughDay();
 
-	return IsCurrentSpawnPoint ? TEXT("NOPRESSPROMPT_Current Spawn Point") : TEXT("to set spawn");
+	if (NormalizedTimeOfDay > NormalizedNightThreshold)
+	{
+		// Sleep prompt
+		return TEXT("sleep");
+	}
+	else
+	{
+		// Spawn prompt
+		const bool IsCurrentSpawnPoint = BedController->GetBedUniqueID() == this->UniqueID;
+		return IsCurrentSpawnPoint ? TEXT("NOPRESSPROMPT_Current Spawn Point") : TEXT("to set spawn");
+	}
+
 }
 
 USceneComponent* ABed::GetSpawnPointComponent() const

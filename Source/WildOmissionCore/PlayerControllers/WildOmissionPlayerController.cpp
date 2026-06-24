@@ -166,6 +166,11 @@ void AWildOmissionPlayerController::SendMessage(APlayerState* Sender, const FStr
 	Server_SendMessage(Sender, Message);
 }
 
+void AWildOmissionPlayerController::Sleep()
+{
+	// TODO sleep logic here
+}
+
 void AWildOmissionPlayerController::SetCurrentBed(const int32& InBedUniqueID, const FIntVector2& InBedChunkLocation)
 {
 	BedUniqueID = InBedUniqueID;

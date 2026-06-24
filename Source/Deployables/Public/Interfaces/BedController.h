@@ -22,6 +22,7 @@ class DEPLOYABLES_API IBedController
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
+	virtual void Sleep() = 0;
 	virtual void SetCurrentBed(const int32& InBedUniqueID, const FIntVector2& InBedChunkLocation) = 0;
 	virtual int32 GetBedUniqueID() const = 0;
 	virtual FIntVector2 GetBedChunkLocation() const = 0;
