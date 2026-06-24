@@ -561,7 +561,7 @@ void AWildOmissionGameMode::OnPlayerSleep(AWildOmissionPlayerController* Sleepin
 		FTimerHandle SleepTimerHandle;
 		FTimerDelegate SleepTimerDelegate;
 		SleepTimerDelegate.BindUObject(this, &AWildOmissionGameMode::OnSleepTimerCompleted);
-		World->GetTimerManager().SetTimer(SleepTimerHandle, SleepTimerDelegate, 3.0f, false);
+		World->GetTimerManager().SetTimer(SleepTimerHandle, SleepTimerDelegate, 0.1f, false);
 	}
 }
 
