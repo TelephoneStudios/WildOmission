@@ -21,6 +21,9 @@ public:
 
 	virtual void Logout(AController* Exiting) override;
 
+	UFUNCTION()
+	TArray<class AWildOmissionPlayerController*> GetAllPlayerControllers() const;
+
 	void SpawnHumanForController(APlayerController* Controller);
 
 	UFUNCTION(BlueprintCallable, Exec)
@@ -100,6 +103,9 @@ private:
 	
 	UPROPERTY()
 	class AGameChatManager* ChatManager;
+
+	UPROPERTY()
+	TArray<class AWildOmissionPlayerController*> SleepingPlayers;
 
 	void ProcessMultiplayerJoinAchievement(class AWildOmissionPlayerController* NewWildOmissionPlayer);
 

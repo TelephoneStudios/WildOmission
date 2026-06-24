@@ -230,6 +230,30 @@ void AWildOmissionGameMode::Logout(AController* Exiting)
 	ChatManager->SendMessage(ExitingPlayerState, TEXT("Has Left The Game."), EChatMessageType::CONNECTION_UPDATE);
 }
 
+TArray<AWildOmissionPlayerController*> AWildOmissionGameMode::GetAllPlayerControllers() const
+{
+	TArray<AWildOmissionPlayerController*> Array;
+
+	UWorld* World = GetWorld();
+	if (World == nullptr)
+	{
+		return Array;
+	}
+
+	for (FConstPlayerControllerIterator Iterator = World->GetPlayerControllerIterator(); Iterator; ++Iterator)
+	{
+		AWildOmissionPlayerController* PlayerController = Cast<AWildOmissionPlayerController>(Iterator->Get());
+		if (PlayerController == nullptr)
+		{
+			continue;
+		}
+
+		Array.Add(PlayerController);
+	}
+
+	return Array;
+}
+
 void AWildOmissionGameMode::SpawnHumanForController(APlayerController* Controller)
 {
 	if (Controller == nullptr || !IsValid(Controller))
@@ -521,10 +545,23 @@ AGameChatManager* AWildOmissionGameMode::GetGameChatManager() const
 void AWildOmissionGameMode::OnPlayerSleep(AWildOmissionPlayerController* SleepingController)
 {
 	// TODO make sure all players are asleep
+	SleepingPlayers.Add(SleepingController);
 
-	// Set time morning
-	TimeOfDayManager->SetTimeOfDay(0);
-	UE_LOG(LogTemp, Warning, TEXT("Sleep AT LAST!!!!"));
+	UWorld* World = GetWorld();
+	if (World == nullptr)
+	{
+		return;
+	}
+
+	int32 PlayerCount = World->GetNumPlayerControllers();
+
+	if (SleepingPlayers.Num() == PlayerCount)
+	{
+		// Set time morning
+		TimeOfDayManager->SetTimeOfDay(0);
+		UE_LOG(LogTemp, Warning, TEXT("Sleep AT LAST!!!!"));
+		SleepingPlayers.Empty();
+	}
 }
 
 //TODO possible nullptr
