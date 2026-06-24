@@ -51,6 +51,10 @@ void ABed::Interact(AActor* Interactor)
 	}
 
 	// if its night, sleep
+	if (TimeOfDayManager->IsNight())
+	{
+		BedController->Sleep();
+	}
 }
 
 FString ABed::PromptText()

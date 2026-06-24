@@ -64,6 +64,8 @@ public:
 	class AMonsterSpawnManager* GetMonsterSpawnManager() const;
 	class AGameChatManager* GetGameChatManager() const;
 
+	void OnPlayerSleep(class AWildOmissionPlayerController* SleepingController);
+
 	UFUNCTION(Exec)
 	void LogPlayerInventoryComponents();
 

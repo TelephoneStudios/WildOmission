@@ -518,6 +518,15 @@ AGameChatManager* AWildOmissionGameMode::GetGameChatManager() const
 	return ChatManager;
 }
 
+void AWildOmissionGameMode::OnPlayerSleep(AWildOmissionPlayerController* SleepingController)
+{
+	// TODO make sure all players are asleep
+
+	// Set time morning
+	TimeOfDayManager->SetTimeOfDay(0);
+	UE_LOG(LogTemp, Warning, TEXT("Sleep AT LAST!!!!"));
+}
+
 //TODO possible nullptr
 void AWildOmissionGameMode::LogPlayerInventoryComponents()
 {
