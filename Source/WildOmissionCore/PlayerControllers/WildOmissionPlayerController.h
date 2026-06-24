@@ -35,6 +35,7 @@ public:
 	// End IPlayerControllerMessageSender Implementation
 
 	// Begin IBedController Implementation
+	virtual void Sleep() override;
 	virtual void SetCurrentBed(const int32& InBedUniqueID, const FIntVector2& InBedChunkLocation) override;
 	virtual int32 GetBedUniqueID() const override;
 	virtual FIntVector2 GetBedChunkLocation() const override;

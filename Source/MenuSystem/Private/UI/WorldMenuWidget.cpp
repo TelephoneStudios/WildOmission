@@ -11,7 +11,12 @@
 #include "Enums/GameDifficulty.h"
 #include "Kismet/GameplayStatics.h"
 #include "WildOmissionSaveGame.h"
+#include "SteamHelperFunctionLibrary.h"
 #include "GameFramework/PlayerState.h"
+#include "Log.h"
+
+static const int32 CreativeModeAppID = 4877470;
+static bool HasCreativeMode = false;
 
 UWorldMenuWidget::UWorldMenuWidget(const FObjectInitializer& ObjectInitializer) : UUserWidget(ObjectInitializer)
 {
@@ -42,6 +47,7 @@ void UWorldMenuWidget::NativeConstruct()
 	DifficultyMultiOptionBox->AddOption(TEXT("Normal"));
 	DifficultyMultiOptionBox->AddOption(TEXT("Hard"));
 
+	// In order to play creative mode they must purchase the creative mode dlc
 	GameModeMultiOptionBox->AddOption(TEXT("Survival"));
 	GameModeMultiOptionBox->AddOption(TEXT("Creative"));
 
@@ -55,6 +61,7 @@ void UWorldMenuWidget::NativeConstruct()
 	CancelButton->OnClicked.AddDynamic(this, &UWorldMenuWidget::BroadcastCancelButtonClicked);
 	MultiplayerCheckOptionBox->OnValueChanged.AddDynamic(this, &UWorldMenuWidget::MultiplayerCheckboxChanged);
 	ServerNameInputBox->OnTextChanged.AddDynamic(this, &UWorldMenuWidget::ServerNameOnTextChanged);
+	GameModeMultiOptionBox->OnValueChanged.AddDynamic(this, &UWorldMenuWidget::OnGameModeSelectionChanged);
 }
 
 void UWorldMenuWidget::Open(const FString& InWorldName)
@@ -72,7 +79,19 @@ void UWorldMenuWidget::Open(const FString& InWorldName)
 
 	// Get Save File and select options
 	DifficultyMultiOptionBox->SetSelectedIndex(SaveFile->Difficulty.GetIntValue());
-	GameModeMultiOptionBox->SetSelectedIndex(SaveFile->GameMode);
+
+	HasCreativeMode = USteamHelperFunctionLibrary::IsDLCInstalled(CreativeModeAppID);
+
+	if (HasCreativeMode)
+	{
+		// load game mode normally
+		GameModeMultiOptionBox->SetSelectedIndex(SaveFile->GameMode);
+	}
+	else
+	{
+		// if we don't have creative make it set to survival
+		GameModeMultiOptionBox->SetSelectedIndex(0);
+	}
 
 	// Set the seed text block
 	SeedTextBlock->SetText(FText::FromString(FString::Printf(TEXT("Seed: %i"), SaveFile->Seed)));
@@ -160,6 +179,31 @@ void UWorldMenuWidget::ServerNameOnTextChanged(const FText& Text)
 	ServerNameInputBox->SetText(FText::FromString(TextString));
 }
 
+// This function is handling making sure that the user must have the creative DLC 
+// in order to start a creative world
+void UWorldMenuWidget::OnGameModeSelectionChanged(const FString& NewValue)
+{
+	if (NewValue != TEXT("Creative"))
+	{
+		// Make sure play button is enabled
+		PlayButton->SetIsEnabled(true);
+		PlayButtonTextBlock->SetColorAndOpacity(FSlateColor(FColor::White));
+		PlayButtonTextBlock->SetText(FText::FromString(TEXT("Play")));
+		return;
+	}
+
+	// If creative was selected and we don't have creative expansion open the store
+	if (!HasCreativeMode)
+	{
+		USteamHelperFunctionLibrary::OpenStore(CreativeModeAppID);
+		
+		// Disable and explain why they can't play
+		PlayButton->SetIsEnabled(false);
+		PlayButtonTextBlock->SetColorAndOpacity(FSlateColor(FColor::Red));
+		PlayButtonTextBlock->SetText(FText::FromString(TEXT("Creative Mode DLC required in order to play creative!")));
+	}
+}
+
 void UWorldMenuWidget::MultiplayerCheckboxChanged(bool bIsChecked)
 {
 	HostSettingsMenu->SetIsEnabled(bIsChecked);
@@ -172,8 +216,13 @@ void UWorldMenuWidget::BroadcastPlayButtonClicked()
 	{
 		return;
 	}
-
-	const uint8 GameMode = GameModeMultiOptionBox->GetSelectedIndex();
+	
+	uint8 GameMode = GameModeMultiOptionBox->GetSelectedIndex();
+	// force survival if creative mode isn't owned
+	if (!HasCreativeMode)
+	{
+		GameMode = 0;
+	}
 	
 	// Set Difficulty in save file
 	SetWorldDifficultyAndGameMode(TEnumAsByte<EGameDifficulty>(DifficultyMultiOptionBox->GetSelectedIndex()), GameMode);

@@ -30,7 +30,7 @@ static const FKey DEFAULT_MOVERIGHT = EKeys::D;
 static const FKey DEFAULT_SPRINT = EKeys::LeftShift;
 static const FKey DEFAULT_CROUCH = EKeys::LeftControl;
 static const FKey DEFAULT_JUMP = EKeys::SpaceBar;
-static const FKey DEFAULT_FLY = EKeys::L;
+static const FKey DEFAULT_FLY = EKeys::F;
 
 static const FKey DEFAULT_PRIMARY = EKeys::LeftMouseButton;
 static const FKey DEFAULT_SECONDARY = EKeys::RightMouseButton;

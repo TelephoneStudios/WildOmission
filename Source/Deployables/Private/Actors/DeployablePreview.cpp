@@ -82,7 +82,6 @@ void ADeployablePreview::Setup(UStaticMesh* PreviewMesh)
 void ADeployablePreview::Update(bool IsSpawnValid)
 {
 	GetStaticMeshComponent()->SetScalarParameterValueOnMaterials(TEXT("Valid"), IsSpawnValid);
-	UE_LOG(LogTemp, Warning, TEXT("%i grounded"), IsGrounded());
 }
 
 bool ADeployablePreview::IsOverlappingInvalidObject() const

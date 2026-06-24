@@ -573,19 +573,17 @@ void AWildOmissionCharacter::SetupMesh()
 void AWildOmissionCharacter::SetupGameMode()
 {
 	AWildOmissionPlayerController* OwnerPlayerController = Cast<AWildOmissionPlayerController>(GetController());
-	if (OwnerPlayerController == nullptr || OwnerPlayerController->IsSurvivalMode())
+	if (OwnerPlayerController == nullptr || PlayerHUDWidget == nullptr)
 	{
 		return;
 	}
 
-	if (VitalsComponent)
+	PlayerHUDWidget->SetGameMode(OwnerPlayerController->IsCreativeMode());
+
+	// Make the player invincible if were in creative
+	if (VitalsComponent && OwnerPlayerController->IsCreativeMode())
 	{
 		VitalsComponent->SetGodMode(true);
-	}
-
-	if (PlayerHUDWidget)
-	{
-		PlayerHUDWidget->SetVitalsHidden(true);
 	}
 }
 
@@ -1330,7 +1328,7 @@ void AWildOmissionCharacter::ToggleCraftingMenu()
 	EquipComponent->PrimaryReleased();
 	EquipComponent->SecondaryReleased();
 
-	PlayerHUDWidget->ToggleCraftingMenu();
+	PlayerHUDWidget->ToggleSecondaryMenu();
 }
 
 void AWildOmissionCharacter::ToggleChat()

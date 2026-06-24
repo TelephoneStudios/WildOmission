@@ -84,6 +84,9 @@ private:
 	void ServerNameOnTextChanged(const FText& Text);
 	
 	UFUNCTION()
+	void OnGameModeSelectionChanged(const FString& NewSelection);
+
+	UFUNCTION()
 	void MultiplayerCheckboxChanged(bool bIsChecked);
 
 	UFUNCTION()

@@ -8,6 +8,7 @@
 #include "Components/WidgetSwitcher.h"
 #include "UI/InventoryMenuWidget.h"
 #include "UI/CraftingMenuWidget.h"
+#include "UI/CreativeMenuWidget.h"
 #include "UI/GameChatWidget.h"
 #include "UI/NotificationPanelWidget.h"
 #include "Components/InteractionComponent.h"
@@ -21,16 +22,21 @@ UPlayerHUDWidget::UPlayerHUDWidget(const FObjectInitializer& ObjectInitializer) 
 	MenuSwitcher = nullptr;
 	Vitals = nullptr;
 	InventoryPanel = nullptr;
-	OpenCraftingButton = nullptr;
+	OpenSecondaryButton = nullptr;
+	OpenSecondaryButtonTextBlock = nullptr;
 	InventoryMenu = nullptr;
 	CraftingPanel = nullptr;
+	CreativePanel = nullptr;
 	OpenInventoryButton = nullptr;
+	CreativeOpenInventoryButton = nullptr;
 	CraftingMenu = nullptr;
+	CreativeMenu = nullptr;
 	Chat = nullptr;
 	NotificationPanel = nullptr;
 	BrandingTextBlock = nullptr;
 	CoordinatesTextBlock = nullptr;
 	Crosshair = nullptr;
+	GameModeIsCreative = false;
 }
 
 void UPlayerHUDWidget::NativeConstruct()
@@ -44,9 +50,10 @@ void UPlayerHUDWidget::NativeConstruct()
 	MenuBackgroundBorder->OnMouseButtonDownEvent.BindUFunction(this, TEXT("MenuBackgroundMouseButtonDown"));
 	Chat->OnToggleRequested.AddDynamic(this, &UPlayerHUDWidget::ToggleChatMenu);
 
-	OpenCraftingButton->OnClicked.AddDynamic(this, &UPlayerHUDWidget::SwitchToCraftingMenu);
-	OpenCraftingButton->SetVisibility(ESlateVisibility::Hidden);
+	OpenSecondaryButton->OnClicked.AddDynamic(this, &UPlayerHUDWidget::OnOpenSecondaryMenuButtonClicked);
+	OpenSecondaryButton->SetVisibility(ESlateVisibility::Hidden);
 	OpenInventoryButton->OnClicked.AddDynamic(this, &UPlayerHUDWidget::SwitchToInventoryMenu);
+	CreativeOpenInventoryButton->OnClicked.AddDynamic(this, &UPlayerHUDWidget::SwitchToInventoryMenu);
 
 	APawn* OwnerPawn = GetOwningPlayerPawn();
 	if (OwnerPawn == nullptr)
@@ -124,16 +131,21 @@ void UPlayerHUDWidget::SetHideChatUnlessOpen(bool HideChatUnlessOpen)
 	Chat->SetHideUnlessOpen(HideChatUnlessOpen);
 }
 
-void UPlayerHUDWidget::SetVitalsHidden(bool Hidden)
+void UPlayerHUDWidget::SetGameMode(bool IsCreative)
 {
-	if (Vitals == nullptr)
+	GameModeIsCreative = IsCreative;
+
+	if (!GameModeIsCreative)
 	{
 		return;
 	}
 
-	ESlateVisibility NewVitalsVisibility = Hidden ? ESlateVisibility::Hidden : ESlateVisibility::Visible;
+	OpenSecondaryButtonTextBlock->SetText(FText::FromString(TEXT("Creative >")));
 
-	Vitals->SetVisibility(NewVitalsVisibility);
+	if (Vitals)
+	{
+		Vitals->SetVisibility(ESlateVisibility::Hidden);
+	}
 }
 
 void UPlayerHUDWidget::ToggleInventoryMenu(bool ForceOpen)
@@ -162,7 +174,7 @@ void UPlayerHUDWidget::ToggleInventoryMenu(bool ForceOpen)
 		}
 
 		OwnerInventoryManipulator->DropSelectedItemInWorld(false);
-		OpenCraftingButton->SetVisibility(ESlateVisibility::Hidden);
+		OpenSecondaryButton->SetVisibility(ESlateVisibility::Hidden);
 		CloseMenuPanel();
 	}
 	else
@@ -172,12 +184,21 @@ void UPlayerHUDWidget::ToggleInventoryMenu(bool ForceOpen)
 	}
 }
 
-void UPlayerHUDWidget::ToggleCraftingMenu(bool ForceOpen)
+void UPlayerHUDWidget::ToggleSecondaryMenu(bool ForceOpen)
 {
+	// if its creative mode we need to switch to crative menu
 	if (!IsMenuOpen() || ForceOpen == true)
 	{
 		OpenMenuPanel();
-		SwitchToCraftingMenu();
+		
+		if (GameModeIsCreative)
+		{
+			SwitchToCreativeMenu();
+		}
+		else
+		{
+			SwitchToCraftingMenu();
+		}
 	}
 	else if (IsInventoryMenuOpen())
 	{
@@ -194,9 +215,16 @@ void UPlayerHUDWidget::ToggleCraftingMenu(bool ForceOpen)
 		}
 
 		OwnerInventoryManipulator->DropSelectedItemInWorld(false);
-		SwitchToCraftingMenu();
+		if (GameModeIsCreative)
+		{
+			SwitchToCreativeMenu();
+		}
+		else 
+		{
+			SwitchToCraftingMenu();
+		}
 	}
-	else if (IsCraftingMenuOpen())
+	else if (IsCraftingMenuOpen() || IsCreativeMenuOpen())
 	{
 		SwitchToInventoryMenu();
 		CloseMenuPanel();
@@ -204,7 +232,15 @@ void UPlayerHUDWidget::ToggleCraftingMenu(bool ForceOpen)
 	else
 	{
 		Chat->Close();
-		SwitchToCraftingMenu();
+		
+		if (GameModeIsCreative)
+		{
+			SwitchToCreativeMenu();
+		}
+		else
+		{
+			SwitchToCraftingMenu();
+		}
 	}
 }
 
@@ -224,7 +260,7 @@ void UPlayerHUDWidget::ToggleChatMenu()
 
 bool UPlayerHUDWidget::IsMenuOpen() const
 {
-	return IsInventoryMenuOpen() || IsCraftingMenuOpen() || IsChatMenuOpen();
+	return IsInventoryMenuOpen() || IsCraftingMenuOpen() || IsCreativeMenuOpen() || IsChatMenuOpen();
 }
 
 bool UPlayerHUDWidget::IsInventoryMenuOpen() const
@@ -235,6 +271,11 @@ bool UPlayerHUDWidget::IsInventoryMenuOpen() const
 bool UPlayerHUDWidget::IsCraftingMenuOpen() const
 {
 	return MenuSwitcher->GetActiveWidget() == CraftingPanel;
+}
+
+bool UPlayerHUDWidget::IsCreativeMenuOpen() const
+{
+	return MenuSwitcher->GetActiveWidget() == CreativePanel;
 }
 
 bool UPlayerHUDWidget::IsChatMenuOpen() const
@@ -283,7 +324,7 @@ void UPlayerHUDWidget::OpenMenuPanel(bool ShowBackground)
 void UPlayerHUDWidget::SwitchToInventoryMenu()
 {
 	MenuSwitcher->SetActiveWidget(InventoryPanel);
-	OpenCraftingButton->SetVisibility(ESlateVisibility::Visible);
+	OpenSecondaryButton->SetVisibility(ESlateVisibility::Visible);
 	InventoryMenu->Open();
 }
 
@@ -292,6 +333,25 @@ void UPlayerHUDWidget::SwitchToCraftingMenu()
 	InventoryMenu->Close();
 	MenuSwitcher->SetActiveWidget(CraftingPanel);
 	CraftingMenu->Refresh();
+}
+
+void UPlayerHUDWidget::SwitchToCreativeMenu()
+{
+	InventoryMenu->Close();
+	MenuSwitcher->SetActiveWidget(CreativePanel);
+	CreativeMenu->Refresh();
+}
+
+void UPlayerHUDWidget::OnOpenSecondaryMenuButtonClicked()
+{
+	if (GameModeIsCreative)
+	{
+		SwitchToCreativeMenu();
+	}
+	else
+	{
+		SwitchToCraftingMenu();
+	}
 }
 
 void UPlayerHUDWidget::CloseMenuPanel()
@@ -307,7 +367,7 @@ void UPlayerHUDWidget::CloseMenuPanel()
 	PlayerController->bShowMouseCursor = false;
 	
 	InventoryMenu->Close(true);
-	OpenCraftingButton->SetVisibility(ESlateVisibility::Hidden);
+	OpenSecondaryButton->SetVisibility(ESlateVisibility::Hidden);
 	MenuBackgroundBorder->SetVisibility(ESlateVisibility::Hidden);
 }
 

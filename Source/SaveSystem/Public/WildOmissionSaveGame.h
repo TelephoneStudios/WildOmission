@@ -49,7 +49,7 @@ public:
 	uint32 DaysPlayed;
 	
 	UPROPERTY()
-	float NormalizedProgressThroughDay;
+	float NormalizedTimeOfDay;
 
 	UPROPERTY()
 	FWeatherData WeatherData;

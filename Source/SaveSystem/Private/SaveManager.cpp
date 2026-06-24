@@ -64,7 +64,7 @@ void ASaveManager::SaveWorld()
 	if (TimeOfDayManager)
 	{
 		SaveFile->DaysPlayed = TimeOfDayManager->GetDaysPlayed();
-		SaveFile->NormalizedProgressThroughDay = TimeOfDayManager->GetNormalizedProgressThroughDay();
+		SaveFile->NormalizedTimeOfDay = TimeOfDayManager->GetTimeOfDay();
 	}
 
 	AWeatherManager* WeatherManager = AWeatherManager::GetWeatherManager();
@@ -124,7 +124,7 @@ void ASaveManager::LoadWorld()
 	if (TimeOfDayManager)
 	{
 		TimeOfDayManager->SetDaysPlayed(SaveFile->DaysPlayed);
-		TimeOfDayManager->SetNormalizedProgressThroughDay(SaveFile->NormalizedProgressThroughDay);
+		TimeOfDayManager->SetTimeOfDay(SaveFile->NormalizedTimeOfDay);
 	}
 	
 	AChunkManager* ChunkManager = AChunkManager::GetChunkManager();

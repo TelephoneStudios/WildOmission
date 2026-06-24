@@ -6,16 +6,6 @@
 #include "Blueprint/UserWidget.h"
 #include "CraftingMenuWidget.generated.h"
 
-class UWrapBox;
-class UTextBlock;
-class UImage;
-class UVerticalBox;
-class UButton;
-class UCraftingRecipeCategoryButton;
-class URecipeIconWidget;
-class UIngredientRowWidget;
-class UInventoryComponent;
-
 enum EItemCategory;
 struct FItemData;
 struct FCraftingRecipe;
@@ -40,50 +30,50 @@ public:
 
 private:
 	UPROPERTY(Meta = (BindWidget))
-	UCraftingRecipeCategoryButton* SortByButton_All;
+	class UCraftingRecipeCategoryButton* SortByButton_All;
 	UPROPERTY(Meta = (BindWidget))
-	UCraftingRecipeCategoryButton* SortByButton_Items;
+	class UCraftingRecipeCategoryButton* SortByButton_Items;
 	UPROPERTY(Meta = (BindWidget))
-	UCraftingRecipeCategoryButton* SortByButton_Resources;
+	class UCraftingRecipeCategoryButton* SortByButton_Resources;
 	UPROPERTY(Meta = (BindWidget))
-	UCraftingRecipeCategoryButton* SortByButton_Tools;
+	class UCraftingRecipeCategoryButton* SortByButton_Tools;
 	UPROPERTY(Meta = (BindWidget))
-	UCraftingRecipeCategoryButton* SortByButton_Building;
+	class UCraftingRecipeCategoryButton* SortByButton_Building;
 	UPROPERTY(Meta = (BindWidget))
-	UCraftingRecipeCategoryButton* SortByButton_Weapons;
+	class UCraftingRecipeCategoryButton* SortByButton_Weapons;
 	UPROPERTY(Meta = (BindWidget))
-	UCraftingRecipeCategoryButton* SortByButton_Ammo;
+	class UCraftingRecipeCategoryButton* SortByButton_Ammo;
 	UPROPERTY(Meta = (BindWidget))
-	UCraftingRecipeCategoryButton* SortByButton_Medical;
+	class UCraftingRecipeCategoryButton* SortByButton_Medical;
 	UPROPERTY(Meta = (BindWidget))
-	UCraftingRecipeCategoryButton* SortByButton_Clothing;
+	class UCraftingRecipeCategoryButton* SortByButton_Clothing;
 
 	UPROPERTY(Meta = (BindWidget))
-	UWrapBox* RecipesWrapBox;
+	class UWrapBox* RecipesWrapBox;
 	
 	UPROPERTY(Meta = (BindWidget))
-	UTextBlock* SelectedRecipeNameTextBlock;
+	class UTextBlock* SelectedRecipeNameTextBlock;
 	
 	UPROPERTY(Meta = (BindWidget))
-	UImage* SelectedRecipeIconImage;
+	class UImage* SelectedRecipeIconImage;
 
 	UPROPERTY(Meta = (BindWidget))
-	UTextBlock* SelectedRecipeYieldTextBlock;
+	class UTextBlock* SelectedRecipeYieldTextBlock;
 
 	UPROPERTY(Meta = (BindWidget))
-	UTextBlock* SelectedRecipeDescriptionTextBlock;
+	class UTextBlock* SelectedRecipeDescriptionTextBlock;
 
 	UPROPERTY(Meta = (BindWidget))
-	UVerticalBox* IngredientListBox;
+	class UVerticalBox* IngredientListBox;
 
 	UPROPERTY(Meta = (BindWidget))
-	UButton* CraftButton;
+	class UButton* CraftButton;
 
 	UPROPERTY()
-	TSubclassOf<URecipeIconWidget> RecipeIconWidgetClass;
+	TSubclassOf<class URecipeIconWidget> RecipeIconWidgetClass;
 	
 	UPROPERTY()
-	TSubclassOf<UIngredientRowWidget> IngredientRowWidgetClass;
+	TSubclassOf<class UIngredientRowWidget> IngredientRowWidgetClass;
 
 	TEnumAsByte<EItemCategory> CategoryFilter;
 

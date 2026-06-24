@@ -38,6 +38,8 @@ public:
 	static FItemData* GetItemData(const FName& ItemID);
 	static void SpawnWorldItem(UWorld* WorldContextObject, const struct FInventoryItem& ItemToSpawn, AActor* SpawningActor);
 
+	static TArray<FName> GetAllItems();
+
 	FInventoryUpdateSignature OnUpdate;
 	FOnInventoryItemUpdateSignature OnItemUpdate;
 	FOnItemHarvestedSignature OnItemHarvested;

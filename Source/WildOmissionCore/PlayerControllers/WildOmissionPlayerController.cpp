@@ -166,6 +166,29 @@ void AWildOmissionPlayerController::SendMessage(APlayerState* Sender, const FStr
 	Server_SendMessage(Sender, Message);
 }
 
+void AWildOmissionPlayerController::Sleep()
+{
+	// TODO sleep logic here
+	if (!HasAuthority())
+	{
+		return;
+	}
+
+	UWorld* World = GetWorld();
+	if (World == nullptr)
+	{
+		return;
+	}
+
+	AWildOmissionGameMode* GameMode = Cast<AWildOmissionGameMode>(World->GetAuthGameMode());
+	if (GameMode == nullptr)
+	{
+		return;
+	}
+
+	GameMode->OnPlayerSleep(this);
+}
+
 void AWildOmissionPlayerController::SetCurrentBed(const int32& InBedUniqueID, const FIntVector2& InBedChunkLocation)
 {
 	BedUniqueID = InBedUniqueID;

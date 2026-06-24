@@ -21,14 +21,15 @@ public:
 	void ShowCrosshair(bool Show);
 	void SetHideChatUnlessOpen(bool HideChatUnlessOpen);
 
-	void SetVitalsHidden(bool Hidden);
+	UFUNCTION()
+	void SetGameMode(bool IsCreative);
 
 	// Setters
 	UFUNCTION(BlueprintCallable)
 	void ToggleInventoryMenu(bool ForceOpen = false);
 
 	UFUNCTION(BlueprintCallable)
-	void ToggleCraftingMenu(bool ForceOpen = false);
+	void ToggleSecondaryMenu(bool ForceOpen = false);
 
 	UFUNCTION(BlueprintCallable)
 	void ToggleChatMenu();
@@ -44,6 +45,9 @@ public:
 	
 	UFUNCTION(BlueprintCallable)
 	bool IsCraftingMenuOpen() const;
+
+	UFUNCTION(BlueprintCallable)
+	bool IsCreativeMenuOpen() const;
 
 	UFUNCTION(BlueprintCallable)
 	bool IsChatMenuOpen() const;
@@ -64,7 +68,10 @@ private:
 	class UPanelWidget* InventoryPanel;
 
 	UPROPERTY(Meta = (BindWidget))
-	class UButton* OpenCraftingButton;
+	class UButton* OpenSecondaryButton;
+
+	UPROPERTY(Meta = (BindWidget))
+	class UTextBlock* OpenSecondaryButtonTextBlock;
 
 	UPROPERTY(Meta = (BindWidget))
 	class UInventoryMenuWidget* InventoryMenu;
@@ -73,10 +80,19 @@ private:
 	UPanelWidget* CraftingPanel;
 
 	UPROPERTY(Meta = (BindWidget))
+	UPanelWidget* CreativePanel;
+
+	UPROPERTY(Meta = (BindWidget))
 	class UButton* OpenInventoryButton;
+	
+	UPROPERTY(Meta = (BindWidget))
+	class UButton* CreativeOpenInventoryButton;
 
 	UPROPERTY(Meta = (BindWidget))
 	class UCraftingMenuWidget* CraftingMenu;
+
+	UPROPERTY(Meta = (BindWidget))
+	class UCreativeMenuWidget* CreativeMenu;
 
 	UPROPERTY(Meta = (BindWidget))
 	class UGameChatWidget* Chat;
@@ -93,6 +109,9 @@ private:
 	UPROPERTY(Meta = (BindWidget))
 	UWidget* Crosshair;
 
+	UPROPERTY()
+	bool GameModeIsCreative;
+
 	void UpdateBrandingText();
 
 	UFUNCTION()
@@ -103,7 +122,13 @@ private:
 	
 	UFUNCTION()
 	void SwitchToCraftingMenu();
+
+	UFUNCTION()
+	void SwitchToCreativeMenu();
 	
+	UFUNCTION()
+	void OnOpenSecondaryMenuButtonClicked();
+
 	UFUNCTION()
 	void CloseMenuPanel();
 

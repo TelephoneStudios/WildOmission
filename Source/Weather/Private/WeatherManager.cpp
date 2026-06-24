@@ -185,7 +185,7 @@ void AWeatherManager::AttemptToSpawnStorm()
 		return;
 	}
 
-	const float SpawnChance = StormSpawnChances[FMath::RoundToInt32(TimeOfDayManager->GetNormalizedProgressThroughDay() / 0.25f)];
+	const float SpawnChance = StormSpawnChances[FMath::RoundToInt32(TimeOfDayManager->GetTimeOfDay() / 0.25f)];
 
 	const bool ShouldSpawn = UKismetMathLibrary::RandomBoolWithWeight(SpawnChance);
 	if (ShouldSpawn == false)

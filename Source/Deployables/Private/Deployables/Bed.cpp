@@ -3,6 +3,7 @@
 
 #include "Deployables/Bed.h"
 #include "Interfaces/BedController.h"
+#include "TimeOfDayManager.h"
 #include "Net/UnrealNetwork.h"
 
 ABed::ABed()
@@ -42,19 +43,52 @@ void ABed::Interact(AActor* Interactor)
 	}
 
 	BedController->SetCurrentBed(this->UniqueID, this->GetChunkLocation());
+
+	ATimeOfDayManager* TimeOfDayManager = ATimeOfDayManager::GetTimeOfDayManager();
+	if (TimeOfDayManager == nullptr)
+	{
+		return;
+	}
+
+	// if its night, sleep
+	if (TimeOfDayManager->IsNight())
+	{
+		BedController->Sleep();
+	}
 }
 
 FString ABed::PromptText()
 {
-	IBedController* BedController = Cast<IBedController>(GetWorld()->GetFirstPlayerController());
+	UWorld* World = GetWorld();
+	if (World == nullptr)
+	{
+		return TEXT("ERROR");
+	}
+
+	IBedController* BedController = Cast<IBedController>(World->GetFirstPlayerController());
 	if (BedController == nullptr)
 	{
 		return TEXT("ERROR");
 	}
 
-	const bool IsCurrentSpawnPoint = BedController->GetBedUniqueID() == this->UniqueID;
+	ATimeOfDayManager* TimeOfDayManager = ATimeOfDayManager::GetTimeOfDayManager();
+	if (TimeOfDayManager == nullptr)
+	{
+		return TEXT("ERROR");
+	}
 
-	return IsCurrentSpawnPoint ? TEXT("NOPRESSPROMPT_Current Spawn Point") : TEXT("to set spawn");
+	if (TimeOfDayManager->IsNight())
+	{
+		// Sleep prompt
+		return TEXT("sleep through the night");
+	}
+	else
+	{
+		// Spawn prompt
+		const bool IsCurrentSpawnPoint = BedController->GetBedUniqueID() == this->UniqueID;
+		return IsCurrentSpawnPoint ? TEXT("NOPRESSPROMPT_Current Spawn Point") : TEXT("to set spawn");
+	}
+
 }
 
 USceneComponent* ABed::GetSpawnPointComponent() const

@@ -82,3 +82,6 @@ Content/Blueprints/.DS_Store
 Content/Textures/.DS_Store
 Content/Textures/Icons/.DS_Store
 Source/.DS_Store
+
+# Steamworks
+/Source/ThirdParty/Steamworks

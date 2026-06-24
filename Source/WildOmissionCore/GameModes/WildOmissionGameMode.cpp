@@ -62,6 +62,12 @@ void AWildOmissionGameMode::InitGame(const FString& MapName, const FString& Opti
 		return;
 	}
 
+	// TODO this is only here for testing creative mode, remove later
+	if (World->WorldType == EWorldType::PIE)
+	{
+		GameMode = 1;
+	}
+
 	SaveManager = World->SpawnActor<ASaveManager>();
 	ASaveManager::SetSaveManager(SaveManager);
 
@@ -222,6 +228,30 @@ void AWildOmissionGameMode::Logout(AController* Exiting)
 	}
 
 	ChatManager->SendMessage(ExitingPlayerState, TEXT("Has Left The Game."), EChatMessageType::CONNECTION_UPDATE);
+}
+
+TArray<AWildOmissionPlayerController*> AWildOmissionGameMode::GetAllPlayerControllers() const
+{
+	TArray<AWildOmissionPlayerController*> Array;
+
+	UWorld* World = GetWorld();
+	if (World == nullptr)
+	{
+		return Array;
+	}
+
+	for (FConstPlayerControllerIterator Iterator = World->GetPlayerControllerIterator(); Iterator; ++Iterator)
+	{
+		AWildOmissionPlayerController* PlayerController = Cast<AWildOmissionPlayerController>(Iterator->Get());
+		if (PlayerController == nullptr)
+		{
+			continue;
+		}
+
+		Array.Add(PlayerController);
+	}
+
+	return Array;
 }
 
 void AWildOmissionGameMode::SpawnHumanForController(APlayerController* Controller)
@@ -413,7 +443,7 @@ void AWildOmissionGameMode::SetTime(float NormalizedTime)
 		return;
 	}
 
-	TimeOfDayManager->SetNormalizedProgressThroughDay(NormalizedTime);
+	TimeOfDayManager->SetTimeOfDay(NormalizedTime);
 }
 
 void AWildOmissionGameMode::Weather(const FString& WeatherToSet)
@@ -512,6 +542,29 @@ AGameChatManager* AWildOmissionGameMode::GetGameChatManager() const
 	return ChatManager;
 }
 
+void AWildOmissionGameMode::OnPlayerSleep(AWildOmissionPlayerController* SleepingController)
+{
+	// TODO make sure all players are asleep
+	SleepingPlayers.Add(SleepingController);
+
+	UWorld* World = GetWorld();
+	if (World == nullptr)
+	{
+		return;
+	}
+
+	int32 PlayerCount = World->GetNumPlayerControllers();
+
+	if (SleepingPlayers.Num() == PlayerCount)
+	{
+		// Start countdown
+		FTimerHandle SleepTimerHandle;
+		FTimerDelegate SleepTimerDelegate;
+		SleepTimerDelegate.BindUObject(this, &AWildOmissionGameMode::OnSleepTimerCompleted);
+		World->GetTimerManager().SetTimer(SleepTimerHandle, SleepTimerDelegate, 0.1f, false);
+	}
+}
+
 //TODO possible nullptr
 void AWildOmissionGameMode::LogPlayerInventoryComponents()
 {
@@ -572,6 +625,25 @@ void AWildOmissionGameMode::LogPlayerInventorySlots()
 			GEngine->AddOnScreenDebugMessage(INDEX_NONE, 10.0f, FColor::Orange, FString::Printf(TEXT("Index: %i, Item: %s, Quantity: %i"), Slot.Index, *Slot.Item.Name.ToString(), Slot.Item.Quantity));
 		}
 		GEngine->AddOnScreenDebugMessage(INDEX_NONE, 10.0f, FColor::Green, FString::Printf(TEXT("Player: "), *Character->GetActorNameOrLabel()));
+	}
+}
+
+void AWildOmissionGameMode::OnSleepTimerCompleted()
+{
+	UWorld* World = GetWorld();
+	if (World == nullptr)
+	{
+		return;
+	}
+
+	// Check if all players are still alseep
+	int32 PlayerCount = World->GetNumPlayerControllers();
+	if (SleepingPlayers.Num() == PlayerCount)
+	{
+		// Set time morning
+		TimeOfDayManager->SetTimeOfDay(1.1f);
+		SleepingPlayers.Empty();
+		// Wake players up
 	}
 }
 

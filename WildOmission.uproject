@@ -67,6 +67,11 @@
 			"LoadingPhase": "Default"
 		},
 		{
+			"Name": "CreativeMode",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		},
+		{
 			"Name": "CustomUI",
 			"Type": "Runtime",
 			"LoadingPhase": "Default",
@@ -219,6 +224,15 @@
 			"LoadingPhase": "Default",
 			"AdditionalDependencies": [
 				"CoreUObject"
+			]
+		},
+		{
+			"Name": "SteamHelpers",
+			"Type": "Runtime",
+			"LoadingPhase": "Default",
+			"AdditionalDependencies": [
+				"CoreUObject",
+				"Engine"
 			]
 		},
 		{
