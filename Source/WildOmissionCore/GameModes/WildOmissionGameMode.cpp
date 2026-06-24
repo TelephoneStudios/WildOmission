@@ -642,7 +642,6 @@ void AWildOmissionGameMode::OnSleepTimerCompleted()
 	{
 		// Set time morning
 		TimeOfDayManager->SetTimeOfDay(1.1f);
-		UE_LOG(LogTemp, Warning, TEXT("Sleep AT LAST!!!!"));
 		SleepingPlayers.Empty();
 		// Wake players up
 	}

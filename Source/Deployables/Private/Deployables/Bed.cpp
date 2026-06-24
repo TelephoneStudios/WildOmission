@@ -80,7 +80,7 @@ FString ABed::PromptText()
 	if (TimeOfDayManager->IsNight())
 	{
 		// Sleep prompt
-		return TEXT("sleep");
+		return TEXT("sleep through the night");
 	}
 	else
 	{
