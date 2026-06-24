@@ -65,6 +65,9 @@ UWildOmissionGameInstance::UWildOmissionGameInstance(const FObjectInitializer& O
 	FriendsOnlySession = false;
 	DesiredMaxPlayerCount = 8;
 
+	GameModeIndex = 0;
+	ServerAdministrators = nullptr;
+
 	OnMainMenu = false;
 	Loading = false;
 	LoadingTitle = TEXT("Loading Title.");
