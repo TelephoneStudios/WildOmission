@@ -29,6 +29,8 @@
 #include "GameFramework/PlayerState.h"
 #include "Actors/Storm.h"
 
+static FPlayerSpawnOverride CachedSpawnOverride;
+
 void AWildOmissionGameMode::InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage)
 {
 	Super::InitGame(MapName, Options, ErrorMessage);
@@ -94,6 +96,12 @@ void AWildOmissionGameMode::InitGame(const FString& MapName, const FString& Opti
 	SaveManager->SetGameSaveLoadController(Cast<IGameSaveLoadController>(GetGameInstance()));
 	SaveManager->SetSaveFile(SaveFile);
 	SaveManager->LoadWorld();
+
+	UWildOmissionSaveGame* SaveGame = SaveManager->GetSaveFile();
+	if (SaveGame)
+	{
+		CachedSpawnOverride = SaveGame->PlayerSpawnOverride;
+	}
 }
 
 void AWildOmissionGameMode::StartPlay()
@@ -310,7 +318,10 @@ void AWildOmissionGameMode::SetWorldSpawnCurrentLocation()
 	}
 
 	SaveFile->PlayerSpawnOverride.Location = FirstPawn->GetActorLocation();
+	SaveFile->PlayerSpawnOverride.Rotation = FirstPawn->GetActorRotation();
 	SaveFile->PlayerSpawnOverride.IsSet = true;
+
+	CachedSpawnOverride = SaveFile->PlayerSpawnOverride;
 
 	SaveManager->SaveWorld();
 }
@@ -329,7 +340,10 @@ void AWildOmissionGameMode::ClearSpawnPointOverride()
 	}
 
 	SaveFile->PlayerSpawnOverride.Location = FVector::ZeroVector;
+	SaveFile->PlayerSpawnOverride.Rotation = FRotator::ZeroRotator;
 	SaveFile->PlayerSpawnOverride.IsSet = false;
+
+	CachedSpawnOverride = SaveFile->PlayerSpawnOverride;
 
 	SaveManager->SaveWorld();
 }
@@ -756,23 +770,17 @@ void AWildOmissionGameMode::SpawnHumanAtStartSpot(AController* Controller)
 	}
 
 	FVector SpawnLocation;
-	UWildOmissionSaveGame* SaveGame = SaveManager->GetSaveFile();
-	if (SaveGame)
+	FRotator SpawnRotation;
+	if (CachedSpawnOverride.IsSet)
 	{
-		if (SaveGame->PlayerSpawnOverride.IsSet)
-		{
-			SpawnLocation = SaveGame->PlayerSpawnOverride.Location;
-		}
-		else
-		{
-			SpawnLocation = ChunkManager->GetWorldSpawnPoint();
-		}
+		SpawnLocation = CachedSpawnOverride.Location;
+		SpawnRotation = CachedSpawnOverride.Rotation;
 	}
 	else
 	{
 		SpawnLocation = ChunkManager->GetWorldSpawnPoint();
+		SpawnRotation = FRotator::ZeroRotator;
 	}
-
 	// Spawn there
 	if (MustSpectate(Cast<APlayerController>(Controller)))
 	{
@@ -783,7 +791,7 @@ void AWildOmissionGameMode::SpawnHumanAtStartSpot(AController* Controller)
 	if (HumanCharacterClass != nullptr)
 	{
 		// Try to create a pawn to use of the default class for this player
-		APawn* NewPawn = GetWorld()->SpawnActor<APawn>(HumanCharacterClass, SpawnLocation + FVector(0.0f, 0.0f, 100.0f), FRotator::ZeroRotator);
+		APawn* NewPawn = GetWorld()->SpawnActor<APawn>(HumanCharacterClass, SpawnLocation + FVector(0.0f, 0.0f, 100.0f), SpawnRotation);
 		if (IsValid(NewPawn))
 		{
 			Controller->SetPawn(NewPawn);
@@ -796,7 +804,7 @@ void AWildOmissionGameMode::SpawnHumanAtStartSpot(AController* Controller)
 	}
 	else
 	{
-		FinishRestartPlayer(Controller, FRotator::ZeroRotator);
+		FinishRestartPlayer(Controller, SpawnRotation);
 	}
 }
 

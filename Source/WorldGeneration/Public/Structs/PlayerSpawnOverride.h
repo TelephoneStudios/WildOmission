@@ -17,6 +17,9 @@ struct WORLDGENERATION_API FPlayerSpawnOverride
 	FVector Location;
 
 	UPROPERTY()
+	FRotator Rotation;
+
+	UPROPERTY()
 	bool IsSet;
 
 };

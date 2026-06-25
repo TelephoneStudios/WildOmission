@@ -6,5 +6,6 @@
 FPlayerSpawnOverride::FPlayerSpawnOverride()
 {
 	Location = FVector::ZeroVector;
+	Rotation = FRotator::ZeroRotator;
 	IsSet = false;
 }
