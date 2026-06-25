@@ -30,8 +30,8 @@ public:
 	void SetServerList(TArray<struct FServerData> ServerNames);
 	
 private:
-	UPROPERTY(Meta = (BindWidget))
-	class UButton* DedicatedServersButton;
+	//UPROPERTY(Meta = (BindWidget))
+	//class UButton* DedicatedServersButton;
 
 	UPROPERTY(Meta = (BindWidget))
 	class UButton* PlayerHostedWorldsButton;

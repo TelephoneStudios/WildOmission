@@ -11,7 +11,7 @@
 
 UServerBrowserWidget::UServerBrowserWidget(const FObjectInitializer& ObjectInitializer) : UUserWidget(ObjectInitializer)
 {
-	DedicatedServersButton = nullptr;
+	//DedicatedServersButton = nullptr;
 	PlayerHostedWorldsButton = nullptr;
 	ServerList = nullptr;
 	JoinButton = nullptr;
@@ -20,7 +20,9 @@ UServerBrowserWidget::UServerBrowserWidget(const FObjectInitializer& ObjectIniti
 	RefreshListButtonText = nullptr;
 	ServerRowWidgetClass = nullptr;
 
-	IsDedicatedList = true;
+	// support for dedicated servers has been depricated but may come back
+	// this used to be true by default
+	IsDedicatedList = false;
 
 	static ConstructorHelpers::FClassFinder<UServerRowWidget> ServerRowWidgetBPClass(TEXT("/Game/MenuSystem/UI/Server/WBP_ServerRow"));
 	if (ServerRowWidgetBPClass.Succeeded())
@@ -39,9 +41,10 @@ void UServerBrowserWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	SwitchToDedicatedList();
+	//SwitchToDedicatedList();
+	SwitchToPlayerHostedWorldsList();
 
-	DedicatedServersButton->OnClicked.AddDynamic(this, &UServerBrowserWidget::SwitchToDedicatedList);
+	//DedicatedServersButton->OnClicked.AddDynamic(this, &UServerBrowserWidget::SwitchToDedicatedList);
 	PlayerHostedWorldsButton->OnClicked.AddDynamic(this, &UServerBrowserWidget::SwitchToPlayerHostedWorldsList);
 
 	JoinButton->SetIsEnabled(false);
@@ -92,7 +95,7 @@ void UServerBrowserWidget::SwitchToDedicatedList()
 		return;
 	}
 
-	DedicatedServersButton->SetBackgroundColor(SelectedColor->Default);
+	//DedicatedServersButton->SetBackgroundColor(SelectedColor->Default);
 	PlayerHostedWorldsButton->SetBackgroundColor(UnselectedColor->Default);
 
 	BroadcastRefreshButtonClicked();
@@ -109,7 +112,7 @@ void UServerBrowserWidget::SwitchToPlayerHostedWorldsList()
 		return;
 	}
 
-	DedicatedServersButton->SetBackgroundColor(UnselectedColor->Default);
+	//DedicatedServersButton->SetBackgroundColor(UnselectedColor->Default);
 	PlayerHostedWorldsButton->SetBackgroundColor(SelectedColor->Default);
 
 	BroadcastRefreshButtonClicked();
@@ -160,6 +163,7 @@ void UServerBrowserWidget::BroadcastRefreshButtonClicked()
 		return;
 	}
 
+	// pass IsDedicatedList in for 
 	OnRefreshButtonClicked.Broadcast(IsDedicatedList);
 }
 
