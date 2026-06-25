@@ -141,7 +141,13 @@ private:
 
 	UPROPERTY(VisibleAnywhere)
 	class ULockModifierComponent* LockModifierComponent;
+
+	UPROPERTY(VisibleAnywhere)
+	class UPhysicsGrabberComponent* PhysicsGrabberComponent;
 	
+	UPROPERTY(VisibleAnywhere)
+	class UPhysicsHandleComponent* PhysicsHandleComponent;
+
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UCameraShakeBase> WalkCameraShake;
 	

@@ -4,23 +4,22 @@
 
 #include "CoreMinimal.h"
 #include "Components/SceneComponent.h"
-#include "PhysicsGrabber.generated.h"
+#include "PhysicsGrabberComponent.generated.h"
 
 UCLASS(ClassGroup = (Cutstom), meta = (BlueprintSpawnableComponent))
-class INVENTORY_API UPhysicsGrabber : public USceneComponent
+class EQUIPABLEITEMS_API UPhysicsGrabberComponent : public USceneComponent
 {
 	GENERATED_BODY()
 
 public:
-	UPhysicsGrabber();
+	UPhysicsGrabberComponent();
 	
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	UFUNCTION(BlueprintCallable)
-	void Grab();
+	void ToggleGrab();
 
-	UFUNCTION(BlueprintCallable)
-	void Release();
+
 
 protected:
 	virtual void BeginPlay() override;
@@ -30,7 +29,7 @@ private:
 	float MaxGrabDistance = 400.0f;
 
 	UPROPERTY(EditAnywhere)
-	float HoldDistance = 200.0f;
+	float HoldDistance = 100.0f;
 
 	UPROPERTY(EditAnywhere)
 	float GrabRadius = 100.0f;
@@ -38,5 +37,11 @@ private:
 	class UPhysicsHandleComponent* GetPhysicsHandle() const;
 
 	bool GetGrabbableInReach(FHitResult& OutHitResult) const;
+
+	UFUNCTION(BlueprintCallable)
+	void Grab();
+
+	UFUNCTION(BlueprintCallable)
+	void Release();
 
 };

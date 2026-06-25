@@ -132,6 +132,9 @@ private:
 	UPROPERTY()
 	USoundBase* HeadshotHitmarkerSound;
 
+	UFUNCTION()
+	class UPhysicsGrabberComponent* GetPhysicsGrabberComponent() const;
+
 	UFUNCTION(Client, Reliable)
 	void Client_PlayHitmarkerSound(bool IsHeadshot);
 

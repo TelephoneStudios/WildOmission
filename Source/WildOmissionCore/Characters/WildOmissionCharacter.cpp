@@ -25,6 +25,7 @@
 #include "WildOmissionCore/Components/NameTagComponent.h"
 #include "WildOmissionCore/Components/SpecialEffectsManagerComponent.h"
 #include "Components/LockModifierComponent.h"
+#include "Components/PhysicsGrabberComponent.h"
 
 // Wild Omission Stuff
 #include "WildOmissionCore/UI/Player/PlayerHUDWidget.h"
@@ -39,6 +40,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Engine/DamageEvents.h"
 #include "Net/UnrealNetwork.h"
+#include "PhysicsEngine/PhysicsHandleComponent.h"
 
 //********************************
 // Setup/General Actor Functionality
@@ -108,6 +110,11 @@ AWildOmissionCharacter::AWildOmissionCharacter()
 	
 	LockModifierComponent = CreateDefaultSubobject<ULockModifierComponent>(TEXT("LockModifierComponent"));
 
+	PhysicsGrabberComponent = CreateDefaultSubobject<UPhysicsGrabberComponent>(TEXT("PhysicsGrabberComponent"));
+	PhysicsGrabberComponent->SetupAttachment(FirstPersonCameraComponent);
+
+	PhysicsHandleComponent = CreateDefaultSubobject<UPhysicsHandleComponent>(TEXT("PhysicsHandleComponent"));
+	
 	TimeToNextSpookySound = 300.0f;
 	SpookyCounter = 0.0f;
 

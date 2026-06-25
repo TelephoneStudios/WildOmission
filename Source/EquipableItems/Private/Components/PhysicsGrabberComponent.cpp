@@ -1,22 +1,24 @@
 // Copyright Telephone Studios. All Rights Reserved.
 
 
-#include "Components/PhysicsGrabber.h"
+#include "Components/PhysicsGrabberComponent.h"
 #include "Engine/World.h"
+#include "DrawDebugHelpers.h"
 #include "PhysicsEngine/PhysicsHandleComponent.h"
 
-UPhysicsGrabber::UPhysicsGrabber()
+UPhysicsGrabberComponent::UPhysicsGrabberComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
 
 }
 
-void UPhysicsGrabber::BeginPlay()
+void UPhysicsGrabberComponent::BeginPlay()
 {
 	Super::BeginPlay();
 }
 
-void UPhysicsGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+// TODO lots of possible crashes here
+void UPhysicsGrabberComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 	
@@ -27,21 +29,45 @@ void UPhysicsGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActor
 	}
 }
 
-void UPhysicsGrabber::Grab()
+void UPhysicsGrabberComponent::ToggleGrab()
+{
+	UE_LOG(LogTemp, Warning, TEXT("ToggleGrab"));
+	UPhysicsHandleComponent* PhysHandle = GetPhysicsHandle();
+	if (PhysHandle == nullptr)
+	{
+		return;
+	}
+
+	if (!PhysHandle->GetGrabbedComponent())
+	{
+		this->Grab();
+	}
+	else
+	{
+		this->Release();
+	}
+}
+
+void UPhysicsGrabberComponent::Grab()
 {
 	FHitResult HitResult;
 	if (GetGrabbableInReach(HitResult) == true)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("Got Grabbable"));
 		UPrimitiveComponent* HitComponent = HitResult.GetComponent();
-		HitComponent->SetSimulatePhysics(true);
-		HitComponent->GetOwner()->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+		//HitComponent->SetSimulatePhysics(true);
+		//HitComponent->GetOwner()->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 		HitComponent->WakeAllRigidBodies();
 		HitResult.GetActor()->Tags.Add("Grabbed");
 		GetPhysicsHandle()->GrabComponentAtLocationWithRotation(HitComponent, NAME_None, HitResult.ImpactPoint, GetComponentRotation());
 	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Didn't Grabbable"));
+	}
 }
 
-void UPhysicsGrabber::Release()
+void UPhysicsGrabberComponent::Release()
 {
 	if (GetPhysicsHandle()->GetGrabbedComponent() != nullptr)
 	{
@@ -51,7 +77,7 @@ void UPhysicsGrabber::Release()
 	}
 }
 
-UPhysicsHandleComponent* UPhysicsGrabber::GetPhysicsHandle() const
+UPhysicsHandleComponent* UPhysicsGrabberComponent::GetPhysicsHandle() const
 {
 	UPhysicsHandleComponent* PhysicsHandle = GetOwner()->FindComponentByClass<UPhysicsHandleComponent>();
 	if (PhysicsHandle == nullptr)
@@ -62,17 +88,19 @@ UPhysicsHandleComponent* UPhysicsGrabber::GetPhysicsHandle() const
 	return PhysicsHandle;
 }
 
-bool UPhysicsGrabber::GetGrabbableInReach(FHitResult& OutHitResult) const
+bool UPhysicsGrabberComponent::GetGrabbableInReach(FHitResult& OutHitResult) const
 {
 	FVector Start = GetComponentLocation();
 	FVector End = Start + GetForwardVector() * MaxGrabDistance;
 	FCollisionShape Sphere = FCollisionShape::MakeSphere(GrabRadius);
 
+	DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, 10.0f, 0, 10.0f);
+
 	return GetWorld()->SweepSingleByChannel(
 		OutHitResult,
 		Start, End,
 		FQuat::Identity,
-		ECC_GameTraceChannel2,
+		ECC_GameTraceChannel11,
 		Sphere
 	);
 }
