@@ -284,6 +284,56 @@ void AWildOmissionGameMode::SaveWorld()
 	SaveManager->SaveWorld();
 }
 
+void AWildOmissionGameMode::SetWorldSpawnCurrentLocation()
+{
+	UWorld* World = GetWorld();
+	if (SaveManager == nullptr || World == nullptr)
+	{
+		return;
+	}
+
+	UWildOmissionSaveGame* SaveFile = SaveManager->GetSaveFile();
+	if (SaveFile == nullptr)
+	{
+		return;
+	}
+	APlayerController* FirstPlayerController = World->GetFirstPlayerController();
+	if (FirstPlayerController == nullptr)
+	{
+		return;
+	}
+
+	APawn* FirstPawn = FirstPlayerController->GetPawn();
+	if (FirstPawn == nullptr)
+	{
+		return;
+	}
+
+	SaveFile->PlayerSpawnOverride.Location = FirstPawn->GetActorLocation();
+	SaveFile->PlayerSpawnOverride.IsSet = true;
+
+	SaveManager->SaveWorld();
+}
+
+void AWildOmissionGameMode::ClearSpawnPointOverride()
+{
+	if (SaveManager == nullptr)
+	{
+		return;
+	}
+
+	UWildOmissionSaveGame* SaveFile = SaveManager->GetSaveFile();
+	if (SaveFile == nullptr)
+	{
+		return;
+	}
+
+	SaveFile->PlayerSpawnOverride.Location = FVector::ZeroVector;
+	SaveFile->PlayerSpawnOverride.IsSet = false;
+
+	SaveManager->SaveWorld();
+}
+
 void AWildOmissionGameMode::TeleportAllPlayersToSelf()
 {
 	APlayerController* SelfPlayerController = GetWorld()->GetFirstPlayerController();
@@ -705,7 +755,23 @@ void AWildOmissionGameMode::SpawnHumanAtStartSpot(AController* Controller)
 		return;
 	}
 
-	const FVector SpawnLocation = ChunkManager->GetWorldSpawnPoint();
+	FVector SpawnLocation;
+	UWildOmissionSaveGame* SaveGame = SaveManager->GetSaveFile();
+	if (SaveGame)
+	{
+		if (SaveGame->PlayerSpawnOverride.IsSet)
+		{
+			SpawnLocation = SaveGame->PlayerSpawnOverride.Location;
+		}
+		else
+		{
+			SpawnLocation = ChunkManager->GetWorldSpawnPoint();
+		}
+	}
+	else
+	{
+		SpawnLocation = ChunkManager->GetWorldSpawnPoint();
+	}
 
 	// Spawn there
 	if (MustSpectate(Cast<APlayerController>(Controller)))
