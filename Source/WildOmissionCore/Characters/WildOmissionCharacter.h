@@ -238,6 +238,9 @@ private:
 	class UInputAction* InteractAction;
 
 	UPROPERTY()
+	class UInputAction* GrabAction;
+
+	UPROPERTY()
 	class UInputAction* ReloadAction;
 	
 	UPROPERTY()

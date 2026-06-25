@@ -7,7 +7,7 @@
 #include "PhysicsGrabberComponent.generated.h"
 
 UCLASS(ClassGroup = (Cutstom), meta = (BlueprintSpawnableComponent))
-class EQUIPABLEITEMS_API UPhysicsGrabberComponent : public USceneComponent
+class PHYSICSGRABBER_API UPhysicsGrabberComponent : public USceneComponent
 {
 	GENERATED_BODY()
 

@@ -3,7 +3,6 @@
 
 #include "Components/EquipComponent.h"
 #include "Components/PlayerInventoryComponent.h"
-#include "Components/PhysicsGrabberComponent.h"
 #include "Items/EquipableItem.h"
 #include "Items/ToolItem.h"
 #include "Kismet/GameplayStatics.h"
@@ -476,14 +475,7 @@ bool UEquipComponent::IsItemEquiped() const
 
 bool UEquipComponent::PrimaryEnabled() const
 {
-	// Primary must be enabled even when item isn't 
-	// equiped for physics grabbing to work
-	if (IsItemEquiped())
-	{
-		return EquipedItem->PrimaryEnabled();
-	}
-
-	return true;
+	return IsItemEquiped() && EquipedItem->PrimaryEnabled();
 }
 
 bool UEquipComponent::SecondaryEnabled() const
@@ -499,11 +491,6 @@ void UEquipComponent::PrimaryPressed()
 	}
 
 	PrimaryHeld = true;
-
-	if (UPhysicsGrabberComponent* PhysicsGrabber = GetPhysicsGrabberComponent())
-	{
-		PhysicsGrabber->ToggleGrab();
-	}
 
 	if (!IsEquipedItemValid())
 	{
@@ -589,7 +576,7 @@ void UEquipComponent::ReloadPressed()
 	EquipedItem->OnReloadPressed();
 }
 
-void UEquipComponent::StartAiming()
+void UEquipComponent::StartAiming() const
 {
 	if (!OnStartAiming.IsBound())
 	{
@@ -599,7 +586,7 @@ void UEquipComponent::StartAiming()
 	OnStartAiming.Broadcast();
 }
 
-void UEquipComponent::StopAiming()
+void UEquipComponent::StopAiming() const
 {
 	if (!OnStopAiming.IsBound())
 	{
@@ -623,18 +610,6 @@ void UEquipComponent::Client_PlayHitmarkerSound_Implementation(bool IsHeadshot)
 {
 	
 	IsHeadshot ? UGameplayStatics::PlaySound2D(GetWorld(), HeadshotHitmarkerSound) : UGameplayStatics::PlaySound2D(GetWorld(), HitmarkerSound);
-}
-
-UPhysicsGrabberComponent* UEquipComponent::GetPhysicsGrabberComponent() const
-{
-	AActor* OwnerActor = GetOwner();
-	if (OwnerActor == nullptr)
-	{
-		return nullptr;
-	}
-
-	UPhysicsGrabberComponent* PhysicsGrabberComponent = OwnerActor->GetComponentByClass<UPhysicsGrabberComponent>();
-	return PhysicsGrabberComponent;
 }
 
 void UEquipComponent::OnRep_EquipedItem()
