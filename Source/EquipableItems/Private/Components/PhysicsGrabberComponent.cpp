@@ -12,26 +12,20 @@ UPhysicsGrabberComponent::UPhysicsGrabberComponent()
 
 }
 
-void UPhysicsGrabberComponent::BeginPlay()
-{
-	Super::BeginPlay();
-}
-
-// TODO lots of possible crashes here
 void UPhysicsGrabberComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 	
-	if (GetPhysicsHandle()->GetGrabbedComponent() != nullptr)
+	UPhysicsHandleComponent* PhysHandle = GetPhysicsHandle();
+	if (PhysHandle->GetGrabbedComponent() != nullptr)
 	{
 		FVector TargetLocation = GetComponentLocation() + GetForwardVector() * HoldDistance;
-		GetPhysicsHandle()->SetTargetLocationAndRotation(TargetLocation, GetComponentRotation());
+		PhysHandle->SetTargetLocationAndRotation(TargetLocation, GetComponentRotation());
 	}
 }
 
 void UPhysicsGrabberComponent::ToggleGrab()
 {
-	UE_LOG(LogTemp, Warning, TEXT("ToggleGrab"));
 	UPhysicsHandleComponent* PhysHandle = GetPhysicsHandle();
 	if (PhysHandle == nullptr)
 	{
@@ -50,31 +44,43 @@ void UPhysicsGrabberComponent::ToggleGrab()
 
 void UPhysicsGrabberComponent::Grab()
 {
-	FHitResult HitResult;
-	if (GetGrabbableInReach(HitResult) == true)
+	UPhysicsHandleComponent* PhysHandle = GetPhysicsHandle();
+	if (PhysHandle == nullptr)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Got Grabbable"));
+		return;
+	}
+
+	FHitResult HitResult;
+	if (GetGrabbableInReach(HitResult))
+	{
 		UPrimitiveComponent* HitComponent = HitResult.GetComponent();
 		//HitComponent->SetSimulatePhysics(true);
 		//HitComponent->GetOwner()->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 		HitComponent->WakeAllRigidBodies();
-		HitResult.GetActor()->Tags.Add("Grabbed");
-		GetPhysicsHandle()->GrabComponentAtLocationWithRotation(HitComponent, NAME_None, HitResult.ImpactPoint, GetComponentRotation());
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Didn't Grabbable"));
+		if (HitResult.GetActor())
+		{
+			HitResult.GetActor()->Tags.Add("Grabbed");
+		}
+		PhysHandle->GrabComponentAtLocationWithRotation(HitComponent, NAME_None, HitResult.ImpactPoint, GetComponentRotation());
 	}
 }
 
 void UPhysicsGrabberComponent::Release()
 {
-	if (GetPhysicsHandle()->GetGrabbedComponent() != nullptr)
+	UPhysicsHandleComponent* PhysHandle = GetPhysicsHandle();
+	if (PhysHandle == nullptr)
 	{
-		GetPhysicsHandle()->GetGrabbedComponent()->WakeAllRigidBodies();
-		GetPhysicsHandle()->GetGrabbedComponent()->GetOwner()->Tags.Remove("Grabbed");
-		GetPhysicsHandle()->ReleaseComponent();
+		return;
 	}
+	UPrimitiveComponent* GrabbedComponent = PhysHandle->GetGrabbedComponent();
+	if (GrabbedComponent == nullptr)
+	{
+		return;
+	}
+
+	GrabbedComponent->WakeAllRigidBodies();
+	GrabbedComponent->GetOwner()->Tags.Remove("Grabbed");
+	PhysHandle->ReleaseComponent();
 }
 
 UPhysicsHandleComponent* UPhysicsGrabberComponent::GetPhysicsHandle() const
@@ -90,13 +96,17 @@ UPhysicsHandleComponent* UPhysicsGrabberComponent::GetPhysicsHandle() const
 
 bool UPhysicsGrabberComponent::GetGrabbableInReach(FHitResult& OutHitResult) const
 {
+	UWorld* World = GetWorld();
+	if (World == nullptr)
+	{
+		return false;
+
+	}
 	FVector Start = GetComponentLocation();
 	FVector End = Start + GetForwardVector() * MaxGrabDistance;
 	FCollisionShape Sphere = FCollisionShape::MakeSphere(GrabRadius);
 
-	DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, 10.0f, 0, 10.0f);
-
-	return GetWorld()->SweepSingleByChannel(
+	return World->SweepSingleByChannel(
 		OutHitResult,
 		Start, End,
 		FQuat::Identity,

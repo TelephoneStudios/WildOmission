@@ -19,11 +19,6 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ToggleGrab();
 
-
-
-protected:
-	virtual void BeginPlay() override;
-
 private:
 	UPROPERTY(EditAnywhere)
 	float MaxGrabDistance = 400.0f;
