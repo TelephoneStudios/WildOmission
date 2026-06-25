@@ -102,6 +102,7 @@ bool UPhysicsGrabberComponent::GetGrabbableInReach(FHitResult& OutHitResult) con
 		return false;
 
 	}
+
 	FVector Start = GetComponentLocation();
 	FVector End = Start + GetForwardVector() * MaxGrabDistance;
 	FCollisionShape Sphere = FCollisionShape::MakeSphere(GrabRadius);
