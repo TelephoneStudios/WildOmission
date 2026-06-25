@@ -7,6 +7,7 @@
 #include "Structs/PlayerSaveData.h"
 #include "Structs/ChunkData.h"
 #include "Structs/PlayerSpawnChunk.h"
+#include "Structs/PlayerSpawnOverride.h"
 #include "Structs/WeatherData.h"
 #include "Enums/GameDifficulty.h"
 #include "WildOmissionSaveGame.generated.h"
@@ -80,6 +81,9 @@ public:
 
 	UPROPERTY()
 	FPlayerSpawnChunk PlayerSpawnChunk;
+
+	UPROPERTY()
+	FPlayerSpawnOverride PlayerSpawnOverride;
 	
 	UPROPERTY()
 	TArray<FChunkData> ChunkData;

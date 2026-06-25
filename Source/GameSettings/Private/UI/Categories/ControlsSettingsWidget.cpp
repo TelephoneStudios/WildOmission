@@ -25,6 +25,7 @@ UControlsSettingsWidget::UControlsSettingsWidget(const FObjectInitializer& Objec
 	PrimaryKeyOptionBox = nullptr;
 	SecondaryKeyOptionBox = nullptr;
 	InteractKeyOptionBox = nullptr;
+	GrabKeyOptionBox = nullptr;
 	ReloadKeyOptionBox = nullptr;
 
 	InventoryKeyOptionBox = nullptr;
@@ -68,6 +69,7 @@ void UControlsSettingsWidget::OnApply()
 	UserSettings->SetPrimaryKey(PrimaryKeyOptionBox->GetSelectedKey());
 	UserSettings->SetSecondaryKey(SecondaryKeyOptionBox->GetSelectedKey());
 	UserSettings->SetInteractKey(InteractKeyOptionBox->GetSelectedKey());
+	UserSettings->SetGrabKey(GrabKeyOptionBox->GetSelectedKey());
 	UserSettings->SetReloadKey(ReloadKeyOptionBox->GetSelectedKey());
 
 	UserSettings->SetInventoryKey(InventoryKeyOptionBox->GetSelectedKey());
@@ -106,6 +108,7 @@ void UControlsSettingsWidget::OnRefresh()
 	PrimaryKeyOptionBox->OnValueChangedNoParams.RemoveDynamic(this, &UControlsSettingsWidget::OnApply);
 	SecondaryKeyOptionBox->OnValueChangedNoParams.RemoveDynamic(this, &UControlsSettingsWidget::OnApply);
 	InteractKeyOptionBox->OnValueChangedNoParams.RemoveDynamic(this, &UControlsSettingsWidget::OnApply);
+	GrabKeyOptionBox->OnValueChangedNoParams.RemoveDynamic(this, &UControlsSettingsWidget::OnApply);
 	ReloadKeyOptionBox->OnValueChangedNoParams.RemoveDynamic(this, &UControlsSettingsWidget::OnApply);
 
 	InventoryKeyOptionBox->OnValueChangedNoParams.RemoveDynamic(this, &UControlsSettingsWidget::OnApply);
@@ -136,6 +139,7 @@ void UControlsSettingsWidget::OnRefresh()
 	PrimaryKeyOptionBox->SetSelectedKey(UserSettings->GetPrimaryKey());
 	SecondaryKeyOptionBox->SetSelectedKey(UserSettings->GetSecondaryKey());
 	InteractKeyOptionBox->SetSelectedKey(UserSettings->GetInteractKey());
+	GrabKeyOptionBox->SetSelectedKey(UserSettings->GetInteractKey());
 	ReloadKeyOptionBox->SetSelectedKey(UserSettings->GetReloadKey());
 
 	InventoryKeyOptionBox->SetSelectedKey(UserSettings->GetInventoryKey());
@@ -158,6 +162,7 @@ void UControlsSettingsWidget::OnRefresh()
 	PrimaryKeyOptionBox->OnValueChangedNoParams.AddDynamic(this, &UControlsSettingsWidget::OnApply);
 	SecondaryKeyOptionBox->OnValueChangedNoParams.AddDynamic(this, &UControlsSettingsWidget::OnApply);
 	InteractKeyOptionBox->OnValueChangedNoParams.AddDynamic(this, &UControlsSettingsWidget::OnApply);
+	GrabKeyOptionBox->OnValueChangedNoParams.AddDynamic(this, &UControlsSettingsWidget::OnApply);
 	ReloadKeyOptionBox->OnValueChangedNoParams.AddDynamic(this, &UControlsSettingsWidget::OnApply);
 
 	InventoryKeyOptionBox->OnValueChangedNoParams.AddDynamic(this, &UControlsSettingsWidget::OnApply);

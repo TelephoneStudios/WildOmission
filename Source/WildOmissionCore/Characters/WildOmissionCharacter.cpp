@@ -25,6 +25,7 @@
 #include "WildOmissionCore/Components/NameTagComponent.h"
 #include "WildOmissionCore/Components/SpecialEffectsManagerComponent.h"
 #include "Components/LockModifierComponent.h"
+#include "Components/PhysicsGrabberComponent.h"
 
 // Wild Omission Stuff
 #include "WildOmissionCore/UI/Player/PlayerHUDWidget.h"
@@ -39,6 +40,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Engine/DamageEvents.h"
 #include "Net/UnrealNetwork.h"
+#include "PhysicsEngine/PhysicsHandleComponent.h"
 
 //********************************
 // Setup/General Actor Functionality
@@ -108,6 +110,11 @@ AWildOmissionCharacter::AWildOmissionCharacter()
 	
 	LockModifierComponent = CreateDefaultSubobject<ULockModifierComponent>(TEXT("LockModifierComponent"));
 
+	PhysicsGrabberComponent = CreateDefaultSubobject<UPhysicsGrabberComponent>(TEXT("PhysicsGrabberComponent"));
+	PhysicsGrabberComponent->SetupAttachment(FirstPersonCameraComponent);
+
+	PhysicsHandleComponent = CreateDefaultSubobject<UPhysicsHandleComponent>(TEXT("PhysicsHandleComponent"));
+	
 	TimeToNextSpookySound = 300.0f;
 	SpookyCounter = 0.0f;
 
@@ -266,7 +273,13 @@ AWildOmissionCharacter::AWildOmissionCharacter()
 	{
 		InteractAction = InteractActionBlueprint.Object;
 	}
-	
+
+	static ConstructorHelpers::FObjectFinder<UInputAction> GrabActionBlueprint(TEXT("/Game/WildOmissionCore/Input/InputActions/IA_Grab"));
+	if (GrabActionBlueprint.Succeeded())
+	{
+		GrabAction = GrabActionBlueprint.Object;
+	}
+
 	static ConstructorHelpers::FObjectFinder<UInputAction> ReloadActionBlueprint(TEXT("/Game/WildOmissionCore/Input/InputActions/IA_Reload"));
 	if (ReloadActionBlueprint.Succeeded())
 	{
@@ -609,6 +622,7 @@ void AWildOmissionCharacter::ApplyInputSettings()
 	DefaultMappingContext->MapKey(PrimaryAction, UserSettings->GetPrimaryKey());
 	DefaultMappingContext->MapKey(SecondaryAction, UserSettings->GetSecondaryKey());
 	DefaultMappingContext->MapKey(InteractAction, UserSettings->GetInteractKey());
+	DefaultMappingContext->MapKey(GrabAction, UserSettings->GetGrabKey());
 	DefaultMappingContext->MapKey(ReloadAction, UserSettings->GetReloadKey());
 	DefaultMappingContext->MapKey(ToolbarSelectionIncrementAction, EKeys::MouseScrollDown);
 	DefaultMappingContext->MapKey(ToolbarSelectionDecrementAction, EKeys::MouseScrollUp);
@@ -874,6 +888,7 @@ void AWildOmissionCharacter::SetupPlayerInputComponent(UInputComponent* PlayerIn
 	EnhancedInputComponent->BindAction(SecondaryAction, ETriggerEvent::Started, this, &AWildOmissionCharacter::SecondaryPressed);
 	EnhancedInputComponent->BindAction(SecondaryAction, ETriggerEvent::Completed, this, &AWildOmissionCharacter::SecondaryReleased);
 	EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Started, InteractionComponent, &UInteractionComponent::Interact);
+	EnhancedInputComponent->BindAction(GrabAction, ETriggerEvent::Started, PhysicsGrabberComponent, &UPhysicsGrabberComponent::ToggleGrab);
 	EnhancedInputComponent->BindAction(ReloadAction, ETriggerEvent::Started, this, &AWildOmissionCharacter::ReloadPressed);
 	EnhancedInputComponent->BindAction(ToolbarSelectionIncrementAction, ETriggerEvent::Started, this, &AWildOmissionCharacter::ToolbarSelectionIncrement);
 	EnhancedInputComponent->BindAction(ToolbarSelectionDecrementAction, ETriggerEvent::Started, this, &AWildOmissionCharacter::ToolbarSelectionDecrement);

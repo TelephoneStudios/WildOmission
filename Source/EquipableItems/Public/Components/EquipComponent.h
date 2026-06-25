@@ -95,8 +95,8 @@ public:
 
 	void ReloadPressed();
 
-	void StartAiming();
-	void StopAiming();
+	void StartAiming() const;
+	void StopAiming() const;
 
 	UFUNCTION()
 	void HandleHitmarker(bool IsHeadshot);

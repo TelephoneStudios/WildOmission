@@ -30,7 +30,7 @@ const static FName GAME_VERSION_SETTINGS_KEY = TEXT("GameVersion");
 const static FName SEARCH_PRESENCE = TEXT("PRESENCESEARCH");
 const static FName SEARCH_DEDICATED_ONLY = TEXT("DEDICATEDONLY");
 
-const static FString GameVersion = TEXT("Beta 1.2.0");
+const static FString GameVersion = TEXT("Beta 1.2.1");
 
 static USoundMix* MasterSoundMixModifier = nullptr;
 static USoundClass* MasterSoundClass = nullptr;
@@ -64,6 +64,9 @@ UWildOmissionGameInstance::UWildOmissionGameInstance(const FObjectInitializer& O
 	WorldToLoad = TEXT("NAN");
 	FriendsOnlySession = false;
 	DesiredMaxPlayerCount = 8;
+
+	GameModeIndex = 0;
+	ServerAdministrators = nullptr;
 
 	OnMainMenu = false;
 	Loading = false;

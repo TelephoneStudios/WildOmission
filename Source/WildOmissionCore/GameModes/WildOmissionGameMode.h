@@ -30,6 +30,12 @@ public:
 	void SaveWorld();
 
 	UFUNCTION(BlueprintCallable, Exec)
+	void SetWorldSpawnCurrentLocation();
+
+	UFUNCTION(BlueprintCallable, Exec)
+	void ClearSpawnPointOverride();
+
+	UFUNCTION(BlueprintCallable, Exec)
 	void TeleportAllPlayersToSelf();
 
 	UFUNCTION(BlueprintCallable, Exec)

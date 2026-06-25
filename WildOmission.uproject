@@ -211,6 +211,14 @@
 			]
 		},
 		{
+			"Name": "PhysicsGrabber",
+			"Type": "Runtime",
+			"LoadingPhase": "Default",
+			"AdditionalDependencies": [
+				"Engine"
+			]
+		},
+		{
 			"Name": "Ragdoll",
 			"Type": "Runtime",
 			"LoadingPhase": "Default",

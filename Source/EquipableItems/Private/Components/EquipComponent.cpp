@@ -576,7 +576,7 @@ void UEquipComponent::ReloadPressed()
 	EquipedItem->OnReloadPressed();
 }
 
-void UEquipComponent::StartAiming()
+void UEquipComponent::StartAiming() const
 {
 	if (!OnStartAiming.IsBound())
 	{
@@ -586,7 +586,7 @@ void UEquipComponent::StartAiming()
 	OnStartAiming.Broadcast();
 }
 
-void UEquipComponent::StopAiming()
+void UEquipComponent::StopAiming() const
 {
 	if (!OnStopAiming.IsBound())
 	{

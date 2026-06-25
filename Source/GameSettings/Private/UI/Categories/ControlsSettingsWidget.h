@@ -49,6 +49,8 @@ private:
 	UPROPERTY(Meta = (BindWidget))
 	class UKeyOptionBox* InteractKeyOptionBox;
 	UPROPERTY(Meta = (BindWidget))
+	class UKeyOptionBox* GrabKeyOptionBox;
+	UPROPERTY(Meta = (BindWidget))
 	class UKeyOptionBox* ReloadKeyOptionBox;
 
 	UPROPERTY(Meta = (BindWidget))

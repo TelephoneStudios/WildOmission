@@ -35,6 +35,7 @@ static const FKey DEFAULT_FLY = EKeys::F;
 static const FKey DEFAULT_PRIMARY = EKeys::LeftMouseButton;
 static const FKey DEFAULT_SECONDARY = EKeys::RightMouseButton;
 static const FKey DEFAULT_INTERACT = EKeys::E;
+static const FKey DEFAULT_GRAB = EKeys::G;
 static const FKey DEFAULT_RELOAD = EKeys::R;
 
 static const FKey DEFAULT_INVENTORY = EKeys::Tab;
@@ -396,6 +397,16 @@ FKey UWildOmissionGameUserSettings::GetInteractKey() const
     return InteractKey;
 }
 
+void UWildOmissionGameUserSettings::SetGrabKey(const FKey& NewKey)
+{
+    GrabKey = NewKey;
+}
+
+FKey UWildOmissionGameUserSettings::GetGrabKey() const
+{
+    return GrabKey;
+}
+
 void UWildOmissionGameUserSettings::SetReloadKey(const FKey& NewKey)
 {
     ReloadKey = NewKey;
@@ -533,6 +544,7 @@ void UWildOmissionGameUserSettings::SetWOSettingsDefault()
     SetPrimaryKey(DEFAULT_PRIMARY);
     SetSecondaryKey(DEFAULT_SECONDARY);
     SetInteractKey(DEFAULT_INTERACT);
+    SetGrabKey(DEFAULT_GRAB);
     SetReloadKey(DEFAULT_RELOAD);
 
     SetInventoryKey(DEFAULT_INVENTORY);

@@ -208,6 +208,12 @@ public:
 	FKey GetInteractKey() const;
 
 	UFUNCTION()
+	void SetGrabKey(const FKey& NewKey);
+
+	UFUNCTION()
+	FKey GetGrabKey() const;
+
+	UFUNCTION()
 	void SetReloadKey(const FKey& NewKey);
 
 	UFUNCTION()
@@ -333,6 +339,8 @@ private:
 	FKey SecondaryKey;
 	UPROPERTY(Config)
 	FKey InteractKey;
+	UPROPERTY(Config)
+	FKey GrabKey;
 	UPROPERTY(Config)
 	FKey ReloadKey;
 	UPROPERTY(Config)

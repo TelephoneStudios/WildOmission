@@ -26,6 +26,7 @@ UWildOmissionSaveGame::UWildOmissionSaveGame()
 	CheatsEnabled = false;
 	GameMode = 0;
 	PlayerSpawnChunk = FPlayerSpawnChunk();
+	PlayerSpawnOverride = FPlayerSpawnOverride();
 }
 
 int32 UWildOmissionSaveGame::GetCurrentVersion()
