@@ -93,12 +93,12 @@ private:
 	void BroadcastPlayButtonClicked();
 
 	UFUNCTION()
-	void BroadcastRenameButtonClicked() const;
+	void BroadcastRenameButtonClicked();
 
 	UFUNCTION()
-	void BroadcastDeleteButtonClicked() const;
+	void BroadcastDeleteButtonClicked();
 
 	UFUNCTION()
-	void BroadcastCancelButtonClicked() const;
+	void BroadcastCancelButtonClicked();
 
 };

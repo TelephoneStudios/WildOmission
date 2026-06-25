@@ -234,7 +234,7 @@ void UWorldMenuWidget::BroadcastPlayButtonClicked()
 	OnPlayButtonClicked.Broadcast(WorldName, ServerName, IsMultiplayer, IsFriendsOnly, GameMode, FMath::RoundToInt32(MaxPlayersSliderOptionBox->GetValue()));
 }
 
-void UWorldMenuWidget::BroadcastRenameButtonClicked() const
+void UWorldMenuWidget::BroadcastRenameButtonClicked()
 {
 	if (!OnRenameButtonClicked.IsBound())
 	{
@@ -244,7 +244,7 @@ void UWorldMenuWidget::BroadcastRenameButtonClicked() const
 	OnRenameButtonClicked.Broadcast();
 }
 
-void UWorldMenuWidget::BroadcastDeleteButtonClicked() const
+void UWorldMenuWidget::BroadcastDeleteButtonClicked()
 {
 	if (!OnDeleteButtonClicked.IsBound())
 	{
@@ -254,7 +254,7 @@ void UWorldMenuWidget::BroadcastDeleteButtonClicked() const
 	OnDeleteButtonClicked.Broadcast();
 }
 
-void UWorldMenuWidget::BroadcastCancelButtonClicked() const
+void UWorldMenuWidget::BroadcastCancelButtonClicked()
 {
 	if (!OnCancelButtonClicked.IsBound())
 	{
