@@ -291,6 +291,15 @@
 			]
 		},
 		{
+			"Name": "Workshop",
+			"Type": "Runtime",
+			"LoadingPhase": "Default",
+			"AdditionalDependencies": [
+				"Engine",
+				"CoreUObject"
+			]
+		},
+		{
 			"Name": "WildOmissionAI",
 			"Type": "Runtime",
 			"LoadingPhase": "Default",
