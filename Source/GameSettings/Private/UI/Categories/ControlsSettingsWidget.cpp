@@ -139,7 +139,7 @@ void UControlsSettingsWidget::OnRefresh()
 	PrimaryKeyOptionBox->SetSelectedKey(UserSettings->GetPrimaryKey());
 	SecondaryKeyOptionBox->SetSelectedKey(UserSettings->GetSecondaryKey());
 	InteractKeyOptionBox->SetSelectedKey(UserSettings->GetInteractKey());
-	GrabKeyOptionBox->SetSelectedKey(UserSettings->GetInteractKey());
+	GrabKeyOptionBox->SetSelectedKey(UserSettings->GetGrabKey());
 	ReloadKeyOptionBox->SetSelectedKey(UserSettings->GetReloadKey());
 
 	InventoryKeyOptionBox->SetSelectedKey(UserSettings->GetInventoryKey());
