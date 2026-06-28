@@ -22,14 +22,29 @@ public:
 
 private:
 	UPROPERTY(Meta = (BindWidget))
+	class UWidgetSwitcher* MenuSwitcher;
+
+	UPROPERTY(Meta = (BindWidget))
 	class UButton* UploadButton;
 
 	UPROPERTY(Meta = (BindWidget))
 	class UButton* BackButton;
+
+	UPROPERTY(Meta = (BindWidget))
+	class UWidget* BrowseMenu;
+
+	UPROPERTY(Meta = (BindWidget))
+	class UWidget* UploadingMenu;
+
+	UPROPERTY()
+	uint64 ItemUploadHandle;
 
 	UFUNCTION()
 	void OnUploadButtonClicked();
 
 	UFUNCTION()
 	void BackButtonClicked();
+
+	UFUNCTION()
+	void CheckUploadStatus();
 };

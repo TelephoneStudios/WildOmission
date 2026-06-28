@@ -37,12 +37,12 @@ void USteamHelperFunctionLibrary::OpenStore(int32 DLC_AppID)
 	SteamFriends()->ActivateGameOverlayToStore(DLC_AppID, k_EOverlayToStoreFlag_None);
 }
 
-void USteamHelperFunctionLibrary::UploadWorkshopItem()
+uint64 USteamHelperFunctionLibrary::UploadWorkshopItem()
 {
 	if (SteamUGC() == nullptr)
 	{
 		UE_LOG(LogSteamHelpers, Warning, TEXT("Failed to upload workshop content, SteamUGC() returned nullptr"));
-		return;
+		return 0;
 	}
 
 	SteamUGC()->CreateItem(Game_App_ID, EWorkshopFileType::k_EWorkshopFileTypeCommunity);
@@ -59,4 +59,21 @@ void USteamHelperFunctionLibrary::UploadWorkshopItem()
 
 	const char* ChangeNote = "Not applicable";
 	SteamUGC()->SubmitItemUpdate(NewItemUpdateHandle, ChangeNote);
+
+	return NewItemUpdateHandle;
+}
+
+bool USteamHelperFunctionLibrary::IsItemUpdateComplete(const int64& InUpdateHandle)
+{
+	if (SteamUGC() == nullptr)
+	{
+		UE_LOG(LogSteamHelpers, Warning, TEXT("Failed to query workshop content update status, SteamUGC() returned nullptr"));
+		return false;
+	}
+
+	uint64* bytesProcessed = nullptr;
+	uint64* bytesTotal = nullptr;
+	SteamUGC()->GetItemUpdateProgress(InUpdateHandle, bytesProcessed, bytesTotal);
+
+	return bytesProcessed == bytesTotal;
 }

@@ -3,6 +3,7 @@
 
 #include "UI/WorkshopMenuWidget.h"
 #include "Components/Button.h"
+#include "Components/WidgetSwitcher.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "SteamHelperFunctionLibrary.h"
 #include "Log.h"
@@ -22,7 +23,9 @@ void UWorkshopMenuWidget::NativeConstruct()
 
 void UWorkshopMenuWidget::OnUploadButtonClicked()
 {
-	USteamHelperFunctionLibrary::UploadWorkshopItem();
+	ItemUploadHandle = USteamHelperFunctionLibrary::UploadWorkshopItem();
+	MenuSwitcher->SetActiveWidget(UploadingMenu);
+
 }
 
 void UWorkshopMenuWidget::BackButtonClicked()
@@ -30,5 +33,14 @@ void UWorkshopMenuWidget::BackButtonClicked()
 	if (OnBackButtonClicked.IsBound())
 	{
 		OnBackButtonClicked.Broadcast();
+	}
+}
+
+void UWorkshopMenuWidget::CheckUploadStatus()
+{
+	bool Completed = USteamHelperFunctionLibrary::IsItemUpdateComplete(ItemUploadHandle);
+	if (Completed)
+	{
+		MenuSwitcher->SetActiveWidget(BrowseMenu);
 	}
 }
