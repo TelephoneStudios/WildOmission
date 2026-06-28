@@ -5,7 +5,7 @@
 #include "Components/Button.h"
 #include "Components/WidgetSwitcher.h"
 #include "Kismet/KismetSystemLibrary.h"
-#include "SteamHelperFunctionLibrary.h"
+#include "WorkshopManager.h"
 #include "Log.h"
 
 UWorkshopMenuWidget::UWorkshopMenuWidget(const FObjectInitializer& ObjectInitializer) : UUserWidget(ObjectInitializer)
@@ -23,7 +23,15 @@ void UWorkshopMenuWidget::NativeConstruct()
 
 void UWorkshopMenuWidget::OnUploadButtonClicked()
 {
-	ItemUploadHandle = USteamHelperFunctionLibrary::UploadWorkshopItem();
+
+	UWorkshopManager* WorkshopManager = UWorkshopManager::GetWorkshopManager();
+	if (WorkshopManager == nullptr)
+	{
+		UE_LOG(LogWorkshop, Warning, TEXT("Failed to start upload, WorkshopManager returned nullptr"));
+		return;
+	}
+	
+	WorkshopManager->UploadWorkshopItem();
 
 	FTimerDelegate CheckUploadStatusTimerDelegate;
 	CheckUploadStatusTimerDelegate.BindUObject(this, &UWorkshopMenuWidget::CheckUploadStatus);
@@ -43,7 +51,7 @@ void UWorkshopMenuWidget::BackButtonClicked()
 void UWorkshopMenuWidget::CheckUploadStatus()
 {
 	UE_LOG(LogWorkshop, Display, TEXT("Checking workshop upload status"));
-	bool Completed = USteamHelperFunctionLibrary::IsItemUpdateComplete(ItemUploadHandle);
+	bool Completed = UWorkshopManager::IsItemUpdateComplete(ItemUploadHandle);
 	UE_LOG(LogWorkshop, Display, TEXT("Item upload completion status %i"), Completed);
 	if (Completed)
 	{

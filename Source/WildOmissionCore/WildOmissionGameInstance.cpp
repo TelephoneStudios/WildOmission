@@ -16,6 +16,7 @@
 #include "WildOmissionGameUserSettings.h"
 #include "AchievementsManager.h"
 #include "ServerAdministrators.h"
+#include "WorkshopManager.h"
 #include "GameFramework/PlayerState.h"
 #include "Sound/SoundMix.h"
 #include "Sound/SoundClass.h"
@@ -58,7 +59,9 @@ UWildOmissionGameInstance::UWildOmissionGameInstance(const FObjectInitializer& O
 
 	FriendsInterface = nullptr;
 
+	ServerAdministrators = nullptr;
 	AchievementsManager = nullptr;
+	WorkshopManager = nullptr;
 
 	DesiredServerName = TEXT("Server");
 	WorldToLoad = TEXT("NAN");
@@ -66,7 +69,6 @@ UWildOmissionGameInstance::UWildOmissionGameInstance(const FObjectInitializer& O
 	DesiredMaxPlayerCount = 8;
 
 	GameModeIndex = 0;
-	ServerAdministrators = nullptr;
 
 	OnMainMenu = false;
 	Loading = false;
@@ -184,6 +186,15 @@ void UWildOmissionGameInstance::Init()
 	SessionInterface->OnJoinSessionCompleteDelegates.AddUObject(this, &UWildOmissionGameInstance::OnJoinSessionComplete);
 	GEngine->OnNetworkFailure().AddUObject(this, &UWildOmissionGameInstance::OnNetworkFailure);
 
+	ServerAdministrators = NewObject<UServerAdministrators>(this);
+	if (ServerAdministrators == nullptr)
+	{
+		UE_LOG(LogInit, Error, TEXT("Failed to create server administrators"))
+			return;
+	}
+
+	ServerAdministrators->OnCreation();
+
 	AchievementsManager = NewObject<UAchievementsManager>(this);
 	if (AchievementsManager == nullptr)
 	{
@@ -193,14 +204,14 @@ void UWildOmissionGameInstance::Init()
 
 	AchievementsManager->OnCreation();
 
-	ServerAdministrators = NewObject<UServerAdministrators>(this);
-	if (ServerAdministrators == nullptr)
+	WorkshopManager = NewObject<UWorkshopManager>(this);
+	if (WorkshopManager == nullptr)
 	{
-		UE_LOG(LogInit, Error, TEXT("Failed to create server administrators"))
+		UE_LOG(LogInit, Error, TEXT("Failed to create workshop manager."));
 		return;
 	}
 
-	ServerAdministrators->OnCreation();
+	WorkshopManager->OnCreation();
 
 	ApplyAudioSettings();
 	RunAutoConfigQualitySettings();

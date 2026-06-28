@@ -24,8 +24,4 @@ public:
 	UFUNCTION(BlueprintCallable, META = (DisplayName = "Open Store", CompactNodeTitle = "Open Store", Category = "Steam Helper Functions"))
 	static void OpenStore(int32 DLC_AppID);
 
-	static uint64 UploadWorkshopItem();
-
-	
-	static bool IsItemUpdateComplete(const int64& InUpdateHandle);
 };

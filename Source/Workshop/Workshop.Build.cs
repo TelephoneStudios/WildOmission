@@ -10,6 +10,6 @@ public class Workshop : ModuleRules
         PrivateDependencyModuleNames.AddRange(new string[] { 
             "Core", "CoreUObject", "InputCore", "Slate", "SlateCore",
              "CustomUI", "SaveSystem",
-            "OnlineSubsystem", "OnlineSubsystemSteam", "SteamHelpers" });
+            "OnlineSubsystem", "OnlineSubsystemSteam", "Steamworks" });
     }
 }
