@@ -6,6 +6,8 @@
 #include "Blueprint/UserWidget.h"
 #include "WorkshopMenuWidget.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnWorkshopMenuBackButtonClickedSignature);
+
 UCLASS()
 class WORKSHOP_API UWorkshopMenuWidget : public UUserWidget
 {
@@ -15,7 +17,19 @@ public:
 	UWorkshopMenuWidget(const FObjectInitializer& ObjectInitializer);
 	
 	virtual void NativeConstruct() override;
+	
+	FOnWorkshopMenuBackButtonClickedSignature OnBackButtonClicked;
 
 private:
+	UPROPERTY(Meta = (BindWidget))
+	class UButton* UploadButton;
 
+	UPROPERTY(Meta = (BindWidget))
+	class UButton* BackButton;
+
+	UFUNCTION()
+	void OnUploadButtonClicked();
+
+	UFUNCTION()
+	void BackButtonClicked();
 };

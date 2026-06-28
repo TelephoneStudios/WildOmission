@@ -12,6 +12,7 @@
 #include "DeleteWorldWidget.h"
 #include "ServerBrowserWidget.h"
 #include "UI/OptionsWidget.h"
+#include "UI/WorkshopMenuWidget.h"
 #include "CreditsWidget.h"
 #include "ErrorMessagePrompt.h"
 #include "Kismet/KismetSystemLibrary.h"
@@ -56,6 +57,7 @@ UMainMenuWidget::UMainMenuWidget(const FObjectInitializer& ObjectInitializer) : 
 
 	PlayButton = nullptr;
 	OptionsButton = nullptr;
+	WorkshopButton = nullptr;
 	FeedbackButton = nullptr;
 	CreditsButton = nullptr;
 	ExitButton = nullptr;
@@ -76,6 +78,7 @@ UMainMenuWidget::UMainMenuWidget(const FObjectInitializer& ObjectInitializer) : 
 	ServerBrowserMenu = nullptr;
 	OptionsMenuPanel = nullptr;
 	OptionsMenu = nullptr;
+	WorkshopMenu = nullptr;
 	CreditsMenuPanel = nullptr;
 	CreditsMenu = nullptr;
 	ErrorMessagePrompt = nullptr;
@@ -88,6 +91,7 @@ void UMainMenuWidget::NativeConstruct()
 
 	PlayButton->OnClicked.AddDynamic(this, &UMainMenuWidget::OpenWorldSelectionMenu);
 	OptionsButton->OnClicked.AddDynamic(this, &UMainMenuWidget::OpenOptionsMenu);
+	WorkshopButton->OnClicked.AddDynamic(this, &UMainMenuWidget::OpenWorkshopMenu);
 	FeedbackButton->OnClicked.AddDynamic(this, &UMainMenuWidget::OpenFeedbackPage);
 	CreditsButton->OnClicked.AddDynamic(this, &UMainMenuWidget::OpenCreditsMenu);
 	ExitButton->OnClicked.AddDynamic(this, &UMainMenuWidget::ExitGame);
@@ -118,6 +122,8 @@ void UMainMenuWidget::NativeConstruct()
 	ServerBrowserMenu->OnCancelButtonClicked.AddDynamic(this, &UMainMenuWidget::OpenWorldSelectionMenu);
 
 	OptionsMenu->OnBackButtonClicked.AddDynamic(this, &UMainMenuWidget::OpenMainMenu);
+
+	WorkshopMenu->OnBackButtonClicked.AddDynamic(this, &UMainMenuWidget::OpenMainMenu);
 
 	CreditsMenu->OnBackButtonClicked.AddDynamic(this, &UMainMenuWidget::OpenMainMenu);
 
@@ -338,6 +344,16 @@ void UMainMenuWidget::OpenOptionsMenu()
 
 	MenuSwitcher->SetActiveWidget(OptionsMenuPanel);
 	OptionsMenu->Refresh();
+}
+
+void UMainMenuWidget::OpenWorkshopMenu()
+{
+	if (MenuSwitcher == nullptr || WorkshopMenu == nullptr)
+	{
+		return;
+	}
+
+	MenuSwitcher->SetActiveWidget(WorkshopMenu);
 }
 
 void UMainMenuWidget::OpenFeedbackPage()

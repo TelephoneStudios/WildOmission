@@ -39,6 +39,8 @@ public:
 	UFUNCTION()
 	void OpenOptionsMenu();
 	UFUNCTION()
+	void OpenWorkshopMenu();
+	UFUNCTION()
 	void OpenFeedbackPage();
 	UFUNCTION()
 	void OpenCreditsMenu();
@@ -62,6 +64,8 @@ private:
 	class UButton* PlayButton;
 	UPROPERTY(Meta = (BindWidget))
 	class UButton* OptionsButton;
+	UPROPERTY(Meta = (BindWidget))
+	class UButton* WorkshopButton;
 	UPROPERTY(Meta = (BindWidget))
 	class UButton* FeedbackButton;
 	UPROPERTY(Meta = (BindWidget))
@@ -98,6 +102,8 @@ private:
 	class UWidget* OptionsMenuPanel;
 	UPROPERTY(Meta = (BindWidget))
 	class UOptionsWidget* OptionsMenu;
+	UPROPERTY(Meta = (BindWidget))
+	class UWorkshopMenuWidget* WorkshopMenu;
 	UPROPERTY(Meta = (BindWidget))
 	class UWidget* CreditsMenuPanel;
 	UPROPERTY(Meta = (BindWidget))

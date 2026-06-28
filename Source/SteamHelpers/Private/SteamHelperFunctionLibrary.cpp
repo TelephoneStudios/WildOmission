@@ -3,6 +3,9 @@
 
 #include "SteamHelperFunctionLibrary.h"
 #include "ThirdParty/Steamworks/sdk/public/steam/steam_api.h"
+#include "Log.h"
+
+static const int32 Game_App_ID = 2348700;
 
 bool USteamHelperFunctionLibrary::IsDLCInstalled(int32 AppID)
 {
@@ -32,4 +35,28 @@ void USteamHelperFunctionLibrary::OpenStore(int32 DLC_AppID)
 	}
 
 	SteamFriends()->ActivateGameOverlayToStore(DLC_AppID, k_EOverlayToStoreFlag_None);
+}
+
+void USteamHelperFunctionLibrary::UploadWorkshopItem()
+{
+	if (SteamUGC() == nullptr)
+	{
+		UE_LOG(LogSteamHelpers, Warning, TEXT("Failed to upload workshop content, SteamUGC() returned nullptr"));
+		return;
+	}
+
+	SteamUGC()->CreateItem(Game_App_ID, EWorkshopFileType::k_EWorkshopFileTypeCommunity);
+
+	PublishedFileId_t NewItemPublishedField = PublishedFileId_t();
+	UGCUpdateHandle_t NewItemUpdateHandle = SteamUGC()->StartItemUpdate(Game_App_ID, NewItemPublishedField);
+	const char* ItemTitle = "TestUpload";
+	const char* ItemDescription = "Test item description.";
+	const char* ItemFilePath = "Saved/SaveGames/New_World.sav";
+	SteamUGC()->SetItemTitle(NewItemUpdateHandle, ItemTitle);
+	SteamUGC()->SetItemDescription(NewItemUpdateHandle, ItemDescription);
+	SteamUGC()->SetItemVisibility(NewItemUpdateHandle, ERemoteStoragePublishedFileVisibility::k_ERemoteStoragePublishedFileVisibilityPublic);
+	SteamUGC()->SetItemContent(NewItemUpdateHandle, ItemFilePath);
+
+	const char* ChangeNote = "Not applicable";
+	SteamUGC()->SubmitItemUpdate(NewItemUpdateHandle, ChangeNote);
 }
