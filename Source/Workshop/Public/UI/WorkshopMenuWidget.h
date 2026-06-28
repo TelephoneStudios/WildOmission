@@ -20,6 +20,9 @@ public:
 	
 	FOnWorkshopMenuBackButtonClickedSignature OnBackButtonClicked;
 
+protected:
+	virtual void NativeTick(const FGeometry& MyGeomotry, float InDeltaTime) override;
+
 private:
 	UPROPERTY(Meta = (BindWidget))
 	class UWidgetSwitcher* MenuSwitcher;
@@ -36,6 +39,9 @@ private:
 	UPROPERTY(Meta = (BindWidget))
 	class UWidget* UploadingMenu;
 
+	UPROPERTY(Meta = (BindWidget))
+	class UProgressBar* UploadProgressBar;
+
 	UPROPERTY()
 	uint64 ItemUploadHandle;
 
@@ -48,5 +54,5 @@ private:
 	void BackButtonClicked();
 
 	UFUNCTION()
-	void CheckUploadStatus();
+	void OnUploadSubmitted();
 };

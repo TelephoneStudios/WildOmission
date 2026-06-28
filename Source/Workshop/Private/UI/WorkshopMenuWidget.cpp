@@ -4,6 +4,7 @@
 #include "UI/WorkshopMenuWidget.h"
 #include "Components/Button.h"
 #include "Components/WidgetSwitcher.h"
+#include "Components/ProgressBar.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "WorkshopManager.h"
 #include "Log.h"
@@ -19,6 +20,25 @@ void UWorkshopMenuWidget::NativeConstruct()
 
 	UploadButton->OnClicked.AddDynamic(this, &UWorkshopMenuWidget::OnUploadButtonClicked);
 	BackButton->OnClicked.AddDynamic(this, &UWorkshopMenuWidget::BackButtonClicked);
+
+	UWorkshopManager* WorkshopManager = UWorkshopManager::GetWorkshopManager();
+	if (WorkshopManager)
+	{
+		WorkshopManager->OnWorkshopItemSubmitted.AddDynamic(this, &UWorkshopMenuWidget::OnUploadSubmitted);
+	}
+}
+
+void UWorkshopMenuWidget::NativeTick(const FGeometry& MyGeomotry, float InDeltaTime)
+{
+	Super::NativeTick(MyGeomotry, InDeltaTime);
+
+	UWorkshopManager* WorkshopManager = UWorkshopManager::GetWorkshopManager();
+	if (WorkshopManager == nullptr || UploadProgressBar == nullptr)
+	{
+		return;
+	}
+
+	UploadProgressBar->SetPercent(WorkshopManager->GetItemUploadPercentage());
 }
 
 void UWorkshopMenuWidget::OnUploadButtonClicked()
@@ -34,8 +54,8 @@ void UWorkshopMenuWidget::OnUploadButtonClicked()
 	WorkshopManager->UploadWorkshopItem();
 
 	FTimerDelegate CheckUploadStatusTimerDelegate;
-	CheckUploadStatusTimerDelegate.BindUObject(this, &UWorkshopMenuWidget::CheckUploadStatus);
-	GetWorld()->GetTimerManager().SetTimer(CheckUploadStatusTimerHandle, CheckUploadStatusTimerDelegate, 1.0f, true);
+	//CheckUploadStatusTimerDelegate.BindUObject(this, &UWorkshopMenuWidget::CheckUploadStatus);
+	//GetWorld()->GetTimerManager().SetTimer(CheckUploadStatusTimerHandle, CheckUploadStatusTimerDelegate, 1.0f, true);
 	MenuSwitcher->SetActiveWidget(UploadingMenu);
 
 }
@@ -48,14 +68,8 @@ void UWorkshopMenuWidget::BackButtonClicked()
 	}
 }
 
-void UWorkshopMenuWidget::CheckUploadStatus()
+void UWorkshopMenuWidget::OnUploadSubmitted()
 {
-	UE_LOG(LogWorkshop, Display, TEXT("Checking workshop upload status"));
-	bool Completed = UWorkshopManager::IsItemUpdateComplete(ItemUploadHandle);
-	UE_LOG(LogWorkshop, Display, TEXT("Item upload completion status %i"), Completed);
-	if (Completed)
-	{
-		MenuSwitcher->SetActiveWidget(BrowseMenu);
-		GetWorld()->GetTimerManager().ClearTimer(CheckUploadStatusTimerHandle);
-	}
+	UE_LOG(LogWorkshop, Display, TEXT("Item updates submitted"));	
+	MenuSwitcher->SetActiveWidget(BrowseMenu);
 }

@@ -8,6 +8,8 @@
 #include "ThirdParty/Steamworks/sdk/public/steam/steam_api.h"
 #include "WorkshopManager.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnWorkshopItemSubmittedSignature);
+
 /**
  * 
  */
@@ -23,12 +25,21 @@ public:
 
 	void UploadWorkshopItem();
 	
+	float GetItemUploadPercentage() const;
+
 	static bool IsItemUpdateComplete(const int64& InUpdateHandle);
+
+	FOnWorkshopItemSubmittedSignature OnWorkshopItemSubmitted;
 
 private:
 	// Handler for the asynchronous call result
 	void OnItemCreated(struct CreateItemResult_t* pCallback, bool bIOFailure);
+	void WorkshopSubmittedCallback(struct SubmitItemUpdateResult_t* pCallback, bool bIOFailure);
+
 	// Steam call result wrapper
 	CCallResult<UWorkshopManager, CreateItemResult_t> m_SteamCallResultCreateItem;
+	CCallResult<UWorkshopManager, SubmitItemUpdateResult_t> m_SteamCallSubmitItem;
+
+	UGCUpdateHandle_t UploadHandle;
 
 };

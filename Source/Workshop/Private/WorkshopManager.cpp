@@ -4,7 +4,6 @@
 #include "WorkshopManager.h"
 #include "Log.h"
 
-static const int32 Game_App_ID = 2348700;
 static UWorkshopManager* Instance = nullptr;
 
 void UWorkshopManager::OnCreation()
@@ -25,8 +24,23 @@ void UWorkshopManager::UploadWorkshopItem()
 		return;
 	}
 
-	SteamAPICall_t SteamAPICall = SteamUGC()->CreateItem(Game_App_ID, EWorkshopFileType::k_EWorkshopFileTypeCommunity);
+	SteamAPICall_t SteamAPICall = SteamUGC()->CreateItem(SteamUtils()->GetAppID(), EWorkshopFileType::k_EWorkshopFileTypeCommunity);
 	m_SteamCallResultCreateItem.Set(SteamAPICall, this, &UWorkshopManager::OnItemCreated);
+}
+
+float UWorkshopManager::GetItemUploadPercentage() const
+{
+	if (SteamUGC() == nullptr)
+	{
+		UE_LOG(LogWorkshop, Warning, TEXT("Failed to get item upload percentage, STEAM_UGC nullptr"));
+		return 0.0f;
+	}
+
+	uint64_t BytesProcessed = 0;
+	uint64_t BytesTotal = 0;
+	SteamUGC()->GetItemUpdateProgress(UploadHandle, &BytesProcessed, &BytesTotal);
+
+	return static_cast<float>(BytesProcessed) / static_cast<float>(BytesTotal);
 }
 
 bool UWorkshopManager::IsItemUpdateComplete(const int64& InUpdateHandle)
@@ -40,8 +54,7 @@ bool UWorkshopManager::IsItemUpdateComplete(const int64& InUpdateHandle)
 	uint64* bytesProcessed = nullptr;
 	uint64* bytesTotal = nullptr;
 	SteamUGC()->GetItemUpdateProgress(InUpdateHandle, bytesProcessed, bytesTotal);
-
-	return bytesProcessed == bytesTotal;
+	return false;
 }
 
 void UWorkshopManager::OnItemCreated(CreateItemResult_t* pCallback, bool bIOFailure)
@@ -68,24 +81,38 @@ void UWorkshopManager::OnItemCreated(CreateItemResult_t* pCallback, bool bIOFail
 			SteamFriends()->ActivateGameOverlayToWebPage("steam://url/CommunityFilePage/");
 		}
 
-		UGCUpdateHandle_t NewItemUpdateHandle = SteamUGC()->StartItemUpdate(Game_App_ID, newFileID);
+		UploadHandle = SteamUGC()->StartItemUpdate(SteamUtils()->GetAppID(), newFileID);
 		/*const char* ItemTitle = "TestUpload";
 		const char* ItemDescription = "Test item description.";
 		const char* ItemFilePath = "Saved/SaveGames/New_World.sav";*/
 
-		SteamUGC()->SetItemTitle(NewItemUpdateHandle, "Test Upload");
-		SteamUGC()->SetItemDescription(NewItemUpdateHandle, "Test Item Description");
-		SteamUGC()->SetItemVisibility(NewItemUpdateHandle, ERemoteStoragePublishedFileVisibility::k_ERemoteStoragePublishedFileVisibilityPublic);
+		SteamUGC()->SetItemTitle(UploadHandle, "Test Upload");
+		SteamUGC()->SetItemDescription(UploadHandle, "Test Item Description");
+		SteamUGC()->SetItemVisibility(UploadHandle, ERemoteStoragePublishedFileVisibility::k_ERemoteStoragePublishedFileVisibilityPublic);
 
-		SteamUGC()->SetItemContent(NewItemUpdateHandle, "C:/Users/Larch/Documents/GitHub/WildOmission/Saved/SaveGames/");
-		SteamUGC()->SetItemPreview(NewItemUpdateHandle, "C:/Users/Larch/Documents/GitHub/WildOmission/Saved/AutoScreenshot.png");
+		SteamUGC()->SetItemContent(UploadHandle, "C:/Users/Larch/Documents/GitHub/WildOmission/Saved/SaveGames/");
+		SteamUGC()->SetItemPreview(UploadHandle, "C:/Users/Larch/Documents/GitHub/WildOmission/Saved/AutoScreenshot.png");
 
-		SteamUGC()->SubmitItemUpdate(NewItemUpdateHandle, "Initial Upload");
-
-		UE_LOG(LogWorkshop, Display, TEXT("OnItemCreated success and Updates submitted"));
+		SteamAPICall_t SubmitAPICall = SteamUGC()->SubmitItemUpdate(UploadHandle, "Initial Upload");
+		m_SteamCallSubmitItem.Set(SubmitAPICall, this, &UWorkshopManager::WorkshopSubmittedCallback);
+		
+		UE_LOG(LogWorkshop, Display, TEXT("Finished updating item, submiting."));
 	}
 	else {
 		// Handle error codes (e.g., k_EResultTimeout, k_EResultInsufficientPrivilege)
 	}
 
+}
+
+void UWorkshopManager::WorkshopSubmittedCallback(SubmitItemUpdateResult_t* pCallback, bool bIOFailure)
+{
+	if (!IsValid(this))
+	{
+		return;
+	}
+
+	if (OnWorkshopItemSubmitted.IsBound())
+	{
+		OnWorkshopItemSubmitted.Broadcast();
+	}
 }
