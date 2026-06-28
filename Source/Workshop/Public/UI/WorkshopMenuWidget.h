@@ -39,6 +39,8 @@ private:
 	UPROPERTY()
 	uint64 ItemUploadHandle;
 
+	FTimerHandle CheckUploadStatusTimerHandle;
+
 	UFUNCTION()
 	void OnUploadButtonClicked();
 
