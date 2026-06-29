@@ -254,7 +254,7 @@ void UMainMenuWidget::OpenWorldSelectionMenu()
 		return;
 	}
 
-	WorldSelectionMenu->SetWorldList(MenuInterface->GetAllWorldNames());
+	WorldSelectionMenu->SetWorldList(MenuInterface->GetAllWorldFolderNames());
 	MenuSwitcher->SetActiveWidget(WorldSelectionMenuPanel);
 }
 

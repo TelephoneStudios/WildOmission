@@ -377,12 +377,16 @@ void UWildOmissionGameInstance::CreateWorld(const FString& WorldName, const FStr
 
 	NewSaveGame->Seed = Seed;
 
-	UGameplayStatics::SaveGameToSlot(NewSaveGame, WorldName, 0);
+	FString SlotName = WorldName + TEXT("/") + WorldName;
+	UGameplayStatics::SaveGameToSlot(NewSaveGame, SlotName, 0);
+
+	// TODO move it into folder
+	// and create all the other data
 }
 
 bool UWildOmissionGameInstance::DoesWorldAlreadyExist(const FString& WorldName) const
 {
-	const TArray<FString> WorldNames = GetAllWorldNames();
+	const TArray<FString> WorldNames = GetAllWorldFolderNames();
 
 	for (const FString& CurrentWorldName : WorldNames)
 	{

@@ -39,7 +39,8 @@ public:
 	UFUNCTION()
 	virtual void QuitToMenu() = 0;
 
-	static TArray<FString> GetAllWorldNames();
+	static TArray<FString> GetAllWorldNamesV1();
+	static TArray<FString> GetAllWorldFolderNames();
 	static bool WorldAlreadyExists(const FString& WorldNameToTest);
 
 };

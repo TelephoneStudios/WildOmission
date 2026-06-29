@@ -110,7 +110,8 @@ TArray<UWildOmissionSaveGame*> UWorldSelectionWidget::GetWorldsSortedByLastPlaye
 	TArray<UWildOmissionSaveGame*> SortedSaveGames;
 	for (const FString& WorldName : NamesList)
 	{
-		UWildOmissionSaveGame* SaveGame = Cast<UWildOmissionSaveGame>(UGameplayStatics::LoadGameFromSlot(WorldName, 0));
+		FString SaveDirectory = WorldName + TEXT("/") + WorldName;
+		UWildOmissionSaveGame* SaveGame = Cast<UWildOmissionSaveGame>(UGameplayStatics::LoadGameFromSlot(SaveDirectory, 0));
 		if (SaveGame == nullptr)
 		{
 			continue;
