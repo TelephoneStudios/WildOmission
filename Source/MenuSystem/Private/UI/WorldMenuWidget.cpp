@@ -66,10 +66,11 @@ void UWorldMenuWidget::NativeConstruct()
 
 void UWorldMenuWidget::Open(const FString& InWorldName)
 {
+	FString WorldDirectory = InWorldName + TEXT("/WorldData");
 	WorldName = InWorldName;
-
 	UWildOmissionSaveGame* SaveFile = Cast<UWildOmissionSaveGame>(UGameplayStatics::CreateSaveGameObject(UWildOmissionSaveGame::StaticClass()));
-	SaveFile = Cast<UWildOmissionSaveGame>(UGameplayStatics::LoadGameFromSlot(WorldName, 0));
+
+	SaveFile = Cast<UWildOmissionSaveGame>(UGameplayStatics::LoadGameFromSlot(WorldDirectory, 0));
 	if (SaveFile == nullptr)
 	{
 		return;

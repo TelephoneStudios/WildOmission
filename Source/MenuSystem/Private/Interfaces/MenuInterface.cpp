@@ -51,10 +51,10 @@ TArray<FString> IMenuInterface::GetAllWorldFolderNames()
 	TArray<FString> FoundFolders;
 	if (FPaths::DirectoryExists(SavesFolder))
 	{
-		FFileManagerGeneric::Get().FindFiles(FoundFolders, *SavesFolder, false, true);
+		FFileManagerGeneric::Get().FindFilesRecursive(FoundFolders, *SavesFolder, TEXT("*"), false, false);
 		for (int i = 0; i < FoundFolders.Num(); i++)
 		{
-			FoundFolders[i] = SavesFolder + FoundFolders[i];
+			FoundFolders[i] = FPaths::GetBaseFilename(FoundFolders[i]);
 			UE_LOG(LogTemp, Warning, TEXT("Found Folder: %s"), *FoundFolders[i]);
 		}
 	}

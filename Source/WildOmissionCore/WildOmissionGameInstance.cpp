@@ -377,7 +377,7 @@ void UWildOmissionGameInstance::CreateWorld(const FString& WorldName, const FStr
 
 	NewSaveGame->Seed = Seed;
 
-	FString SlotName = WorldName + TEXT("/") + WorldName;
+	FString SlotName = WorldName + TEXT("/WorldData");
 	UGameplayStatics::SaveGameToSlot(NewSaveGame, SlotName, 0);
 
 	// TODO move it into folder
