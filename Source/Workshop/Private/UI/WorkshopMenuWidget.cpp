@@ -71,5 +71,5 @@ void UWorkshopMenuWidget::BackButtonClicked()
 void UWorkshopMenuWidget::OnUploadSubmitted()
 {
 	UE_LOG(LogWorkshop, Display, TEXT("Item updates submitted"));	
-	MenuSwitcher->SetActiveWidget(BrowseMenu);
+	MenuSwitcher->SetActiveWidget(WorkshopMenu);
 }

@@ -34,7 +34,7 @@ private:
 	class UButton* BackButton;
 
 	UPROPERTY(Meta = (BindWidget))
-	class UWidget* BrowseMenu;
+	class UWidget* WorkshopMenu;
 
 	UPROPERTY(Meta = (BindWidget))
 	class UWidget* UploadingMenu;

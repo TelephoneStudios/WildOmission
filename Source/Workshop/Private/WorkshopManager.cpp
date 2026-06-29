@@ -38,9 +38,9 @@ float UWorkshopManager::GetItemUploadPercentage() const
 
 	uint64_t BytesProcessed = 0;
 	uint64_t BytesTotal = 0;
-	SteamUGC()->GetItemUpdateProgress(UploadHandle, &BytesProcessed, &BytesTotal);
+	//SteamUGC()->GetItemUpdateProgress(UploadHandle, &BytesProcessed, &BytesTotal);
 
-	return static_cast<float>(BytesProcessed) / static_cast<float>(BytesTotal);
+	return 0.0f; //static_cast<float>(BytesProcessed) / static_cast<float>(BytesTotal);
 }
 
 bool UWorkshopManager::IsItemUpdateComplete(const int64& InUpdateHandle)
@@ -81,21 +81,22 @@ void UWorkshopManager::OnItemCreated(CreateItemResult_t* pCallback, bool bIOFail
 			SteamFriends()->ActivateGameOverlayToWebPage("steam://url/CommunityFilePage/");
 		}
 
-		UploadHandle = SteamUGC()->StartItemUpdate(SteamUtils()->GetAppID(), newFileID);
+		UploadItemContent(newFileID);
+		/*UploadHandle = SteamUGC()->StartItemUpdate(SteamUtils()->GetAppID(), newFileID);*/
 		/*const char* ItemTitle = "TestUpload";
 		const char* ItemDescription = "Test item description.";
 		const char* ItemFilePath = "Saved/SaveGames/New_World.sav";*/
 
-		SteamUGC()->SetItemTitle(UploadHandle, "Test Upload");
-		SteamUGC()->SetItemDescription(UploadHandle, "Test Item Description");
-		SteamUGC()->SetItemVisibility(UploadHandle, ERemoteStoragePublishedFileVisibility::k_ERemoteStoragePublishedFileVisibilityPublic);
+		//SteamUGC()->SetItemTitle(UploadHandle, "Test Upload");
+		//SteamUGC()->SetItemDescription(UploadHandle, "Test Item Description");
+		//SteamUGC()->SetItemVisibility(UploadHandle, ERemoteStoragePublishedFileVisibility::k_ERemoteStoragePublishedFileVisibilityPublic);
 
-		SteamUGC()->SetItemContent(UploadHandle, "C:/Users/Larch/Documents/GitHub/WildOmission/Saved/SaveGames/");
-		SteamUGC()->SetItemPreview(UploadHandle, "C:/Users/Larch/Documents/GitHub/WildOmission/Saved/AutoScreenshot.png");
+		//SteamUGC()->SetItemContent(UploadHandle, "C:/Users/Larch/Documents/GitHub/WildOmission/Saved/SaveGames/");
+		//SteamUGC()->SetItemPreview(UploadHandle, "C:/Users/Larch/Documents/GitHub/WildOmission/Saved/AutoScreenshot.png");
 
-		SteamAPICall_t SubmitAPICall = SteamUGC()->SubmitItemUpdate(UploadHandle, "Initial Upload");
-		m_SteamCallSubmitItem.Set(SubmitAPICall, this, &UWorkshopManager::WorkshopSubmittedCallback);
-		
+		//SteamAPICall_t SubmitAPICall = SteamUGC()->SubmitItemUpdate(UploadHandle, "Initial Upload");
+		//m_SteamCallSubmitItem.Set(SubmitAPICall, this, &UWorkshopManager::WorkshopSubmittedCallback);
+		//
 		UE_LOG(LogWorkshop, Display, TEXT("Finished updating item, submiting."));
 	}
 	else {
@@ -111,8 +112,28 @@ void UWorkshopManager::WorkshopSubmittedCallback(SubmitItemUpdateResult_t* pCall
 		return;
 	}
 
-	if (OnWorkshopItemSubmitted.IsBound())
-	{
-		OnWorkshopItemSubmitted.Broadcast();
-	}
+	//pCallback->m_eResult == Ereselt
+	UE_LOG(LogWorkshop, Display, TEXT("Workshop item submitted %i"), bIOFailure);
+
+	//if (OnWorkshopItemSubmitted.IsBound())
+	//{
+	//	OnWorkshopItemSubmitted.Broadcast();
+	//}
+}
+
+void UWorkshopManager::UploadItemContent(PublishedFileId_t nFileID)
+{
+	UGCUpdateHandle_t hUpdate = SteamUGC()->StartItemUpdate(SteamUtils()->GetAppID(), nFileID);
+
+	// Populate item metadata
+	SteamUGC()->SetItemTitle(hUpdate, "Test Workshop Item");
+	SteamUGC()->SetItemDescription(hUpdate, "This is my awesome test description.");
+	SteamUGC()->SetItemVisibility(hUpdate, ERemoteStoragePublishedFileVisibility::k_ERemoteStoragePublishedFileVisibilityPublic);
+
+	// Content
+	SteamUGC()->SetItemContent(hUpdate, "C:\\Users\\Larch\\Documents\\Github\\WildOmission\\Saved\\SaveGames");
+	SteamUGC()->SetItemPreview(hUpdate, "C:\\Users\\Larch\\Documents\\Github\\WildOmission\\Saved\\AutoScreenshot.png");
+
+	SteamAPICall_t hSteamAPICall = SteamUGC()->SubmitItemUpdate(hUpdate, "initial upload");
+	m_SteamCallSubmitItem.Set(hSteamAPICall, this, &UWorkshopManager::WorkshopSubmittedCallback);
 }
