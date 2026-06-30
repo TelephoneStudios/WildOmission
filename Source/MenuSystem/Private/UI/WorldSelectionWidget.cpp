@@ -110,7 +110,7 @@ TArray<UWildOmissionSaveGame*> UWorldSelectionWidget::GetWorldsSortedByLastPlaye
 	TArray<UWildOmissionSaveGame*> SortedSaveGames;
 	for (const FString& WorldName : NamesList)
 	{
-		FString SaveDirectory = WorldName + TEXT("/") + WorldName;
+		FString SaveDirectory = WorldName + TEXT("/WorldData");
 		UWildOmissionSaveGame* SaveGame = Cast<UWildOmissionSaveGame>(UGameplayStatics::LoadGameFromSlot(SaveDirectory, 0));
 		if (SaveGame == nullptr)
 		{
@@ -121,7 +121,7 @@ TArray<UWildOmissionSaveGame*> UWorldSelectionWidget::GetWorldsSortedByLastPlaye
 		if (SaveGame->CreationInformation.Name == TEXT(""))
 		{
 			SaveGame->CreationInformation.Name = WorldName;
-			UGameplayStatics::SaveGameToSlot(SaveGame, WorldName, 0);
+			UGameplayStatics::SaveGameToSlot(SaveGame, SaveDirectory, 0);
 		}
 
 		SortedSaveGames.Add(SaveGame);

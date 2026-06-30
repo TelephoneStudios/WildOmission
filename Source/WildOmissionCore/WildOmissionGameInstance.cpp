@@ -379,9 +379,6 @@ void UWildOmissionGameInstance::CreateWorld(const FString& WorldName, const FStr
 
 	FString SlotName = WorldName + TEXT("/WorldData");
 	UGameplayStatics::SaveGameToSlot(NewSaveGame, SlotName, 0);
-
-	// TODO move it into folder
-	// and create all the other data
 }
 
 bool UWildOmissionGameInstance::DoesWorldAlreadyExist(const FString& WorldName) const
