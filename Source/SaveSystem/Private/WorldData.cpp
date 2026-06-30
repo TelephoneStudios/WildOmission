@@ -5,7 +5,6 @@
 
 UWorldData::UWorldData()
 {
-	NormalizedTimeOfDay = 0.0f;
 	PlayerSpawnChunk = FPlayerSpawnChunk();
 	PlayerSpawnOverride = FPlayerSpawnOverride();
 }

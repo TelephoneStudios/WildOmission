@@ -45,6 +45,9 @@ public:
 	uint32 DaysPlayed;
 	
 	UPROPERTY()
+	float NormalizedTimeOfDay;
+
+	UPROPERTY()
 	FDateTime LastPlayedTime;
 
 	UPROPERTY()

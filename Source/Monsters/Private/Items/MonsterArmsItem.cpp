@@ -4,7 +4,7 @@
 #include "Items/MonsterArmsItem.h"
 #include "Monsters/Monster.h"
 #include "SaveManager.h"
-#include "WildOmissionSaveGame.h"
+#include "WorldInformation.h"
 #include "Components/EquipComponent.h"
 #include "Engine/DamageEvents.h"
 
@@ -24,14 +24,14 @@ void AMonsterArmsItem::Equip(APawn* InOwnerPawn, USkeletalMeshComponent* InThird
 		return;
 	}
 
-	UWildOmissionSaveGame* SaveFile = SaveManager->GetSaveFile();
-	if (SaveFile == nullptr)
+	UWorldInformation* WorldInformation = SaveManager->GetWorldInformation();
+	if (WorldInformation == nullptr)
 	{
 		return;
 	}
 
 	// 0 = peace, 1 = easy, 2 = normal, 3 = hard
-	const int8 DifficultyModifier = (SaveFile->Difficulty.GetIntValue() - 2) * 0.15f;
+	const int8 DifficultyModifier = (WorldInformation->Difficulty.GetIntValue() - 2) * 0.15f;
 	DamageMultiplier = FMath::Clamp(DamageMultiplier + DifficultyModifier, 0.1f, 1.0f);
 }
 

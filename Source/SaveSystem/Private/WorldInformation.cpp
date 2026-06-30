@@ -19,6 +19,7 @@ FWorldCreationInformation::FWorldCreationInformation()
 UWorldInformation::UWorldInformation()
 {
 	DaysPlayed = 0;
+	NormalizedTimeOfDay = 0.0f;
 	LastPlayedTime = FDateTime::Now();
 	Difficulty = EGameDifficulty::EGD_Normal;
 	LevelFile = TEXT("LV_Procedural");

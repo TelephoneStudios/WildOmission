@@ -21,9 +21,6 @@ public:
 	UWorldData();
 
 	UPROPERTY()
-	float NormalizedTimeOfDay;
-
-	UPROPERTY()
 	FWeatherData WeatherData;
 
 	UPROPERTY()

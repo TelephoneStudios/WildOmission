@@ -7,7 +7,8 @@
 #include "TimeOfDayManager.h"
 #include "WeatherManager.h"
 #include "Interfaces/GameSaveLoadController.h"
-#include "WildOmissionSaveGame.h"
+#include "WorldInformation.h"
+#include "WorldData.h"
 #include "Kismet/GameplayStatics.h"
 #include "Log.h"
 
@@ -20,7 +21,9 @@ ASaveManager::ASaveManager()
 	PrimaryActorTick.bCanEverTick = false;
 
 	GameSaveLoadController = nullptr;
-	CurrentSaveFile = nullptr;
+
+	CurrentWorldInformation = nullptr;
+	CurrentWorldData = nullptr;
 
 	PlayerSaveManagerComponent = CreateDefaultSubobject<UPlayerSaveManagerComponent>(TEXT("PlayerSaveManagerComponent"));
 }
@@ -42,109 +45,156 @@ ASaveManager* ASaveManager::GetSaveManager()
 
 void ASaveManager::SaveWorld()
 {
-	UWildOmissionSaveGame* SaveFile = GetSaveFile();
-	if (SaveFile == nullptr)
+	if (CurrentWorldData == nullptr
+		|| CurrentWorldInformation == nullptr)
 	{
-		UE_LOG(LogSaveSystem, Error, TEXT("Aborting save, SaveFile was nullptr."));
+		UE_LOG(LogSaveSystem, Error, TEXT("Aborting save, CurrentWorldInformation or CurrentWorldData was nullptr."));
 		return;
 	}
 
-	SaveFile->LastPlayedTime = FDateTime::Now();
-
+	// Populate World Information
+	CurrentWorldInformation->LastPlayedTime = FDateTime::Now();
+	
+	// Save Chunks
 	AChunkManager* ChunkManager = AChunkManager::GetChunkManager();
 	if (ChunkManager)
 	{
-		SaveFile->PlayerSpawnChunk = ChunkManager->GetPlayerSpawnChunk();
-		SaveFile->Seed = ChunkManager->GetGenerationSeed();
+		// Populate World Information
+		CurrentWorldInformation->Seed = ChunkManager->GetGenerationSeed();
+		
+		// Populate World Data
+		CurrentWorldData->PlayerSpawnChunk = ChunkManager->GetPlayerSpawnChunk();
+		
 		ChunkManager->SaveAllSpawnedChunks();
-		SaveFile->ChunkData = ChunkManager->GetAllChunkData();
+		CurrentWorldData->ChunkData = ChunkManager->GetAllChunkData();
 	}
 
+	// Save TimeOfDay
 	ATimeOfDayManager* TimeOfDayManager = ATimeOfDayManager::GetTimeOfDayManager();
 	if (TimeOfDayManager)
 	{
-		SaveFile->DaysPlayed = TimeOfDayManager->GetDaysPlayed();
-		SaveFile->NormalizedTimeOfDay = TimeOfDayManager->GetTimeOfDay();
+		// Populate World Information
+		CurrentWorldInformation->DaysPlayed = TimeOfDayManager->GetDaysPlayed();
+		CurrentWorldInformation->NormalizedTimeOfDay = TimeOfDayManager->GetTimeOfDay();
 	}
 
 	AWeatherManager* WeatherManager = AWeatherManager::GetWeatherManager();
 	if (WeatherManager)
 	{
-		WeatherManager->Save(SaveFile->WeatherData);
+		WeatherManager->Save(CurrentWorldData->WeatherData);
 	}
 
 	if (PlayerSaveManagerComponent)
 	{
-		PlayerSaveManagerComponent->Save(SaveFile->PlayerData);
+		PlayerSaveManagerComponent->Save(CurrentWorldData->PlayerData);
 	}
 	
-	SaveFile->Version = UWildOmissionSaveGame::GetCurrentVersion();
+	CurrentWorldInformation->Version = UWorldInformation::GetCurrentVersion();
 
-	UpdateSaveFile(SaveFile);
+	UpdateWorldFile(CurrentWorldInformation, CurrentWorldData);
 }
 
-void ASaveManager::SetSaveFile(const FString& SaveFileName)
+void ASaveManager::SetWorld(const FString& WorldName)
 {
-	CurrentSaveFileName = SaveFileName;
+	CurrentWorldName = WorldName;
 	ValidateSave();
 
-	CurrentSaveFile = Cast<UWildOmissionSaveGame>(UGameplayStatics::CreateSaveGameObject(UWildOmissionSaveGame::StaticClass()));
-	CurrentSaveFile = Cast<UWildOmissionSaveGame>(UGameplayStatics::LoadGameFromSlot(CurrentSaveFileName + TEXT("/WorldData"), 0));
+	CurrentWorldInformation = Cast<UWorldInformation>(UGameplayStatics::CreateSaveGameObject(UWorldInformation::StaticClass()));
+	CurrentWorldInformation = Cast<UWorldInformation>(UGameplayStatics::LoadGameFromSlot(CurrentWorldName + TEXT("/WorldInformation"), 0));
+
+	CurrentWorldData = Cast<UWorldData>(UGameplayStatics::CreateSaveGameObject(UWorldData::StaticClass()));
+	CurrentWorldData = Cast<UWorldData>(UGameplayStatics::LoadGameFromSlot(CurrentWorldName + TEXT("/WorldData"), 0));
 }
 
 void ASaveManager::LoadWorld()
 {
-	UWildOmissionSaveGame* SaveFile = GetSaveFile();
-	if (SaveFile == nullptr)
+	if (CurrentWorldInformation == nullptr || CurrentWorldData == nullptr)
 	{
+		UE_LOG(LogSaveSystem, Warning, TEXT("Attemped to load world but CurrentWorldInformation or CurrentWorldData was nullptr."));
 		return;
 	}
 	
-	if (SaveFile->CreationInformation.LevelHasGenerated == false)
+	// Check if the world needs to be generated first
+	if (CurrentWorldInformation->CreationInformation.LevelHasGenerated == false)
 	{
+		// Generate world
 		SetLoadingSubtitle(TEXT("Generating level."));
 
-		AChunkManager::SetGenerationSeed(SaveFile->Seed);
+		AChunkManager::SetGenerationSeed(CurrentWorldInformation->Seed);
 
-		SaveFile->CreationInformation.LevelHasGenerated = true;
-		UpdateSaveFile(SaveFile);
+		CurrentWorldInformation->CreationInformation.LevelHasGenerated = true;
+		UpdateWorldFile(CurrentWorldInformation, CurrentWorldData);
 		return;
 	}
 
 	SetLoadingSubtitle(TEXT("Loading level."));
 
-	if (SaveFile->GameMode == 1)
+	if (CurrentWorldInformation->GameMode == 1)
 	{
-		SaveFile->CheatsEnabled = true;
+		CurrentWorldInformation->CheatsEnabled = true;
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("GameMode is %i"), SaveFile->GameMode);
+	UE_LOG(LogSaveSystem, Warning, TEXT("Loading world GameMode is %i"), CurrentWorldInformation->GameMode);
 
 	ATimeOfDayManager* TimeOfDayManager = ATimeOfDayManager::GetTimeOfDayManager();
 	if (TimeOfDayManager)
 	{
-		TimeOfDayManager->SetDaysPlayed(SaveFile->DaysPlayed);
-		TimeOfDayManager->SetTimeOfDay(SaveFile->NormalizedTimeOfDay);
+		TimeOfDayManager->SetDaysPlayed(CurrentWorldInformation->DaysPlayed);
+		TimeOfDayManager->SetTimeOfDay(CurrentWorldInformation->NormalizedTimeOfDay);
 	}
 	
 	AChunkManager* ChunkManager = AChunkManager::GetChunkManager();
 	if (ChunkManager)
 	{
-		ChunkManager->SetPlayerSpawnChunk(SaveFile->PlayerSpawnChunk);
-		ChunkManager->SetGenerationSeed(SaveFile->Seed);
-		ChunkManager->SetChunkData(SaveFile->ChunkData);
+		ChunkManager->SetPlayerSpawnChunk(CurrentWorldData->PlayerSpawnChunk);
+		ChunkManager->SetGenerationSeed(CurrentWorldInformation->Seed);
+		ChunkManager->SetChunkData(CurrentWorldData->ChunkData);
 	}
 
 	AWeatherManager* WeatherManager = AWeatherManager::GetWeatherManager();
 	if (WeatherManager)
 	{
-		WeatherManager->Load(SaveFile->WeatherData);
+		WeatherManager->Load(CurrentWorldData->WeatherData);
 	}
 }
 
-UWildOmissionSaveGame* ASaveManager::GetSaveFile() const
+void ASaveManager::UpdateWorldFile(UWorldInformation* UpdatedWorldInformation, UWorldData* UpdatedWorldData)
 {
-	return CurrentSaveFile;
+	UpdateWorldInformation(UpdatedWorldInformation);
+	UpdateWorldData(UpdatedWorldData);
+}
+
+void ASaveManager::UpdateWorldInformation(UWorldInformation* UpdatedWorldInformation)
+{
+	if (UpdatedWorldInformation == nullptr)
+	{
+		UE_LOG(LogSaveSystem, Error, TEXT("Aborting update to world files, UpdatedWorldInformation was nullptr."));
+		return;
+	}
+
+	UGameplayStatics::SaveGameToSlot(UpdatedWorldInformation, CurrentWorldName + TEXT("/WorldInformation"), 0);
+}
+
+void ASaveManager::UpdateWorldData(UWorldData* UpdatedWorldData)
+{
+	if (UpdatedWorldData == nullptr)
+	{
+		UE_LOG(LogSaveSystem, Error, TEXT("Aborting update to world files, UpdatedWorldData was nullptr."));
+		return;
+	}
+
+	UGameplayStatics::SaveGameToSlot(UpdatedWorldData, CurrentWorldName + TEXT("/WorldData"), 0);
+}
+
+
+UWorldInformation* ASaveManager::GetWorldInformation() const
+{
+	return CurrentWorldInformation;
+}
+
+UWorldData* ASaveManager::GetWorldData() const
+{
+	return CurrentWorldData;
 }
 
 void ASaveManager::BeginPlay()
@@ -177,32 +227,22 @@ UPlayerSaveManagerComponent* ASaveManager::GetPlayerManager() const
 
 void ASaveManager::ValidateSave()
 {
-	if (CurrentSaveFileName.Len() > 0)
+	if (CurrentWorldName.Len() > 0)
 	{
-		UE_LOG(LogSaveSystem, Display, TEXT("Loading into valid save file: %s."), *CurrentSaveFileName);
+		UE_LOG(LogSaveSystem, Display, TEXT("Loading into valid world: %s."), *CurrentWorldName);
 		return;
 	}
 
-	CurrentSaveFileName = TEXT("New_World");
+	// If loaded world name is blank create populate it with "New_World"
+	CurrentWorldName = TEXT("New_World");
 	UE_LOG(LogSaveSystem, Display, TEXT("World Name was 0 in length, using default world name of New_World"));
 
-	if (DoesWorldAlreadExist(CurrentSaveFileName))
+	if (DoesWorldAlreadExist(CurrentWorldName))
 	{
 		return;
 	}
 
-	CreateWorld(CurrentSaveFileName);
-}
-
-void ASaveManager::UpdateSaveFile(UWildOmissionSaveGame* UpdatedSaveFile)
-{
-	if (UpdatedSaveFile == nullptr)
-	{
-		UE_LOG(LogSaveSystem, Error, TEXT("Aborting update to save file, updated save file passed in was a nullptr."));
-		return;
-	}
-
-	UGameplayStatics::SaveGameToSlot(UpdatedSaveFile, CurrentSaveFileName + TEXT("/WorldData"), 0);
+	CreateWorld(CurrentWorldName);
 }
 
 void ASaveManager::StartLoading()

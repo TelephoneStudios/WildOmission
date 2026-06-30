@@ -2,7 +2,7 @@
 
 
 #include "Components/PlayerSaveManagerComponent.h"
-#include "WildOmissionSaveGame.h"
+#include "WorldData.h"
 #include "Interfaces/SavablePlayer.h"
 #include "SaveManager.h"
 #include "Structs/PlayerSaveData.h"
@@ -66,18 +66,18 @@ void UPlayerSaveManagerComponent::Load(APlayerController* PlayerController)
 	const FString PlayerUniqueID = SavablePlayer->GetUniqueID();
 	const bool PlayerIsHost = SavablePlayer->IsHost();
 
-	UWildOmissionSaveGame* SaveFile = SaveManagerOwner->GetSaveFile();
-	if (SaveFile == nullptr)
+	UWorldData* WorldData = SaveManagerOwner->GetWorldData();
+	if (WorldData == nullptr)
 	{
 		return;
 	}
 
 	// Attempt host parody
-	if (PlayerIsHost && FindHostSaveIndexInList(SaveFile->PlayerData, SaveIndex))
+	if (PlayerIsHost && FindHostSaveIndexInList(WorldData->PlayerData, SaveIndex))
 	{
-		SavablePlayer->LoadPlayerSave(SaveFile->PlayerData[SaveIndex]);
-		SaveFile->PlayerData[SaveIndex].IsHost = false;
-		SaveManagerOwner->UpdateSaveFile(SaveFile);
+		SavablePlayer->LoadPlayerSave(WorldData->PlayerData[SaveIndex]);
+		WorldData->PlayerData[SaveIndex].IsHost = false;
+		SaveManagerOwner->UpdateWorldData(WorldData);
 		return;
 	}
 
@@ -87,9 +87,9 @@ void UPlayerSaveManagerComponent::Load(APlayerController* PlayerController)
 		SavablePlayer->LoadPlayerSave(PendingSaves[SaveIndex]);
 	}
 	// Find existing save in the save file
-	else if (FindSaveIndexInList(SaveFile->PlayerData, PlayerUniqueID, SaveIndex))
+	else if (FindSaveIndexInList(WorldData->PlayerData, PlayerUniqueID, SaveIndex))
 	{
-		SavablePlayer->LoadPlayerSave(SaveFile->PlayerData[SaveIndex]);
+		SavablePlayer->LoadPlayerSave(WorldData->PlayerData[SaveIndex]);
 	}
 }
 
