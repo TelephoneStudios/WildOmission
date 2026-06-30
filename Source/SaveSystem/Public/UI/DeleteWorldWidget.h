@@ -10,7 +10,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDeleteWorldOnDeleteButtonClickedSignature);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDeleteWorldOnCancelButtonClickedSignature);
 
 UCLASS()
-class UDeleteWorldWidget : public UUserWidget
+class SAVESYSTEM_API UDeleteWorldWidget : public UUserWidget
 {
 	GENERATED_BODY()
 	

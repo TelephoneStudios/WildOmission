@@ -5,8 +5,11 @@
 #include "Components/Button.h"
 #include "Components/WidgetSwitcher.h"
 #include "Components/ProgressBar.h"
+#include "UI/WorldSelectionWidget.h"
+#include "UI/WorkshopUploadMenuWidget.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "WorkshopManager.h"
+#include "SaveManager.h"
 #include "Log.h"
 
 UWorkshopMenuWidget::UWorkshopMenuWidget(const FObjectInitializer& ObjectInitializer) : UUserWidget(ObjectInitializer)
@@ -18,8 +21,10 @@ void UWorkshopMenuWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	UploadButton->OnClicked.AddDynamic(this, &UWorkshopMenuWidget::OnUploadButtonClicked);
+	UploadButton->OnClicked.AddDynamic(this, &UWorkshopMenuWidget::OpenWorldSelectionForUploading);
 	BackButton->OnClicked.AddDynamic(this, &UWorkshopMenuWidget::BackButtonClicked);
+
+	WorldSelectionMenu->OnCancelButtonClicked.AddDynamic(this, &UWorkshopMenuWidget::OpenWorkshopMenu);
 
 	UWorkshopManager* WorkshopManager = UWorkshopManager::GetWorkshopManager();
 	if (WorkshopManager)
@@ -72,4 +77,23 @@ void UWorkshopMenuWidget::OnUploadSubmitted()
 {
 	UE_LOG(LogWorkshop, Display, TEXT("Item updates submitted"));	
 	MenuSwitcher->SetActiveWidget(WorkshopMenu);
+}
+
+void UWorkshopMenuWidget::OpenWorkshopMenu()
+{
+	MenuSwitcher->SetActiveWidget(WorkshopMenu);
+}
+
+void UWorkshopMenuWidget::OpenWorldSelectionForUploading()
+{
+	MenuSwitcher->SetActiveWidget(WorldSelectionMenu);
+
+	TArray<FString> WorldFolderNames = ASaveManager::GetAllWorldFolderNames();
+	//WorldSelectionMenu->SetWorldList(WorldFolderNames);
+}
+
+void UWorkshopMenuWidget::OpenUploadWorldMenu()
+{
+	MenuSwitcher->SetActiveWidget(UploadWorldMenu);
+	UploadWorldMenu->SetWorld(WorldSelectionMenu->SelectedWorldName.GetValue());
 }

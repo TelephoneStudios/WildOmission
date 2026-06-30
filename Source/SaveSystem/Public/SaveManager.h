@@ -17,7 +17,7 @@ public:
 
 	void SetGameSaveLoadController(class IGameSaveLoadController* InGameSaveLoadController);
 
-	static void SetSaveManager(ASaveManager* NewInstance);
+	static void SetSaveManager(ASaveManager* NewSaveManagerInstance);
 	static ASaveManager* GetSaveManager();
 
 	void SaveWorld();
@@ -35,6 +35,10 @@ public:
 
 	class UWorldInformation* GetWorldInformation() const;
 	class UWorldData* GetWorldData() const;
+
+	static TArray<FString> GetAllWorldNamesV1();
+	static TArray<FString> GetAllWorldFolderNames();
+	static bool WorldAlreadyExists(const FString& WorldNameToTest);
 
 protected:
 	virtual void BeginPlay() override;

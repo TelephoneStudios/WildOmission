@@ -7,11 +7,12 @@
 #include "Components/Button.h"
 #include "Components/TextBlock.h"
 #include "PlayWorldSelectionWidget.h"
-#include "WorldCreationWidget.h"
-#include "WorldMenuWidget.h"
-#include "RenameWorldWidget.h"
-#include "DeleteWorldWidget.h"
+#include "UI/WorldCreationWidget.h"
+#include "UI/WorldMenuWidget.h"
+#include "UI/RenameWorldWidget.h"
+#include "UI/DeleteWorldWidget.h"
 #include "ServerBrowserWidget.h"
+#include "SaveManager.h"
 #include "UI/OptionsWidget.h"
 #include "UI/WorkshopMenuWidget.h"
 #include "CreditsWidget.h"
@@ -156,7 +157,7 @@ void UMainMenuWidget::Setup(IMenuInterface* InMenuInterface)
 	MenuSwitcher->SetActiveWidget(UpdatingWorldsMenu);
 	Async(EAsyncExecution::Thread, [this]()
 		{
-			TArray<FString> OldWorldNames = MenuInterface->GetAllWorldNamesV1();
+			TArray<FString> OldWorldNames = ASaveManager::GetAllWorldNamesV1();
 			if (!OldWorldNames.IsEmpty())
 			{
 				USaveUpdater::UpdateWorldFiles(OldWorldNames);
@@ -273,7 +274,7 @@ void UMainMenuWidget::OpenPlayWorldSelectionMenu()
 		return;
 	}
 
-	PlayWorldSelectionMenu->SetWorldList(MenuInterface->GetAllWorldFolderNames());
+	PlayWorldSelectionMenu->SetWorldList(ASaveManager::GetAllWorldFolderNames());
 	MenuSwitcher->SetActiveWidget(WorldSelectionMenuPanel);
 }
 

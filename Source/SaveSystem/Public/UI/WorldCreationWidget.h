@@ -10,7 +10,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnOpenWorldMenuRequestedSignature, 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FWorldCreationOnCancelButtonClickedSignature);
 
 UCLASS()
-class UWorldCreationWidget : public UUserWidget
+class SAVESYSTEM_API UWorldCreationWidget : public UUserWidget
 {
 	GENERATED_BODY()
 

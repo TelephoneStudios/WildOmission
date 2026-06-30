@@ -1,8 +1,8 @@
 // Copyright Telephone Studios. All Rights Reserved.
 
 
-#include "WorldCreationWidget.h"
-#include "Interfaces/MenuInterface.h"
+#include "UI/WorldCreationWidget.h"
+#include "SaveManager.h"
 #include "Components/Button.h"
 #include "Components/EditableTextBox.h"
 #include "Components/TextBlock.h"
@@ -48,7 +48,7 @@ void UWorldCreationWidget::HideInvalidWarning()
 
 bool UWorldCreationWidget::WorldOfSameNameAlreadyExists(const FString& WorldName)
 {
-	return IMenuInterface::WorldAlreadyExists(WorldName);
+	return ASaveManager::WorldAlreadyExists(WorldName);
 }
 
 bool UWorldCreationWidget::WorldContainsInvalidCharacter(const FString& WorldName)
@@ -111,7 +111,7 @@ void UWorldCreationWidget::CreateWorld()
 
 	if (NewWorldName.IsEmpty() || WorldOfSameNameAlreadyExists(NewWorldName) || WorldContainsInvalidCharacter(NewWorldName))
 	{
-		UE_LOG(LogMenuSystem, Warning, TEXT("World name error."));
+		UE_LOG(LogSaveSystem, Warning, TEXT("World name error."));
 		return;
 	}
 

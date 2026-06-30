@@ -10,7 +10,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnSelectButtonClickedSignature);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnCancelButtonClickedSignature);
 
 UCLASS()
-class UWorldSelectionWidget : public UUserWidget
+class SAVESYSTEM_API UWorldSelectionWidget : public UUserWidget
 {
 	GENERATED_BODY()
 

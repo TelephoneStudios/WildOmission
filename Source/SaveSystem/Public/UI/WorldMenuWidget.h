@@ -13,7 +13,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FWorldMenuOnDeleteButtonClickedSignature);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FWorldMenuOnCancelButtonClickedSignature);
 
 UCLASS()
-class UWorldMenuWidget : public UUserWidget
+class SAVESYSTEM_API UWorldMenuWidget : public UUserWidget
 {
 	GENERATED_BODY()
 	

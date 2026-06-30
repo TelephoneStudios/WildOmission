@@ -4,12 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Structs/ItemData.h"
 #include "ItemCategoryButton.generated.h"
 
-class UCreativeMenuWidget;
-class UButton;
-class UTextBlock;
-enum EItemCategory;
 
 UCLASS()
 class UItemCategoryButton : public UUserWidget
@@ -19,18 +16,18 @@ class UItemCategoryButton : public UUserWidget
 public:	
 	UItemCategoryButton(const FObjectInitializer& ObjectInitializer);
 
-	void Setup(UCreativeMenuWidget* InParent, TEnumAsByte<EItemCategory> InCategory);
+	void Setup(class UCreativeMenuWidget* InParent, TEnumAsByte<EItemCategory> InCategory);
 protected:
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
 private:
 	UPROPERTY(Meta = (BindWidget))
-	UButton* Button;
+	class UButton* Button;
 	UPROPERTY(Meta = (BindWidget))
-	UTextBlock* TextBlock;
+	class UTextBlock* TextBlock;
 	
 	UPROPERTY()
-	UCreativeMenuWidget* ParentCreativeMenu;
+	class UCreativeMenuWidget* ParentCreativeMenu;
 	
 	UPROPERTY()
 	TEnumAsByte<EItemCategory> Category;

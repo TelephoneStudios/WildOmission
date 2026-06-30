@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "WorldSelectionWidget.h"
+#include "UI/WorldSelectionWidget.h"
 #include "PlayWorldSelectionWidget.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnCreateNewWorldButtonClickedSignature);

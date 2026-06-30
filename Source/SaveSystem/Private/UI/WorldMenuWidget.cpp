@@ -1,7 +1,7 @@
 // Copyright Telephone Studios. All Rights Reserved.
 
 
-#include "WorldMenuWidget.h"
+#include "UI/WorldMenuWidget.h"
 #include "Components/Button.h"
 #include "Components/EditableTextBox.h"
 #include "OptionBoxes/MultiOptionBox.h"
@@ -73,7 +73,7 @@ void UWorldMenuWidget::Open(const FString& InWorldName)
 	WorldInformation= Cast<UWorldInformation>(UGameplayStatics::LoadGameFromSlot(InformationDirectory, 0));
 	if (WorldInformation == nullptr)
 	{
-		UE_LOG(LogMenuSystem, Warning, TEXT("Failed to open world menu, WorldInformation is nullptr."));
+		UE_LOG(LogSaveSystem, Warning, TEXT("Failed to open world menu, WorldInformation is nullptr."));
 		return;
 	}
 
@@ -133,7 +133,7 @@ int32 UWorldMenuWidget::GetWorldVersion() const
 	if (WorldInformation == nullptr)
 	{
 
-		UE_LOG(LogMenuSystem, Warning, TEXT("Failed to get world infomation in UWorldMenuWidget::GetWorldVersion"));
+		UE_LOG(LogSaveSystem, Warning, TEXT("Failed to get world infomation in UWorldMenuWidget::GetWorldVersion"));
 		return -1;
 	}
 

@@ -4,11 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Structs/ItemData.h"
 #include "CraftingMenuWidget.generated.h"
 
-enum EItemCategory;
-struct FItemData;
-struct FCraftingRecipe;
 
 UCLASS()
 class CRAFTING_API UCraftingMenuWidget : public UUserWidget

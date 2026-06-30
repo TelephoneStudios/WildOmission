@@ -3,8 +3,6 @@
 
 #include "WorldInformation.h"
 
-const static int32 CURRENT_SAVE_FILE_VERSION = 3;
-
 FWorldCreationInformation::FWorldCreationInformation()
 {
 	Name = TEXT("");

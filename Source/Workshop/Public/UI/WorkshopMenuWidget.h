@@ -42,6 +42,12 @@ private:
 	UPROPERTY(Meta = (BindWidget))
 	class UProgressBar* UploadProgressBar;
 
+	UPROPERTY(Meta = (BindWidget))
+	class UWorldSelectionWidget* WorldSelectionMenu;
+
+	UPROPERTY(Meta = (BindWidget))
+	class UWorkshopUploadMenuWidget* UploadWorldMenu;
+
 	UPROPERTY()
 	uint64 ItemUploadHandle;
 
@@ -55,4 +61,13 @@ private:
 
 	UFUNCTION()
 	void OnUploadSubmitted();
+
+	UFUNCTION()
+	void OpenWorkshopMenu();
+
+	UFUNCTION()
+	void OpenWorldSelectionForUploading();
+
+	UFUNCTION()
+	void OpenUploadWorldMenu();
 };

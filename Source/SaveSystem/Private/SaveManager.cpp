@@ -17,7 +17,7 @@
 #include "Camera/CameraComponent.h"
 #include "Log.h"
 
-static ASaveManager* Instance = nullptr;
+static ASaveManager* SaveManagerInstance = nullptr;
 
 // Sets default values
 ASaveManager::ASaveManager()
@@ -38,14 +38,14 @@ void ASaveManager::SetGameSaveLoadController(IGameSaveLoadController* InGameSave
 	GameSaveLoadController = InGameSaveLoadController;
 }
 
-void ASaveManager::SetSaveManager(ASaveManager* NewInstance)
+void ASaveManager::SetSaveManager(ASaveManager* NewSaveManagerInstance)
 {
-	Instance = NewInstance;
+	SaveManagerInstance = NewSaveManagerInstance;
 }
 
 ASaveManager* ASaveManager::GetSaveManager()
 {
-	return Instance;
+	return SaveManagerInstance;
 }
 
 void ASaveManager::SaveWorld()
@@ -297,12 +297,78 @@ UWorldData* ASaveManager::GetWorldData() const
 	return CurrentWorldData;
 }
 
+
+TArray<FString> ASaveManager::GetAllWorldNamesV1()
+{
+	////////////////////////////////////////////////////////////////////////////////////
+	// Special thanks to Ixiguis on the Unreal Engine forums for this useful function //
+	////////////////////////////////////////////////////////////////////////////////////
+	class FFindSavesVisitor : public IPlatformFile::FDirectoryVisitor
+	{
+	public:
+		FFindSavesVisitor() {}
+
+		virtual bool Visit(const TCHAR* FilenameOrDirectory, bool bIsDirectory)
+		{
+			if (!bIsDirectory)
+			{
+				FString FullFilePath(FilenameOrDirectory);
+				if (FPaths::GetExtension(FullFilePath) == TEXT("sav"))
+				{
+					FString CleanFilename = FPaths::GetBaseFilename(FullFilePath);
+					CleanFilename = CleanFilename.Replace(TEXT(".sav"), TEXT(""));
+					SavesFound.Add(CleanFilename);
+				}
+			}
+			return true;
+		}
+		TArray<FString> SavesFound;
+	};
+
+	TArray<FString> Saves;
+	const FString SavesFolder = FPaths::ProjectSavedDir() + TEXT("SaveGames");
+
+	if (!SavesFolder.IsEmpty())
+	{
+		FFindSavesVisitor Visitor;
+		FPlatformFileManager::Get().GetPlatformFile().IterateDirectory(*SavesFolder, Visitor);
+		Saves = Visitor.SavesFound;
+	}
+
+	return Saves;
+}
+
+TArray<FString> ASaveManager::GetAllWorldFolderNames()
+{
+	TArray<FString> FolderNames;
+	FString SearchDirectory = FPaths::ProjectSavedDir() + TEXT("SaveGames/") + TEXT("*");
+
+	IFileManager::Get().FindFiles(FolderNames, *SearchDirectory, false, true);
+
+	return FolderNames;
+}
+
+bool ASaveManager::WorldAlreadyExists(const FString& WorldNameToTest)
+{
+	TArray<FString> WorldNames = GetAllWorldFolderNames();
+	for (const FString& WorldName : WorldNames)
+	{
+		if (WorldNameToTest.ToLower() == WorldName.ToLower())
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
+
 void ASaveManager::BeginPlay()
 {
 	Super::BeginPlay();
 
 	UWorld* World = GetWorld();
-	if (World == nullptr || World->IsEditorWorld() && IsValid(Instance))
+	if (World == nullptr || World->IsEditorWorld() && IsValid(SaveManagerInstance))
 	{
 		return;
 	}
@@ -317,7 +383,7 @@ void ASaveManager::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	Super::EndPlay(EndPlayReason);
 
-	Instance = nullptr;
+	SaveManagerInstance = nullptr;
 }
 
 UPlayerSaveManagerComponent* ASaveManager::GetPlayerManager() const

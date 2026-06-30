@@ -18,8 +18,6 @@
 #include "Camera/CameraComponent.h"
 #include "Log.h"
 
-static USaveUpdater* Instance = nullptr;
-
 // Sets default values
 USaveUpdater::USaveUpdater()
 {

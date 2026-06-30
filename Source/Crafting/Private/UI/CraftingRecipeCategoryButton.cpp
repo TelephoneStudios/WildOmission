@@ -3,7 +3,6 @@
 
 #include "CraftingRecipeCategoryButton.h"
 #include "UI/CraftingMenuWidget.h"
-#include "Structs/ItemData.h"
 #include "Components/Button.h"
 #include "Components/TextBlock.h"
 #include "Color/UIColors.h"

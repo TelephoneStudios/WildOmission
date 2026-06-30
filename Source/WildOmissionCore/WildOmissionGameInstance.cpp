@@ -18,6 +18,7 @@
 #include "AchievementsManager.h"
 #include "ServerAdministrators.h"
 #include "WorkshopManager.h"
+#include "SaveManager.h"
 #include "GameFramework/PlayerState.h"
 #include "Sound/SoundMix.h"
 #include "Sound/SoundClass.h"
@@ -387,7 +388,7 @@ void UWildOmissionGameInstance::CreateWorld(const FString& WorldName, const FStr
 
 bool UWildOmissionGameInstance::DoesWorldAlreadyExist(const FString& WorldName) const
 {
-	const TArray<FString> WorldNames = GetAllWorldFolderNames();
+	const TArray<FString> WorldNames = ASaveManager::GetAllWorldFolderNames();
 
 	for (const FString& CurrentWorldName : WorldNames)
 	{

@@ -5,7 +5,7 @@
 #include "Components/EditableTextBox.h"
 #include "Components/Button.h"
 #include "Components/TextBlock.h"
-#include "Interfaces/MenuInterface.h"
+#include "SaveManager.h"
 #include "Interfaces/GameSaveLoadController.h"
 #include "Log.h"
 
@@ -43,14 +43,14 @@ void URenameWorldWidget::RenameWorld()
 	
 	if (NewWorldName.IsEmpty() || WorldOfSameNameAlreadyExists(NewWorldName) || WorldContainsInvalidCharacter(NewWorldName))
 	{
-		UE_LOG(LogMenuSystem, Warning, TEXT("World name error."));
+		UE_LOG(LogSaveSystem, Warning, TEXT("World name error."));
 		return;
 	}
 
 	IGameSaveLoadController* GameSaveLoadController = Cast<IGameSaveLoadController>(GetGameInstance());
 	if (GameSaveLoadController == nullptr)
 	{
-		UE_LOG(LogMenuSystem, Warning, TEXT("RenameWorldWidget::GameSaveLoadController nullptr."));
+		UE_LOG(LogSaveSystem, Warning, TEXT("RenameWorldWidget::GameSaveLoadController nullptr."));
 		return;
 	}
 	
@@ -73,7 +73,7 @@ void URenameWorldWidget::HideInvalidWarning()
 
 bool URenameWorldWidget::WorldOfSameNameAlreadyExists(const FString& WorldName)
 {
-	return IMenuInterface::WorldAlreadyExists(WorldName);
+	return ASaveManager::WorldAlreadyExists(WorldName);
 }
 
 bool URenameWorldWidget::WorldContainsInvalidCharacter(const FString& WorldName)

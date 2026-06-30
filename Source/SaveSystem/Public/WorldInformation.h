@@ -39,6 +39,8 @@ class SAVESYSTEM_API UWorldInformation : public USaveGame
 public:
 	UWorldInformation();
 
+	const static int32 CURRENT_SAVE_FILE_VERSION = 3;
+
 	static int32 GetCurrentVersion();
 
 	UPROPERTY()
