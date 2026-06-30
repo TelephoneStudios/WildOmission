@@ -14,8 +14,6 @@ UWorldSelectionWidget::UWorldSelectionWidget(const FObjectInitializer& ObjectIni
 {
 	WorldListBox = nullptr;
 	SelectButton = nullptr;
-	CreateNewWorldButton = nullptr;
-	MultiplayerButton = nullptr;
 	CancelButton = nullptr;
 
 	WorldRowWidgetClass = nullptr;
@@ -33,8 +31,6 @@ void UWorldSelectionWidget::NativeConstruct()
 
 	SelectButton->SetIsEnabled(false);
 	SelectButton->OnClicked.AddDynamic(this, &UWorldSelectionWidget::BroadcastSelectButtonClicked);
-	CreateNewWorldButton->OnClicked.AddDynamic(this, &UWorldSelectionWidget::BroadcastCreateNewWorldButtonClicked);
-	MultiplayerButton->OnClicked.AddDynamic(this, &UWorldSelectionWidget::BroadcastMultiplayerButtonClicked);
 	CancelButton->OnClicked.AddDynamic(this, &UWorldSelectionWidget::BroadcastCancelButtonClicked);
 }
 
@@ -90,6 +86,7 @@ void UWorldSelectionWidget::SetSelectedWorld(const FString& WorldName)
 void UWorldSelectionWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
+
 	SelectButton->SetIsEnabled(SelectedWorldName.IsSet());
 }
 
@@ -142,26 +139,6 @@ void UWorldSelectionWidget::BroadcastSelectButtonClicked()
 	}
 
 	OnSelectButtonClicked.Broadcast();
-}
-
-void UWorldSelectionWidget::BroadcastCreateNewWorldButtonClicked()
-{
-	if (!OnCreateNewWorldButtonClicked.IsBound())
-	{
-		return;
-	}
-
-	OnCreateNewWorldButtonClicked.Broadcast();
-}
-
-void UWorldSelectionWidget::BroadcastMultiplayerButtonClicked()
-{
-	if (!OnMultiplayerButtonClicked.IsBound())
-	{
-		return;
-	}
-
-	OnMultiplayerButtonClicked.Broadcast();
 }
 
 void UWorldSelectionWidget::BroadcastCancelButtonClicked()

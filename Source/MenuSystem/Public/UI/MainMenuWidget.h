@@ -21,7 +21,7 @@ public:
 	UFUNCTION()
 	void OpenMainMenu();
 	UFUNCTION()
-	void OpenWorldSelectionMenu();
+	void OpenPlayWorldSelectionMenu();
 	UFUNCTION()
 	void OpenWorldCreationMenu();
 	UFUNCTION()
@@ -85,7 +85,7 @@ private:
 	UPROPERTY(Meta = (BindWidget))
 	class UWidget* WorldSelectionMenuPanel;
 	UPROPERTY(Meta = (BindWidget))
-	class UWorldSelectionWidget* WorldSelectionMenu;
+	class UPlayWorldSelectionWidget* PlayWorldSelectionMenu;
 	UPROPERTY(Meta = (BindWidget))
 	class UWorldCreationWidget* WorldCreationMenu;
 	UPROPERTY(Meta = (BindWidget))

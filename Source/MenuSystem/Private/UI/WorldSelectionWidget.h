@@ -7,11 +7,6 @@
 #include "WorldSelectionWidget.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnSelectButtonClickedSignature);
-//DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnRenameWorldButtonClickedSignature);
-//DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDeleteWorldButtonClickedSignature);
-
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnCreateNewWorldButtonClickedSignature);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnMultiplayerButtonClickedSignature);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnCancelButtonClickedSignature);
 
 UCLASS()
@@ -28,11 +23,9 @@ public:
 	TOptional<FString> SelectedWorldName;
 
 	FOnSelectButtonClickedSignature OnSelectButtonClicked;
-	FOnCreateNewWorldButtonClickedSignature OnCreateNewWorldButtonClicked;
-	FOnMultiplayerButtonClickedSignature OnMultiplayerButtonClicked;
 	FOnCancelButtonClickedSignature OnCancelButtonClicked;
 protected:
-	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime);
+	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
 private:
 	UPROPERTY(Meta = (BindWidget))
@@ -40,13 +33,7 @@ private:
 
 	UPROPERTY(Meta = (BindWidget))
 	class UButton* SelectButton;
-	
-	UPROPERTY(Meta = (BindWidget))
-	class UButton* CreateNewWorldButton;
 
-	UPROPERTY(Meta = (BindWidget))
-	class UButton* MultiplayerButton;
-	
 	UPROPERTY(Meta = (BindWidget))
 	class UButton* CancelButton;
 
@@ -62,12 +49,6 @@ private:
 
 	UFUNCTION()
 	void BroadcastSelectButtonClicked();
-
-	UFUNCTION()
-	void BroadcastCreateNewWorldButtonClicked();
-
-	UFUNCTION()
-	void BroadcastMultiplayerButtonClicked();
 
 	UFUNCTION()
 	void BroadcastCancelButtonClicked();
