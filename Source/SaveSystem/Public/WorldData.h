@@ -4,32 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/SaveGame.h"
+#include "Structs/PlayerSaveData.h"
+#include "Structs/ChunkData.h"
+#include "Structs/PlayerSpawnChunk.h"
+#include "Structs/PlayerSpawnOverride.h"
+#include "Structs/WeatherData.h"
 #include "Enums/GameDifficulty.h"
 #include "WorldData.generated.h"
-
-USTRUCT()
-struct FWorldCreationInformation
-{
-	GENERATED_BODY()
-
-	FWorldCreationInformation();
-
-	UPROPERTY()
-	FString Name;
-
-	UPROPERTY()
-	bool LevelHasGenerated;
-
-	UPROPERTY()
-	uint8 Day;
-	
-	UPROPERTY()
-	uint8 Month;
-	
-	UPROPERTY()
-	uint16 Year;
-
-};
 
 UCLASS()
 class SAVESYSTEM_API UWorldData : public USaveGame
@@ -39,33 +20,22 @@ class SAVESYSTEM_API UWorldData : public USaveGame
 public:
 	UWorldData();
 
-	static int32 GetCurrentVersion();
+	UPROPERTY()
+	float NormalizedTimeOfDay;
 
 	UPROPERTY()
-	uint32 DaysPlayed;
+	FWeatherData WeatherData;
+
+	UPROPERTY()
+	FPlayerSpawnChunk PlayerSpawnChunk;
+
+	UPROPERTY()
+	FPlayerSpawnOverride PlayerSpawnOverride;
 	
 	UPROPERTY()
-	FDateTime LastPlayedTime;
+	TArray<FChunkData> ChunkData;
 
 	UPROPERTY()
-	TEnumAsByte<EGameDifficulty> Difficulty;
-
-	UPROPERTY()
-	FString LevelFile;
-
-	UPROPERTY()
-	uint32 Seed;
-
-	UPROPERTY()
-	FWorldCreationInformation CreationInformation;
-
-	UPROPERTY()
-	int32 Version;
-
-	UPROPERTY()
-	bool CheatsEnabled;
-
-	UPROPERTY()
-	uint8 GameMode;
+	TArray<FPlayerSaveData> PlayerData;
 
 };
