@@ -7,9 +7,14 @@
 #include "TimeOfDayManager.h"
 #include "WeatherManager.h"
 #include "Interfaces/GameSaveLoadController.h"
+#include "Components/SceneCaptureComponent2D.h"
+#include "Engine/TextureRenderTarget2D.h"
+#include "ImageUtils.h"
+#include "Misc/FileHelper.h"
 #include "WorldInformation.h"
 #include "WorldData.h"
 #include "Kismet/GameplayStatics.h"
+#include "Camera/CameraComponent.h"
 #include "Log.h"
 
 static ASaveManager* Instance = nullptr;
@@ -78,18 +83,23 @@ void ASaveManager::SaveWorld()
 		CurrentWorldInformation->NormalizedTimeOfDay = TimeOfDayManager->GetTimeOfDay();
 	}
 
+	// Save Weather
 	AWeatherManager* WeatherManager = AWeatherManager::GetWeatherManager();
 	if (WeatherManager)
 	{
 		WeatherManager->Save(CurrentWorldData->WeatherData);
 	}
 
+	// Save Players
 	if (PlayerSaveManagerComponent)
 	{
 		PlayerSaveManagerComponent->Save(CurrentWorldData->PlayerData);
 	}
 	
 	CurrentWorldInformation->Version = UWorldInformation::GetCurrentVersion();
+
+	// Capture World Icon
+	CaptureWorldIcon();
 
 	UpdateWorldFile(CurrentWorldInformation, CurrentWorldData);
 }
@@ -186,6 +196,72 @@ void ASaveManager::UpdateWorldData(UWorldData* UpdatedWorldData)
 	UGameplayStatics::SaveGameToSlot(UpdatedWorldData, CurrentWorldName + TEXT("/WorldData"), 0);
 }
 
+void ASaveManager::CaptureWorldIcon()
+{
+	UWorld* World = GetWorld();
+	if (World == nullptr)
+	{
+		UE_LOG(LogSaveSystem, Error, TEXT("Failed to capture world thumbnail, world was nullptr"));
+		return;
+	}
+
+	// Create 512 x 512 render target
+	UTextureRenderTarget2D* RenderTarget = NewObject<UTextureRenderTarget2D>(World);
+	RenderTarget->InitAutoFormat(512, 512);
+	RenderTarget->TargetGamma = 2.2f;
+	RenderTarget->UpdateResource();
+
+	// Spawn a temporary Scene Capture Component from the player's camera view
+	APlayerController* FirstPlayerController = World->GetFirstPlayerController();
+	if (FirstPlayerController == nullptr || FirstPlayerController->PlayerCameraManager == nullptr)
+	{
+		UE_LOG(LogSaveSystem, Warning, TEXT("Failed to capture world thumbnail, FirstPlayerController was nullptr"));
+		return;
+	}
+
+	USceneCaptureComponent2D* CaptureComponent = NewObject<USceneCaptureComponent2D>(FirstPlayerController);
+	CaptureComponent->RegisterComponent();
+
+	CaptureComponent->SetWorldLocationAndRotation(
+		FirstPlayerController->PlayerCameraManager->GetCameraLocation(),
+		FirstPlayerController->PlayerCameraManager->GetCameraRotation()
+	);
+
+	// Configure capture settings
+	CaptureComponent->TextureTarget = RenderTarget;
+	CaptureComponent->CaptureSource = ESceneCaptureSource::SCS_FinalColorLDR;
+	CaptureComponent->bCaptureEveryFrame = false;
+	CaptureComponent->bCaptureOnMovement = false;
+	CaptureComponent->bAlwaysPersistRenderingState = true;
+
+	// Override individual ShowFlags to ensure GI and Lumen are allowed in the render loop
+	FEngineShowFlags& ShowFlags = CaptureComponent->ShowFlags;
+	ShowFlags.SetGlobalIllumination(true);
+	ShowFlags.SetLumenGlobalIllumination(true);
+	ShowFlags.SetLumenReflections(true);
+	ShowFlags.SetAmbientOcclusion(true);
+	ShowFlags.SetDirectLighting(true);
+	ShowFlags.SetIndirectLightingCache(true);
+
+	// Capture
+	CaptureComponent->CaptureScene();
+
+	// Read the raw pixel data from the render target
+	TArray<FColor> RawPixels;
+	FTextureRenderTargetResource* RenderTargetResource = RenderTarget->GameThread_GetRenderTargetResource();
+	RenderTargetResource->ReadPixels(RawPixels);
+
+	// Compress raw pixel array into PNG format
+	TArray64<uint8> CompressedPNG;
+	FImageUtils::PNGCompressImageArray(512, 512, RawPixels, CompressedPNG);
+
+	// Save the PNG into the world directory
+	const FString FilePath = FPaths::ProjectSavedDir() + "/SaveGames/" + CurrentWorldName + "/Icon.png";
+	FFileHelper::SaveArrayToFile(CompressedPNG, *FilePath);
+
+	// Clean up
+	CaptureComponent->DestroyComponent();
+}
 
 UWorldInformation* ASaveManager::GetWorldInformation() const
 {

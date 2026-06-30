@@ -28,6 +28,8 @@ public:
 	void UpdateWorldInformation(class UWorldInformation* UpdatedWorldInformation);
 	void UpdateWorldData(class UWorldData* UpdatedWorldData);
 
+	void CaptureWorldIcon();
+
 	class UPlayerSaveManagerComponent* GetPlayerManager() const;
 
 	class UWorldInformation* GetWorldInformation() const;
