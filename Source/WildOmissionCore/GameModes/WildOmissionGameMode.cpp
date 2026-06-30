@@ -35,7 +35,9 @@ void AWildOmissionGameMode::InitGame(const FString& MapName, const FString& Opti
 {
 	Super::InitGame(MapName, Options, ErrorMessage);
 
-	FString SaveFile = UGameplayStatics::ParseOption(Options, "SaveGame");
+	FString WorldName = UGameplayStatics::ParseOption(Options, "WorldName");
+	UE_LOG(LogTemp, Display, TEXT("Parsed world name in init game: %"), *WorldName);
+
 	FriendsOnly = UGameplayStatics::ParseOption(Options, "FriendsOnly") == TEXT("1");
 	const FString GameModeString = UGameplayStatics::ParseOption(Options, "GameMode");
 		
@@ -94,7 +96,7 @@ void AWildOmissionGameMode::InitGame(const FString& MapName, const FString& Opti
 	}
 
 	SaveManager->SetGameSaveLoadController(Cast<IGameSaveLoadController>(GetGameInstance()));
-	SaveManager->SetSaveFile(SaveFile);
+	SaveManager->SetSaveFile(WorldName);
 	SaveManager->LoadWorld();
 
 	UWildOmissionSaveGame* SaveGame = SaveManager->GetSaveFile();

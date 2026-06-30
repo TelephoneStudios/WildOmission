@@ -89,7 +89,7 @@ void ASaveManager::SetSaveFile(const FString& SaveFileName)
 	ValidateSave();
 
 	CurrentSaveFile = Cast<UWildOmissionSaveGame>(UGameplayStatics::CreateSaveGameObject(UWildOmissionSaveGame::StaticClass()));
-	CurrentSaveFile = Cast<UWildOmissionSaveGame>(UGameplayStatics::LoadGameFromSlot(CurrentSaveFileName, 0));
+	CurrentSaveFile = Cast<UWildOmissionSaveGame>(UGameplayStatics::LoadGameFromSlot(CurrentSaveFileName + TEXT("/WorldData"), 0));
 }
 
 void ASaveManager::LoadWorld()
@@ -184,7 +184,8 @@ void ASaveManager::ValidateSave()
 	}
 
 	CurrentSaveFileName = TEXT("New_World");
-	
+	UE_LOG(LogSaveSystem, Display, TEXT("World Name was 0 in length, using default world name of New_World"));
+
 	if (DoesWorldAlreadExist(CurrentSaveFileName))
 	{
 		return;
@@ -201,7 +202,7 @@ void ASaveManager::UpdateSaveFile(UWildOmissionSaveGame* UpdatedSaveFile)
 		return;
 	}
 
-	UGameplayStatics::SaveGameToSlot(UpdatedSaveFile, CurrentSaveFileName, 0);
+	UGameplayStatics::SaveGameToSlot(UpdatedSaveFile, CurrentSaveFileName + TEXT("/WorldData"), 0);
 }
 
 void ASaveManager::StartLoading()

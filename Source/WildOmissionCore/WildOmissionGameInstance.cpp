@@ -521,9 +521,11 @@ void UWildOmissionGameInstance::StartSingleplayer(const FString& WorldName, cons
 
 	WorldToLoad = WorldName;
 	GameModeIndex = GameMode;
+	UE_LOG(LogTemp, Warning, TEXT("StartSingleplayer WorldName: %s"), *WorldName);
+	FString WorldDirectory = WorldToLoad + TEXT("/WorldData");
 
 	UWorld* World = GetWorld();
-	UWildOmissionSaveGame* SaveGame = Cast<UWildOmissionSaveGame>(UGameplayStatics::LoadGameFromSlot(WorldToLoad, 0));
+	UWildOmissionSaveGame* SaveGame = Cast<UWildOmissionSaveGame>(UGameplayStatics::LoadGameFromSlot(WorldDirectory, 0));
 	if (World == nullptr || SaveGame == nullptr)
 	{
 		return;
@@ -531,7 +533,7 @@ void UWildOmissionGameInstance::StartSingleplayer(const FString& WorldName, cons
 
 	const FString LevelFileString = SaveGame->LevelFile;
 	const FString GameModeString = FString::Printf(TEXT("%i"), GameModeIndex);
-	const FString LoadString = FString::Printf(TEXT("/Game/WildOmissionCore/Levels/%s?savegame=%s?gamemode=%s"), *LevelFileString, *WorldName, *GameModeString);
+	const FString LoadString = FString::Printf(TEXT("/Game/WildOmissionCore/Levels/%s?worldname=%s?gamemode=%s"), *LevelFileString, *WorldName, *GameModeString);
 	// Server travel to the game level
 	World->ServerTravel(LoadString);
 }
@@ -667,8 +669,10 @@ void UWildOmissionGameInstance::OnCreateSessionComplete(FName SessionName, bool 
 	SetLoadingTitle(TEXT("Loading Game"));
 	SetLoadingSubtitle(TEXT("Loading level."));
 
+	FString WorldDirectory = WorldToLoad + TEXT("/WorldData");
+
 	UWorld* World = GetWorld();
-	UWildOmissionSaveGame* SaveGame = Cast<UWildOmissionSaveGame>(UGameplayStatics::LoadGameFromSlot(WorldToLoad, 0));
+	UWildOmissionSaveGame* SaveGame = Cast<UWildOmissionSaveGame>(UGameplayStatics::LoadGameFromSlot(WorldDirectory, 0));
 	if (World == nullptr || SaveGame == nullptr)
 	{
 		return;
@@ -677,7 +681,7 @@ void UWildOmissionGameInstance::OnCreateSessionComplete(FName SessionName, bool 
 	const FString FriendsOnlyString = FString::Printf(TEXT("%i"), FriendsOnlySession);
 	const FString LevelFileString = SaveGame->LevelFile;
 	const FString GameModeString = FString::Printf(TEXT("%i"), GameModeIndex);
-	const FString LoadString = FString::Printf(TEXT("/Game/WildOmissionCore/Levels/%s?listen?savegame=%s?friendsonly=%s?gamemode=%s"),
+	const FString LoadString = FString::Printf(TEXT("/Game/WildOmissionCore/Levels/%s?listen?worldname=%s?friendsonly=%s?gamemode=%s"),
 		*LevelFileString, *WorldToLoad, *FriendsOnlyString, *GameModeString);
 	// Server travel to the game level
 	World->ServerTravel(LoadString);

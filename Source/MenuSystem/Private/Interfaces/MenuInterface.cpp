@@ -51,22 +51,6 @@ TArray<FString> IMenuInterface::GetAllWorldFolderNames()
 	IFileManager::Get().FindFiles(FolderNames, *SearchDirectory, false, true);
 
 	return FolderNames;
-
-	//TArray<FString> Saves;
-	//const FString SavesFolder = FPaths::ProjectSavedDir() + TEXT("SaveGames");
-
-	//TArray<FString> FoundFolders;
-	//if (FPaths::DirectoryExists(SavesFolder))
-	//{
-	//	FFileManagerGeneric::Get().FindFilesRecursive(FoundFolders, *SavesFolder, TEXT("*"), false, false);
-	//	for (int i = 0; i < FoundFolders.Num(); i++)
-	//	{
-	//		FoundFolders[i] = FPaths::GetBaseFilename(FoundFolders[i]);
-	//		UE_LOG(LogTemp, Warning, TEXT("Found Folder: %s"), *FoundFolders[i]);
-	//	}
-	//}
-
-	//return FoundFolders;
 }
 
 bool IMenuInterface::WorldAlreadyExists(const FString& WorldNameToTest)

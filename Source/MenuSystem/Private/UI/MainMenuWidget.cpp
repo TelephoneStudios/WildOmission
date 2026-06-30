@@ -297,6 +297,7 @@ void UMainMenuWidget::HostGame(const FString& WorldName, const FString& ServerNa
 		return;
 	}
 
+	UE_LOG(LogMenuSystem, Display, TEXT("Host game, World Name is %s"), *WorldName);
 	IsMultiplayer ? MenuInterface->HostServer(ServerName, WorldName, IsFriendsOnly, MaxPlayerCount, GameMode) : MenuInterface->StartSingleplayer(WorldName, GameMode);
 }
 
