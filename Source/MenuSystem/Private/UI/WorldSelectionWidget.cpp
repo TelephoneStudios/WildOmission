@@ -6,7 +6,7 @@
 #include "Components/PanelWidget.h"
 #include "Components/Button.h"
 #include "Components/TextBlock.h"
-#include "WildOmissionSaveGame.h"
+#include "WorldInformation.h"
 #include "Kismet/GameplayStatics.h"
 
 UWorldSelectionWidget::UWorldSelectionWidget(const FObjectInitializer& ObjectInitializer) : UUserWidget(ObjectInitializer)
@@ -49,27 +49,27 @@ void UWorldSelectionWidget::SetWorldList(const TArray<FString>& WorldNames)
 
 	WorldListBox->ClearChildren();
 
-	TArray<UWildOmissionSaveGame*> SortedWorlds = GetWorldsSortedByLastPlayed(WorldNames);
+	TArray<UWorldInformation*> SortedWorlds = GetWorldsSortedByLastPlayed(WorldNames);
 
-	for (UWildOmissionSaveGame* SaveGame : SortedWorlds)
+	for (UWorldInformation* WorldInformation : SortedWorlds)
 	{
-		if (SaveGame == nullptr)
+		if (WorldInformation == nullptr)
 		{
 			continue;
 		}
 
 		UWorldRowWidget* Row = CreateWidget<UWorldRowWidget>(World, WorldRowWidgetClass);
-		if (Row == nullptr || SaveGame == nullptr)
+		if (Row == nullptr)
 		{
 			return;
 		}
 
 		const FWorldRowInformation Information(
-			SaveGame->DaysPlayed, 
-			SaveGame->CreationInformation.Month, 
-			SaveGame->CreationInformation.Day, 
-			SaveGame->CreationInformation.Year, 
-			SaveGame->CreationInformation.Name
+			WorldInformation->DaysPlayed,
+			WorldInformation->CreationInformation.Month,
+			WorldInformation->CreationInformation.Day,
+			WorldInformation->CreationInformation.Year,
+			WorldInformation->CreationInformation.Name
 		);
 		Row->Setup(Information);
 		Row->OnClicked.AddDynamic(this, &UWorldSelectionWidget::SetSelectedWorld);
@@ -105,36 +105,29 @@ void UWorldSelectionWidget::UpdateListChildren()
 	}
 }
 
-TArray<UWildOmissionSaveGame*> UWorldSelectionWidget::GetWorldsSortedByLastPlayed(const TArray<FString>& NamesList)
+TArray<UWorldInformation*> UWorldSelectionWidget::GetWorldsSortedByLastPlayed(const TArray<FString>& NamesList)
 {
-	TArray<UWildOmissionSaveGame*> SortedSaveGames;
+	TArray<UWorldInformation*> SortedWorlds;
 	for (const FString& WorldName : NamesList)
 	{
-		FString SaveDirectory = WorldName + TEXT("/WorldData");
-		UWildOmissionSaveGame* SaveGame = Cast<UWildOmissionSaveGame>(UGameplayStatics::LoadGameFromSlot(SaveDirectory, 0));
-		if (SaveGame == nullptr)
+		FString InformationDirectory = WorldName + TEXT("/WorldInformation");
+		UWorldInformation* WorldInformation = Cast<UWorldInformation>(UGameplayStatics::LoadGameFromSlot(InformationDirectory, 0));
+		if (WorldInformation == nullptr)
 		{
 			continue;
 		}
 
-		// If this save was created before pre alpha 0.7.3, populate its Name Value
-		if (SaveGame->CreationInformation.Name == TEXT(""))
-		{
-			SaveGame->CreationInformation.Name = WorldName;
-			UGameplayStatics::SaveGameToSlot(SaveGame, SaveDirectory, 0);
-		}
-
-		SortedSaveGames.Add(SaveGame);
+		SortedWorlds.Add(WorldInformation);
 	}
 
-	Algo::Sort(SortedSaveGames, IsSaveMoreRecentlyPlayed);
+	Algo::Sort(SortedWorlds, IsSaveMoreRecentlyPlayed);
 
-	return SortedSaveGames;
+	return SortedWorlds;
 }
 
-bool UWorldSelectionWidget::IsSaveMoreRecentlyPlayed(UWildOmissionSaveGame* SaveA, UWildOmissionSaveGame* SaveB)
+bool UWorldSelectionWidget::IsSaveMoreRecentlyPlayed(UWorldInformation* WorldA, UWorldInformation* WorldB)
 {
-	return SaveA->LastPlayedTime > SaveB->LastPlayedTime;
+	return WorldA->LastPlayedTime > WorldB->LastPlayedTime;
 }
 
 void UWorldSelectionWidget::BroadcastSelectButtonClicked()

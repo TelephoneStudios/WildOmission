@@ -12,7 +12,8 @@
 #include "UI/MainMenuWidget.h"
 #include "UI/GameplayMenuWidget.h"
 #include "UI/LoadingMenuWidget.h"
-#include "WildOmissionSaveGame.h"
+#include "WorldInformation.h"
+#include "WorldData.h"
 #include "WildOmissionGameUserSettings.h"
 #include "AchievementsManager.h"
 #include "ServerAdministrators.h"
@@ -354,20 +355,23 @@ void UWildOmissionGameInstance::SetLoadingSubtitle(const FString& InLoadingSubti
 
 void UWildOmissionGameInstance::CreateWorld(const FString& WorldName, const FString& SeedOverride)
 {
-	UWildOmissionSaveGame* NewSaveGame = Cast<UWildOmissionSaveGame>(UGameplayStatics::CreateSaveGameObject(UWildOmissionSaveGame::StaticClass()));
+	const FString NewWorldInformationDirectory = WorldName + TEXT("/WorldInformation");
+	const FString NewWorldDataDirectory = WorldName + TEXT("/WorldData");
+	UWorldInformation* NewWorldInformation = Cast<UWorldInformation>(UGameplayStatics::CreateSaveGameObject(UWorldInformation::StaticClass()));
+	UWorldData* NewWorldData = Cast<UWorldData>(UGameplayStatics::CreateSaveGameObject(UWorldData::StaticClass()));
 
 	FDateTime Time;
 	Time = FDateTime::Now();
 
-	NewSaveGame->LastPlayedTime = Time;
+	NewWorldInformation->LastPlayedTime = Time;
 
-	NewSaveGame->LevelFile = TEXT("LV_Procedural");
-	NewSaveGame->Version = UWildOmissionSaveGame::GetCurrentVersion();
+	NewWorldInformation->LevelFile = TEXT("LV_Procedural");
+	NewWorldInformation->Version = UWorldInformation::GetCurrentVersion();
 
-	NewSaveGame->CreationInformation.Name = WorldName;
-	NewSaveGame->CreationInformation.Day = Time.GetDay();
-	NewSaveGame->CreationInformation.Month = Time.GetMonth();
-	NewSaveGame->CreationInformation.Year = Time.GetYear();
+	NewWorldInformation->CreationInformation.Name = WorldName;
+	NewWorldInformation->CreationInformation.Day = Time.GetDay();
+	NewWorldInformation->CreationInformation.Month = Time.GetMonth();
+	NewWorldInformation->CreationInformation.Year = Time.GetYear();
 
 	const int32 MinSeed = 0;
 	const int32 MaxSeed = 999999999;
@@ -375,10 +379,10 @@ void UWildOmissionGameInstance::CreateWorld(const FString& WorldName, const FStr
 	const uint32 CustomSeed = SeedOverride.IsNumeric() ? FCString::Atoi(*SeedOverride) : GetTypeHash(SeedOverride);
 	const uint32 Seed = SeedOverride.IsEmpty() ? RandomSeed : CustomSeed;
 
-	NewSaveGame->Seed = Seed;
+	NewWorldInformation->Seed = Seed;
 
-	FString SlotName = WorldName + TEXT("/WorldData");
-	UGameplayStatics::SaveGameToSlot(NewSaveGame, SlotName, 0);
+	UGameplayStatics::SaveGameToSlot(NewWorldInformation, NewWorldInformationDirectory, 0);
+	UGameplayStatics::SaveGameToSlot(NewWorldData, NewWorldDataDirectory, 0);
 }
 
 bool UWildOmissionGameInstance::DoesWorldAlreadyExist(const FString& WorldName) const
@@ -400,13 +404,30 @@ bool UWildOmissionGameInstance::DoesWorldAlreadyExist(const FString& WorldName) 
 
 void UWildOmissionGameInstance::RenameWorld(const FString& OldWorldName, const FString& NewWorldName)
 {
-	UWildOmissionSaveGame* RenamingSave = Cast<UWildOmissionSaveGame>(UGameplayStatics::CreateSaveGameObject(UWildOmissionSaveGame::StaticClass()));
-	RenamingSave = Cast<UWildOmissionSaveGame>(UGameplayStatics::LoadGameFromSlot(OldWorldName, 0));
+	// Directory strings
+	const FString OldWorldInformationDirectory = OldWorldName + TEXT("/WorldInformation");
+	const FString OldWorldDataDirectory = OldWorldName + TEXT("/WorldData");
+	const FString NewWorldInformationDirectory = NewWorldName + TEXT("/WorldInformation");
+	const FString NewWorldDataDirectory = NewWorldName + TEXT("/WorldData");
 
-	RenamingSave->CreationInformation.Name = NewWorldName;
+	// Load the world with the old name
+	UWorldInformation* RenamingWorldInformation = Cast<UWorldInformation>(UGameplayStatics::CreateSaveGameObject(UWorldInformation::StaticClass()));
+	RenamingWorldInformation = Cast<UWorldInformation>(UGameplayStatics::LoadGameFromSlot(OldWorldInformationDirectory, 0));
+	UWorldData* RenamingWorldData = Cast<UWorldData>(UGameplayStatics::CreateSaveGameObject(UWorldData::StaticClass()));
+	RenamingWorldData = Cast<UWorldData>(UGameplayStatics::LoadGameFromSlot(OldWorldDataDirectory, 0));
 
-	UGameplayStatics::SaveGameToSlot(RenamingSave, NewWorldName, 0);
-	UGameplayStatics::DeleteGameInSlot(OldWorldName, 0);
+	// Change world name in WorldInformation
+	RenamingWorldInformation->CreationInformation.Name = NewWorldName;
+
+	// Save world under new name
+	UGameplayStatics::SaveGameToSlot(RenamingWorldInformation, NewWorldInformationDirectory, 0);
+	UGameplayStatics::SaveGameToSlot(RenamingWorldData, NewWorldDataDirectory, 0);
+	
+	// TODO move world icon too
+
+	// Delete the old save with the old name
+	UGameplayStatics::DeleteGameInSlot(OldWorldInformationDirectory, 0);
+	UGameplayStatics::DeleteGameInSlot(OldWorldDataDirectory, 0);
 }
 
 void UWildOmissionGameInstance::DeleteWorld(const FString& WorldName)
@@ -522,16 +543,16 @@ void UWildOmissionGameInstance::StartSingleplayer(const FString& WorldName, cons
 	WorldToLoad = WorldName;
 	GameModeIndex = GameMode;
 	UE_LOG(LogTemp, Warning, TEXT("StartSingleplayer WorldName: %s"), *WorldName);
-	FString WorldDirectory = WorldToLoad + TEXT("/WorldData");
+	FString WorldInformationDirectory = WorldToLoad + TEXT("/WorldInformation");
 
 	UWorld* World = GetWorld();
-	UWildOmissionSaveGame* SaveGame = Cast<UWildOmissionSaveGame>(UGameplayStatics::LoadGameFromSlot(WorldDirectory, 0));
-	if (World == nullptr || SaveGame == nullptr)
+	UWorldInformation* WorldInformation = Cast<UWorldInformation>(UGameplayStatics::LoadGameFromSlot(WorldInformationDirectory, 0));
+	if (World == nullptr || WorldInformation== nullptr)
 	{
 		return;
 	}
 
-	const FString LevelFileString = SaveGame->LevelFile;
+	const FString LevelFileString = WorldInformation->LevelFile;
 	const FString GameModeString = FString::Printf(TEXT("%i"), GameModeIndex);
 	const FString LoadString = FString::Printf(TEXT("/Game/WildOmissionCore/Levels/%s?worldname=%s?gamemode=%s"), *LevelFileString, *WorldName, *GameModeString);
 	// Server travel to the game level
@@ -669,17 +690,17 @@ void UWildOmissionGameInstance::OnCreateSessionComplete(FName SessionName, bool 
 	SetLoadingTitle(TEXT("Loading Game"));
 	SetLoadingSubtitle(TEXT("Loading level."));
 
-	FString WorldDirectory = WorldToLoad + TEXT("/WorldData");
+	FString WorldInformationDirectory = WorldToLoad + TEXT("/WorldInformation");
 
 	UWorld* World = GetWorld();
-	UWildOmissionSaveGame* SaveGame = Cast<UWildOmissionSaveGame>(UGameplayStatics::LoadGameFromSlot(WorldDirectory, 0));
-	if (World == nullptr || SaveGame == nullptr)
+	UWorldInformation* WorldInformation = Cast<UWorldInformation>(UGameplayStatics::LoadGameFromSlot(WorldInformationDirectory, 0));
+	if (World == nullptr || WorldInformation == nullptr)
 	{
 		return;
 	}
 
 	const FString FriendsOnlyString = FString::Printf(TEXT("%i"), FriendsOnlySession);
-	const FString LevelFileString = SaveGame->LevelFile;
+	const FString LevelFileString = WorldInformation->LevelFile;
 	const FString GameModeString = FString::Printf(TEXT("%i"), GameModeIndex);
 	const FString LoadString = FString::Printf(TEXT("/Game/WildOmissionCore/Levels/%s?listen?worldname=%s?friendsonly=%s?gamemode=%s"),
 		*LevelFileString, *WorldToLoad, *FriendsOnlyString, *GameModeString);

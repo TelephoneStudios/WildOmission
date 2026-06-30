@@ -54,8 +54,8 @@ private:
 	
 	void UpdateListChildren();
 
-	TArray<class UWildOmissionSaveGame*> GetWorldsSortedByLastPlayed(const TArray<FString>& NameList);
-	static bool IsSaveMoreRecentlyPlayed(class UWildOmissionSaveGame* SaveA, class UWildOmissionSaveGame* SaveB);
+	TArray<class UWorldInformation*> GetWorldsSortedByLastPlayed(const TArray<FString>& NameList);
+	static bool IsSaveMoreRecentlyPlayed(class UWorldInformation* WorldA, class UWorldInformation* WorldB);
 
 	UFUNCTION()
 	void SetSelectedWorld(const FString& WorldName);
