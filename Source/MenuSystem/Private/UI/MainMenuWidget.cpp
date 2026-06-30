@@ -2,6 +2,7 @@
 
 
 #include "UI/MainMenuWidget.h"
+#include "SaveUpdater.h"
 #include "Components/WidgetSwitcher.h"
 #include "Components/Button.h"
 #include "Components/TextBlock.h"
@@ -66,6 +67,8 @@ UMainMenuWidget::UMainMenuWidget(const FObjectInitializer& ObjectInitializer) : 
 
 	MainMenuPanel = nullptr;
 	MainMenu = nullptr;
+
+	UpdatingWorldsMenu = nullptr;
 
 	WorldSelectionMenuPanel = nullptr;
 	WorldSelectionMenu = nullptr;
@@ -149,6 +152,21 @@ void UMainMenuWidget::Setup(IMenuInterface* InMenuInterface)
 	}
 
 	MenuInterface = InMenuInterface;
+
+	MenuSwitcher->SetActiveWidget(UpdatingWorldsMenu);
+	Async(EAsyncExecution::Thread, [this]()
+		{
+			TArray<FString> OldWorldNames = MenuInterface->GetAllWorldNamesV1();
+			if (!OldWorldNames.IsEmpty())
+			{
+				USaveUpdater::UpdateWorldFiles(OldWorldNames);
+			}
+
+			AsyncTask(ENamedThreads::GameThread, [this]() 
+				{
+					OpenMainMenu();
+				});
+		});
 }
 
 void UMainMenuWidget::Teardown()
@@ -237,11 +255,12 @@ void UMainMenuWidget::RefreshServerList(bool IsDedicated)
 
 void UMainMenuWidget::OpenMainMenu()
 {
-	if (MenuSwitcher == nullptr || MainMenuPanel == nullptr)
+	if (MenuSwitcher == nullptr || MainMenuPanel == nullptr || UpdatingWorldsMenu == nullptr)
 	{
 		UE_LOG(LogMenuSystem, Warning, TEXT("Failed to switch to main menu"));
 		return;
 	}
+
 	UE_LOG(LogMenuSystem, Verbose, TEXT("Switching to main menu"));
 	MenuSwitcher->SetActiveWidget(MainMenuPanel);
 }

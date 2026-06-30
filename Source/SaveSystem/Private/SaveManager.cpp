@@ -263,6 +263,30 @@ void ASaveManager::CaptureWorldIcon()
 	CaptureComponent->DestroyComponent();
 }
 
+UTexture2D* ASaveManager::GetWorldIcon(const FString& WorldName)
+{
+	// Build file path
+	const FString FilePath = FPaths::ProjectSavedDir() + "/SaveGames/" + WorldName + "/Icon.png";
+	// Check if it actually exists
+	if (!FPaths::FileExists(FilePath))
+	{
+		UE_LOG(LogSaveSystem, Warning, TEXT("World icon not found at: %s"), *FilePath);
+		return nullptr;
+	}
+
+	// Load the raw compressed binary data from disk
+	TArray<uint8> RawFileData;
+	if (!FFileHelper::LoadFileToArray(RawFileData, *FilePath))
+	{
+		return nullptr;
+	}
+
+	// Convert png back into texture
+	UTexture2D* LoadedTexture = FImageUtils::ImportBufferAsTexture2D(RawFileData);
+
+	return LoadedTexture;
+}
+
 UWorldInformation* ASaveManager::GetWorldInformation() const
 {
 	return CurrentWorldInformation;

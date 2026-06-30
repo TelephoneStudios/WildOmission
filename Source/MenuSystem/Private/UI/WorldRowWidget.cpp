@@ -4,10 +4,13 @@
 #include "WorldRowWidget.h"
 #include "Components/Button.h"
 #include "Components/TextBlock.h"
+#include "Components/Image.h"
+#include "Engine/Texture2D.h"
 #include "Color/UIColors.h"
 
 UWorldRowWidget::UWorldRowWidget(const FObjectInitializer& ObjectInitializer) : UUserWidget(ObjectInitializer)
 {
+	Icon = nullptr;
 	RowButton = nullptr;
 	WorldNameTextBlock = nullptr;
 	DateCreatedTextBlock = nullptr;
@@ -29,6 +32,15 @@ void UWorldRowWidget::Setup(const FWorldRowInformation& InInformation)
 
 	const FString DaysPlayedString = FString::Printf(TEXT("%i Days"), InInformation.DaysPlayed);
 	const FString CreationString = FString::Printf(TEXT("Created: %i/%i/%i"), InInformation.CreationMonth, InInformation.CreationDay, InInformation.CreationYear);
+
+	if (InInformation.Icon)
+	{
+		Icon->SetBrushFromTexture(InInformation.Icon);
+	}
+	else
+	{
+		Icon->SetVisibility(ESlateVisibility::Collapsed);
+	}
 
 	WorldNameTextBlock->SetText(FText::FromString(InInformation.Name));
 	DateCreatedTextBlock->SetText(FText::FromString(CreationString));
@@ -79,8 +91,9 @@ FWorldRowInformation::FWorldRowInformation()
 	Name = TEXT("");
 }
 
-FWorldRowInformation::FWorldRowInformation(const uint32& InDaysPlayed, const uint8& InCreationMonth, const uint8& InCreationDay, const uint16& InCreationYear, const FString& InName)
+FWorldRowInformation::FWorldRowInformation(UTexture2D* InIcon, const uint32& InDaysPlayed, const uint8& InCreationMonth, const uint8& InCreationDay, const uint16& InCreationYear, const FString& InName)
 {
+	Icon = InIcon;
 	DaysPlayed = InDaysPlayed;
 	CreationMonth = InCreationMonth;
 	CreationDay = InCreationDay;

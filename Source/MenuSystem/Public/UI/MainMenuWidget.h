@@ -81,6 +81,8 @@ private:
 	UPROPERTY(Meta = (BindWidget))
 	class UWidget* MainMenu;
 	UPROPERTY(Meta = (BindWidget))
+	class UWidget* UpdatingWorldsMenu;
+	UPROPERTY(Meta = (BindWidget))
 	class UWidget* WorldSelectionMenuPanel;
 	UPROPERTY(Meta = (BindWidget))
 	class UWorldSelectionWidget* WorldSelectionMenu;

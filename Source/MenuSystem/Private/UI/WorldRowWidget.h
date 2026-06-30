@@ -14,6 +14,9 @@ struct FWorldRowInformation
 	GENERATED_BODY()
 
 	UPROPERTY()
+	UTexture2D* Icon;
+
+	UPROPERTY()
 	uint32 DaysPlayed;
 
 	UPROPERTY()
@@ -29,7 +32,7 @@ struct FWorldRowInformation
 	FString Name;
 
 	FWorldRowInformation();
-	FWorldRowInformation(const uint32& InDaysPlayed, const uint8& InCreationMonth, const uint8& InCreationDay, const uint16& InCreationYear, const FString& InName);
+	FWorldRowInformation(class UTexture2D* InIcon, const uint32& InDaysPlayed, const uint8& InCreationMonth, const uint8& InCreationDay, const uint16& InCreationYear, const FString& InName);
 };
 
 UCLASS()
@@ -53,6 +56,9 @@ protected:
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 	
 private:
+	UPROPERTY(Meta = (BindWidget))
+	class UImage* Icon;
+	
 	UPROPERTY(Meta = (BindWidget))
 	class UButton* RowButton;
 

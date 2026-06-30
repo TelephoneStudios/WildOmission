@@ -29,6 +29,7 @@ public:
 	void UpdateWorldData(class UWorldData* UpdatedWorldData);
 
 	void CaptureWorldIcon();
+	static UTexture2D* GetWorldIcon(const FString& WorldName);
 
 	class UPlayerSaveManagerComponent* GetPlayerManager() const;
 

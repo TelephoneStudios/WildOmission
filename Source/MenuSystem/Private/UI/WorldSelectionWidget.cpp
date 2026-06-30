@@ -6,6 +6,7 @@
 #include "Components/PanelWidget.h"
 #include "Components/Button.h"
 #include "Components/TextBlock.h"
+#include "SaveManager.h"
 #include "WorldInformation.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -64,7 +65,10 @@ void UWorldSelectionWidget::SetWorldList(const TArray<FString>& WorldNames)
 			return;
 		}
 
+		UTexture2D* Icon = ASaveManager::GetWorldIcon(WorldInformation->CreationInformation.Name);
+
 		const FWorldRowInformation Information(
+			Icon,
 			WorldInformation->DaysPlayed,
 			WorldInformation->CreationInformation.Month,
 			WorldInformation->CreationInformation.Day,
