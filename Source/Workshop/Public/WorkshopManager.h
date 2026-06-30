@@ -23,7 +23,7 @@ public:
 
 	static UWorkshopManager* GetWorkshopManager();
 
-	void UploadWorkshopItem();
+	void UploadWorld(const FString& WorldName, const FString& WorkshopItemName, const FString& WorkshopItemDescription);
 	
 	float GetItemUploadPercentage() const;
 
@@ -35,10 +35,14 @@ private:
 	// Handler for the asynchronous call result
 	void OnItemCreated(struct CreateItemResult_t* pCallback, bool bIOFailure);
 	void WorkshopSubmittedCallback(struct SubmitItemUpdateResult_t* pCallback, bool bIOFailure);
-	void UploadItemContent(PublishedFileId_t nFileID);
+	void UploadWorldContent(PublishedFileId_t nFileID);
 
 	// Steam call result wrapper
 	CCallResult<UWorkshopManager, CreateItemResult_t> m_SteamCallResultCreateItem;
 	CCallResult<UWorkshopManager, SubmitItemUpdateResult_t> m_SteamCallSubmitItem;
+
+	FString PendingUploadWorldName;
+	FString PendingUploadWorkshopItemName;
+	FString PendingUploadWorkshopItemDescription;
 
 };

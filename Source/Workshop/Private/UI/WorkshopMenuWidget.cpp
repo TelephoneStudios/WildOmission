@@ -24,7 +24,11 @@ void UWorkshopMenuWidget::NativeConstruct()
 	UploadButton->OnClicked.AddDynamic(this, &UWorkshopMenuWidget::OpenWorldSelectionForUploading);
 	BackButton->OnClicked.AddDynamic(this, &UWorkshopMenuWidget::BackButtonClicked);
 
+	WorldSelectionMenu->OnSelectButtonClicked.AddDynamic(this, &UWorkshopMenuWidget::OpenUploadWorldMenu);
 	WorldSelectionMenu->OnCancelButtonClicked.AddDynamic(this, &UWorkshopMenuWidget::OpenWorkshopMenu);
+
+	UploadWorldMenu->OnCancelButtonClicked.AddDynamic(this, &UWorkshopMenuWidget::OpenWorldSelectionForUploading);
+	UploadWorldMenu->OnUploadButtonClicked.AddDynamic(this, &UWorkshopMenuWidget::UploadWorld);
 
 	UWorkshopManager* WorkshopManager = UWorkshopManager::GetWorkshopManager();
 	if (WorkshopManager)
@@ -49,19 +53,19 @@ void UWorkshopMenuWidget::NativeTick(const FGeometry& MyGeomotry, float InDeltaT
 void UWorkshopMenuWidget::OnUploadButtonClicked()
 {
 
-	UWorkshopManager* WorkshopManager = UWorkshopManager::GetWorkshopManager();
-	if (WorkshopManager == nullptr)
-	{
-		UE_LOG(LogWorkshop, Warning, TEXT("Failed to start upload, WorkshopManager returned nullptr"));
-		return;
-	}
-	
-	WorkshopManager->UploadWorkshopItem();
+	//UWorkshopManager* WorkshopManager = UWorkshopManager::GetWorkshopManager();
+	//if (WorkshopManager == nullptr)
+	//{
+	//	UE_LOG(LogWorkshop, Warning, TEXT("Failed to start upload, WorkshopManager returned nullptr"));
+	//	return;
+	//}
+	//
+	//WorkshopManager->UploadWorkshopItem();
 
-	FTimerDelegate CheckUploadStatusTimerDelegate;
-	//CheckUploadStatusTimerDelegate.BindUObject(this, &UWorkshopMenuWidget::CheckUploadStatus);
-	//GetWorld()->GetTimerManager().SetTimer(CheckUploadStatusTimerHandle, CheckUploadStatusTimerDelegate, 1.0f, true);
-	MenuSwitcher->SetActiveWidget(UploadingMenu);
+	//FTimerDelegate CheckUploadStatusTimerDelegate;
+	////CheckUploadStatusTimerDelegate.BindUObject(this, &UWorkshopMenuWidget::CheckUploadStatus);
+	////GetWorld()->GetTimerManager().SetTimer(CheckUploadStatusTimerHandle, CheckUploadStatusTimerDelegate, 1.0f, true);
+	//MenuSwitcher->SetActiveWidget(UploadingMenu);
 
 }
 
@@ -89,11 +93,22 @@ void UWorkshopMenuWidget::OpenWorldSelectionForUploading()
 	MenuSwitcher->SetActiveWidget(WorldSelectionMenu);
 
 	TArray<FString> WorldFolderNames = ASaveManager::GetAllWorldFolderNames();
-	//WorldSelectionMenu->SetWorldList(WorldFolderNames);
+	WorldSelectionMenu->SetWorldList(WorldFolderNames);
 }
 
 void UWorkshopMenuWidget::OpenUploadWorldMenu()
 {
 	MenuSwitcher->SetActiveWidget(UploadWorldMenu);
 	UploadWorldMenu->SetWorld(WorldSelectionMenu->SelectedWorldName.GetValue());
+}
+
+void UWorkshopMenuWidget::UploadWorld(const FString& WorldName, const FString& WorkshopItemName, const FString& WorkshopItemDescription)
+{
+	UWorkshopManager* WorkshopManager = UWorkshopManager::GetWorkshopManager();
+	if(WorkshopManager == nullptr)
+	{
+		return;
+	}
+	UE_LOG(LogTemp, Display, TEXT("UWorkshopMenuWidget, uploading world: %s"), *WorldName);
+	WorkshopManager->UploadWorld(WorldName, WorkshopItemName, WorkshopItemDescription);
 }

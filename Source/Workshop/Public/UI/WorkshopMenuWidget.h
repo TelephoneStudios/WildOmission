@@ -70,4 +70,7 @@ private:
 
 	UFUNCTION()
 	void OpenUploadWorldMenu();
+
+	UFUNCTION()
+	void UploadWorld(const FString& WorldName, const FString& WorkshopItemName, const FString& WorkshopItemDescription);
 };

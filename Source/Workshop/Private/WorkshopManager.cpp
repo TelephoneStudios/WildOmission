@@ -16,13 +16,17 @@ UWorkshopManager* UWorkshopManager::GetWorkshopManager()
 	return Instance;
 }
 
-void UWorkshopManager::UploadWorkshopItem()
+void UWorkshopManager::UploadWorld(const FString& WorldName, const FString& WorkshopItemName, const FString& WorkshopItemDescription)
 {
 	if (SteamUGC() == nullptr)
 	{
 		UE_LOG(LogWorkshop, Warning, TEXT("Failed to upload workshop content, SteamUGC() returned nullptr"));
 		return;
 	}
+
+	PendingUploadWorldName = WorldName;
+	PendingUploadWorkshopItemName = WorkshopItemName;
+	PendingUploadWorkshopItemDescription = WorkshopItemDescription;
 
 	SteamAPICall_t SteamAPICall = SteamUGC()->CreateItem(SteamUtils()->GetAppID(), EWorkshopFileType::k_EWorkshopFileTypeCommunity);
 	m_SteamCallResultCreateItem.Set(SteamAPICall, this, &UWorkshopManager::OnItemCreated);
@@ -81,26 +85,13 @@ void UWorkshopManager::OnItemCreated(CreateItemResult_t* pCallback, bool bIOFail
 			SteamFriends()->ActivateGameOverlayToWebPage("steam://url/CommunityFilePage/");
 		}
 
-		UploadItemContent(newFileID);
-		/*UploadHandle = SteamUGC()->StartItemUpdate(SteamUtils()->GetAppID(), newFileID);*/
-		/*const char* ItemTitle = "TestUpload";
-		const char* ItemDescription = "Test item description.";
-		const char* ItemFilePath = "Saved/SaveGames/New_World.sav";*/
-
-		//SteamUGC()->SetItemTitle(UploadHandle, "Test Upload");
-		//SteamUGC()->SetItemDescription(UploadHandle, "Test Item Description");
-		//SteamUGC()->SetItemVisibility(UploadHandle, ERemoteStoragePublishedFileVisibility::k_ERemoteStoragePublishedFileVisibilityPublic);
-
-		//SteamUGC()->SetItemContent(UploadHandle, "C:/Users/Larch/Documents/GitHub/WildOmission/Saved/SaveGames/");
-		//SteamUGC()->SetItemPreview(UploadHandle, "C:/Users/Larch/Documents/GitHub/WildOmission/Saved/AutoScreenshot.png");
-
-		//SteamAPICall_t SubmitAPICall = SteamUGC()->SubmitItemUpdate(UploadHandle, "Initial Upload");
-		//m_SteamCallSubmitItem.Set(SubmitAPICall, this, &UWorkshopManager::WorkshopSubmittedCallback);
-		//
+		UploadWorldContent(newFileID);
+	
 		UE_LOG(LogWorkshop, Display, TEXT("Finished updating item, submiting."));
 	}
 	else {
 		// Handle error codes (e.g., k_EResultTimeout, k_EResultInsufficientPrivilege)
+		UE_LOG(LogWorkshop, Warning, TEXT("Workshop item creation unspecified error"));
 	}
 
 }
@@ -121,19 +112,27 @@ void UWorkshopManager::WorkshopSubmittedCallback(SubmitItemUpdateResult_t* pCall
 	//}
 }
 
-void UWorkshopManager::UploadItemContent(PublishedFileId_t nFileID)
+void UWorkshopManager::UploadWorldContent(PublishedFileId_t nFileID)
 {
 	UGCUpdateHandle_t hUpdate = SteamUGC()->StartItemUpdate(SteamUtils()->GetAppID(), nFileID);
 
 	// Populate item metadata
-	SteamUGC()->SetItemTitle(hUpdate, "Test Workshop Item");
-	SteamUGC()->SetItemDescription(hUpdate, "This is my awesome test description.");
+	SteamUGC()->SetItemTitle(hUpdate, TCHAR_TO_ANSI(*PendingUploadWorkshopItemName));
+	SteamUGC()->SetItemDescription(hUpdate, TCHAR_TO_ANSI(*PendingUploadWorkshopItemDescription));
 	SteamUGC()->SetItemVisibility(hUpdate, ERemoteStoragePublishedFileVisibility::k_ERemoteStoragePublishedFileVisibilityPublic);
+	
+	// Content paths
+	FString ContentPath = FPaths::ConvertRelativePathToFull(FPaths::ProjectSavedDir()) + TEXT("/SaveGames/") + PendingUploadWorldName;
+	const FString IconPath = ContentPath + TEXT("/Icon.png");
 
+	UE_LOG(LogWorkshop, Display, TEXT("Uploading world with content path: %s"), *ContentPath);
+	UE_LOG(LogWorkshop, Display, TEXT("Uploading world with icon path: %s"), *IconPath);
+	UE_LOG(LogWorkshop, Display, TEXT("Uploading world conent"));
+	
 	// Content
-	SteamUGC()->SetItemContent(hUpdate, "C:\\Users\\Larch\\Documents\\Github\\WildOmission\\Saved\\SaveGames");
-	SteamUGC()->SetItemPreview(hUpdate, "C:\\Users\\Larch\\Documents\\Github\\WildOmission\\Saved\\AutoScreenshot.png");
+	SteamUGC()->SetItemContent(hUpdate, TCHAR_TO_ANSI(*ContentPath));
+	SteamUGC()->SetItemPreview(hUpdate, TCHAR_TO_ANSI(*IconPath));
 
-	SteamAPICall_t hSteamAPICall = SteamUGC()->SubmitItemUpdate(hUpdate, "initial upload");
+	SteamAPICall_t hSteamAPICall = SteamUGC()->SubmitItemUpdate(hUpdate, "Initial upload from client.");
 	m_SteamCallSubmitItem.Set(hSteamAPICall, this, &UWorkshopManager::WorkshopSubmittedCallback);
 }
