@@ -19,6 +19,9 @@ public:
 	
 	virtual void NativeConstruct() override;
 	
+	void OnOpen();
+	void Refresh();
+
 	void SetWorld(const FString& InWorldName);
 
 	FOnWorkshopUploadMenuUploadButtonClickedSignature OnUploadButtonClicked;
@@ -28,7 +31,7 @@ protected:
 	virtual void NativeTick(const FGeometry& MyGeomotry, float InDeltaTime) override;
 
 private:
-	
+
 	UPROPERTY(Meta = (BindWidget))
 	class UTextBlock* WorldNameTextBlock;
 

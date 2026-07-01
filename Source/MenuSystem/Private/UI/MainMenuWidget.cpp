@@ -374,6 +374,7 @@ void UMainMenuWidget::OpenWorkshopMenu()
 		return;
 	}
 
+	WorkshopMenu->OnOpen();
 	MenuSwitcher->SetActiveWidget(WorkshopMenu);
 }
 

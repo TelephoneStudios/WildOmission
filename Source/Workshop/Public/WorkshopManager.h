@@ -10,9 +10,23 @@
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnWorkshopItemSubmittedSignature);
 
-/**
- * 
- */
+USTRUCT(BlueprintType)
+struct FSteamWorkshopItemDetails
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadOnly, Category = "Steam Workshop")
+	FString Title;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Steam Workshop")
+	FString FileID;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Steam Workshop")
+	int32 Likes = 0;
+};
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnWorkshopQueryCompletedSignature, bool, bSuccess, const TArray<FSteamWorkshopItemDetails>&, Items);
+
 UCLASS()
 class WORKSHOP_API UWorkshopManager : public UObject
 {
@@ -23,15 +37,18 @@ public:
 
 	static UWorkshopManager* GetWorkshopManager();
 
+	void QueryPopularWorlds();
 	void UploadWorld(const FString& WorldName, const FString& WorkshopItemName, const FString& WorkshopItemDescription);
 	
 	bool IsUploadInProgress() const;
 	EItemUpdateStatus GetItemUploadStatus(float& OutPercent);
-
+	FOnWorkshopQueryCompletedSignature OnWorkshopQueryCompleted;
 	FOnWorkshopItemSubmittedSignature OnWorkshopItemSubmitted;
 
 private:
-	// Handler for the asynchronous call result
+	// Querying
+	void OnWorkshopQueryCompletedCallback(SteamUGCQueryCompleted_t* pCallback, bool bIOFailure);
+	// Uploading
 	void OnItemCreated(struct CreateItemResult_t* pCallback, bool bIOFailure);
 	void WorkshopSubmittedCallback(struct SubmitItemUpdateResult_t* pCallback, bool bIOFailure);
 	void UploadWorldContent(PublishedFileId_t nFileID);
@@ -39,7 +56,8 @@ private:
 	bool UploadInProgress;
 	UGCUpdateHandle_t hUpdate;
 
-	// Steam call result wrapper
+	// Steam call result wrappers
+	CCallResult<UWorkshopManager, SteamUGCQueryCompleted_t> m_SteamCallResultQueryWorkshop;
 	CCallResult<UWorkshopManager, CreateItemResult_t> m_SteamCallResultCreateItem;
 	CCallResult<UWorkshopManager, SubmitItemUpdateResult_t> m_SteamCallSubmitItem;
 

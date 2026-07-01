@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "WorkshopManager.h"
 #include "WorkshopMenuWidget.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnWorkshopMenuBackButtonClickedSignature);
@@ -16,6 +17,9 @@ class WORKSHOP_API UWorkshopMenuWidget : public UUserWidget
 public:
 	UWorkshopMenuWidget(const FObjectInitializer& ObjectInitializer);
 	
+	void OnOpen();
+	void Refresh();
+
 	virtual void NativeConstruct() override;
 	
 	FOnWorkshopMenuBackButtonClickedSignature OnBackButtonClicked;
@@ -26,6 +30,9 @@ protected:
 private:
 	UPROPERTY(Meta = (BindWidget))
 	class UWidgetSwitcher* MenuSwitcher;
+
+	UPROPERTY(Meta = (BindWidget))
+	class UWrapBox* WorkshopItemsWrapBox;
 
 	UPROPERTY(Meta = (BindWidget))
 	class UButton* UploadButton;
@@ -51,6 +58,9 @@ private:
 	UPROPERTY(Meta = (BindWidget))
 	class UWorkshopUploadMenuWidget* UploadWorldMenu;
 
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class UWorkshopItemWidget> WorkshopItemClass;
+
 	UPROPERTY()
 	uint64 ItemUploadHandle;
 
@@ -58,6 +68,9 @@ private:
 
 	UFUNCTION()
 	void BackButtonClicked();
+
+	UFUNCTION()
+	void OnQueryCompleted(bool bSuccess, const TArray<FSteamWorkshopItemDetails>& Items);
 
 	UFUNCTION()
 	void OnUploadSubmitted();

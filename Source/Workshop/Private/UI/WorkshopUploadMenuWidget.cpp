@@ -18,11 +18,19 @@
 UWorkshopUploadMenuWidget::UWorkshopUploadMenuWidget(const FObjectInitializer& ObjectInitializer) : UUserWidget(ObjectInitializer)
 {
 	SetIsFocusable(true);
+
+	WorldNameTextBlock = nullptr;
+	WorldIcon = nullptr;
+	NameInputBox = nullptr;
+	DescriptionInputBox = nullptr;
+	UploadButton = nullptr;
+	CancelButton = nullptr;
 }
 
 void UWorkshopUploadMenuWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
+
 	UploadButton->OnClicked.AddDynamic(this, &UWorkshopUploadMenuWidget::UploadButtonClicked);
 	CancelButton->OnClicked.AddDynamic(this, &UWorkshopUploadMenuWidget::CancelButtonClicked);
 }

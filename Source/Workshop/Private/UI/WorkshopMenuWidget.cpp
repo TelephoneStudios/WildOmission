@@ -4,18 +4,45 @@
 #include "UI/WorkshopMenuWidget.h"
 #include "Components/Button.h"
 #include "Components/TextBlock.h"
+#include "Components/WrapBox.h"
 #include "Components/WidgetSwitcher.h"
 #include "Components/ProgressBar.h"
+#include "UI/WorkshopItemWidget.h"
 #include "UI/WorldSelectionWidget.h"
 #include "UI/WorkshopUploadMenuWidget.h"
 #include "Kismet/KismetSystemLibrary.h"
-#include "WorkshopManager.h"
 #include "SaveManager.h"
 #include "Log.h"
 
 UWorkshopMenuWidget::UWorkshopMenuWidget(const FObjectInitializer& ObjectInitializer) : UUserWidget(ObjectInitializer)
 {
 	SetIsFocusable(true);
+
+	// TODO initialize pointers
+	
+	static ConstructorHelpers::FClassFinder<UWorkshopItemWidget> WorkshopItemWidgetBlueprint(TEXT("/Game/Workshop/UI/WBP_WorkshopItem"));
+	if (WorkshopItemWidgetBlueprint.Succeeded())
+	{
+		WorkshopItemClass = WorkshopItemWidgetBlueprint.Class;
+	}
+}
+
+void UWorkshopMenuWidget::OnOpen()
+{
+	Refresh();
+}
+
+void UWorkshopMenuWidget::Refresh()
+{
+	UWorkshopManager* WorkshopManager = UWorkshopManager::GetWorkshopManager();
+	if (WorkshopManager == nullptr)
+	{
+		UE_LOG(LogWorkshop, Warning, TEXT("Failed to refresh workshop menu, couldn't get workshop manager"));
+		return;
+	}
+	
+	WorkshopItemsWrapBox->ClearChildren();
+	WorkshopManager->QueryPopularWorlds();
 }
 
 void UWorkshopMenuWidget::NativeConstruct()
@@ -34,6 +61,7 @@ void UWorkshopMenuWidget::NativeConstruct()
 	UWorkshopManager* WorkshopManager = UWorkshopManager::GetWorkshopManager();
 	if (WorkshopManager)
 	{
+		WorkshopManager->OnWorkshopQueryCompleted.AddDynamic(this, &UWorkshopMenuWidget::OnQueryCompleted);
 		WorkshopManager->OnWorkshopItemSubmitted.AddDynamic(this, &UWorkshopMenuWidget::OnUploadSubmitted);
 	}
 }
@@ -87,6 +115,25 @@ void UWorkshopMenuWidget::BackButtonClicked()
 	if (OnBackButtonClicked.IsBound())
 	{
 		OnBackButtonClicked.Broadcast();
+	}
+}
+
+void UWorkshopMenuWidget::OnQueryCompleted(bool bSuccess, const TArray<FSteamWorkshopItemDetails>& Items)
+{
+	for (const FSteamWorkshopItemDetails& ItemDetails : Items)
+	{
+		// Create item widget
+		UWorkshopItemWidget* NewWorkshopItemWidget = CreateWidget<UWorkshopItemWidget>(this, WorkshopItemClass);
+		if (NewWorkshopItemWidget == nullptr)
+		{
+			continue;
+		}
+		// Populate new widget with details
+		NewWorkshopItemWidget->Setup(ItemDetails);
+		// Add to wrap box
+		WorkshopItemsWrapBox->AddChild(NewWorkshopItemWidget);
+		// Give it padding
+		NewWorkshopItemWidget->SetPadding(FMargin(5.0f));
 	}
 }
 
