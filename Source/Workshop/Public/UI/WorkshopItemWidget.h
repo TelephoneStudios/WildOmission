@@ -7,6 +7,8 @@
 #include "WorkshopManager.h"
 #include "WorkshopItemWidget.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWorkshopItemButtonClickedSignature, const FString&, FileID);
+
 UCLASS()
 class WORKSHOP_API UWorkshopItemWidget : public UUserWidget
 {
@@ -19,6 +21,8 @@ public:
 
 	void Setup(const FSteamWorkshopItemDetails& Details);
 
+	FOnWorkshopItemButtonClickedSignature OnClicked;
+
 protected:
 	virtual void NativeTick(const FGeometry& MyGeomotry, float InDeltaTime) override;
 
@@ -29,5 +33,10 @@ private:
 	class UTextBlock* NameTextBlock;
 	UPROPERTY(Meta = (BindWidget))
 	class UImage* PreviewImage;
+
+	FString FileID;
+
+	UFUNCTION()
+	void OnButtonClicked();
 
 };

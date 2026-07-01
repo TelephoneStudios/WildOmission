@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
+#include "Interfaces/IHttpRequest.h"
+#include "Interfaces/IHttpResponse.h"
 #pragma warning(disable: 4996)
 #include "ThirdParty/Steamworks/sdk/public/steam/steam_api.h"
 #include "WorkshopManager.generated.h"
@@ -19,13 +21,24 @@ struct FSteamWorkshopItemDetails
 	FString Title;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Steam Workshop")
+	FString Description;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Steam Workshop")
 	FString FileID;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Steam Workshop")
 	int32 Likes = 0;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Steam Workshop")
+	FString PreviewURL;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Steam Workshop")
+	UTexture2D* PreviewTexture = nullptr;
+
 };
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnWorkshopQueryCompletedSignature, bool, bSuccess, const TArray<FSteamWorkshopItemDetails>&, Items);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnWorkshopItemReadySignature, const FString&, FileId, const FString&, AbsoluteDiskPath);
 
 UCLASS()
 class WORKSHOP_API UWorkshopManager : public UObject
@@ -38,12 +51,14 @@ public:
 	static UWorkshopManager* GetWorkshopManager();
 
 	void QueryPopularWorlds();
+	void SubscribeAndDownloadWorld(const FString& PublishedFileIdStr);
 	void UploadWorld(const FString& WorldName, const FString& WorkshopItemName, const FString& WorkshopItemDescription);
 	
 	bool IsUploadInProgress() const;
 	EItemUpdateStatus GetItemUploadStatus(float& OutPercent);
 	FOnWorkshopQueryCompletedSignature OnWorkshopQueryCompleted;
 	FOnWorkshopItemSubmittedSignature OnWorkshopItemSubmitted;
+	FOnWorkshopItemReadySignature OnWorkshopItemReady;
 
 private:
 	// Querying
@@ -52,14 +67,28 @@ private:
 	void OnItemCreated(struct CreateItemResult_t* pCallback, bool bIOFailure);
 	void WorkshopSubmittedCallback(struct SubmitItemUpdateResult_t* pCallback, bool bIOFailure);
 	void UploadWorldContent(PublishedFileId_t nFileID);
+	// Downloading
+	void OnSubscribeCompleted(RemoteStorageSubscribePublishedFileResult_t* pCallback, bool bIOFailure);
+	void OnDownloadResult(DownloadItemResult_t* pCallback, bool bIOFailure);
+	void OnItemInstalled(ItemInstalled_t* pCallback, bool bIOFailure);
+	
+	// Preview Image
+	void DownloadPreviewTexture(const FString& URL, const int32& ItemIndex);
+	void OnPreviewDownloaded(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
 
 	bool UploadInProgress;
 	UGCUpdateHandle_t hUpdate;
+
+	UPROPERTY()
+	TArray<FSteamWorkshopItemDetails> CachedWorkshopItems;
 
 	// Steam call result wrappers
 	CCallResult<UWorkshopManager, SteamUGCQueryCompleted_t> m_SteamCallResultQueryWorkshop;
 	CCallResult<UWorkshopManager, CreateItemResult_t> m_SteamCallResultCreateItem;
 	CCallResult<UWorkshopManager, SubmitItemUpdateResult_t> m_SteamCallSubmitItem;
+	CCallResult<UWorkshopManager, RemoteStorageSubscribePublishedFileResult_t> m_CallResultSubscribe;
+	CCallResult<UWorkshopManager, ItemInstalled_t> m_CallbackItemInstalled;
+	CCallResult<UWorkshopManager, DownloadItemResult_t> m_CallbackDownloadResult;
 
 	FString PendingUploadWorldName;
 	FString PendingUploadWorkshopItemName;

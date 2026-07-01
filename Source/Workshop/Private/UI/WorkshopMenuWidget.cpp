@@ -110,6 +110,13 @@ void UWorkshopMenuWidget::NativeTick(const FGeometry& MyGeomotry, float InDeltaT
 	}
 }
 
+void UWorkshopMenuWidget::SelectWorkshopItem(const FString& FileID)
+{
+	SelectedFileID = FileID;
+	// TODO populate 
+	// Uncollapse the side panel
+}
+
 void UWorkshopMenuWidget::BackButtonClicked()
 {
 	if (OnBackButtonClicked.IsBound())

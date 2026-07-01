@@ -66,6 +66,11 @@ private:
 
 	FTimerHandle CheckUploadStatusTimerHandle;
 
+	TOptional<FString> SelectedFileID;
+
+	UFUNCTION()
+	void SelectWorkshopItem(const FString& FileID);
+
 	UFUNCTION()
 	void BackButtonClicked();
 

@@ -2,6 +2,11 @@
 
 
 #include "WorkshopManager.h"
+#include "Containers/UnrealString.h"
+#include "HttpModule.h"
+#include "IImageWrapper.h"
+#include "IImageWrapperModule.h"
+#include "Engine/Texture2D.h"
 #include "Log.h"
 
 static UWorkshopManager* WorkshopManagerInstance = nullptr;
@@ -44,6 +49,21 @@ void UWorkshopManager::QueryPopularWorlds()
 	m_SteamCallResultQueryWorkshop.Set(apiCall, this, &UWorkshopManager::OnWorkshopQueryCompletedCallback);
 
 	UE_LOG(LogWorkshop, Display, TEXT("Workshop query sent to steam..."));
+}
+
+void UWorkshopManager::SubscribeAndDownloadWorld(const FString& PublishedFileIdStr)
+{
+	if (!SteamUGC()) return;
+
+	// Convert string back to Steam's uint64 file ID layout
+	//uint64 RawId = FString::ToHexBlob(*PublishedFileIdStr); // Or FCString::Atoll if using numeric mapping
+	PublishedFileId_t FileId = FCString::Atoi64(*PublishedFileIdStr);
+
+	// Step 1: Tell Steam to subscribe to the item
+	SteamAPICall_t apiCall = SteamUGC()->SubscribeItem(FileId);
+	m_CallResultSubscribe.Set(apiCall, this, &UWorkshopManager::OnSubscribeCompleted);
+	m_CallbackItemInstalled.Set(apiCall, this, &UWorkshopManager::OnItemInstalled);
+	m_CallbackDownloadResult.Set(apiCall, this, &UWorkshopManager::OnDownloadResult);
 }
 
 void UWorkshopManager::UploadWorld(const FString& WorldName, const FString& WorkshopItemName, const FString& WorkshopItemDescription)
@@ -118,9 +138,16 @@ void UWorkshopManager::OnWorkshopQueryCompletedCallback(SteamUGCQueryCompleted_t
 		{
 			FSteamWorkshopItemDetails WorkshopItem;
 			WorkshopItem.Title = FString(UTF8_TO_TCHAR(details.m_rgchTitle));
+			WorkshopItem.Description = FString(UTF8_TO_TCHAR(details.m_rgchDescription));
 			WorkshopItem.FileID = FString::Printf(TEXT("%llu"), details.m_nPublishedFileId);
 			WorkshopItem.Likes = static_cast<int32>(details.m_unVotesUp);
-
+			
+			char URLBuffer[1024];
+			if (SteamUGC()->GetQueryUGCPreviewURL(pCallback->m_handle, i, URLBuffer, sizeof(URLBuffer)))
+			{
+				WorkshopItem.PreviewURL = FString(UTF8_TO_TCHAR(URLBuffer));
+			}
+			
 			ParsedItems.Add(WorkshopItem);
 
 			UE_LOG(LogWorkshop, Display, TEXT("--- Item %i ---"), i + 1);
@@ -133,6 +160,17 @@ void UWorkshopManager::OnWorkshopQueryCompletedCallback(SteamUGCQueryCompleted_t
 	SteamUGC()->ReleaseQueryUGCRequest(pCallback->m_handle);
 	AsyncTask(ENamedThreads::GameThread, [this, MovedItems = MoveTemp(ParsedItems)]()
 		{
+			this->CachedWorkshopItems = MovedItems;
+
+			for (int32 Index = 0; Index < this->CachedWorkshopItems.Num(); ++Index)
+			{
+				// TODO Move to workshop item UI
+				if (!this->CachedWorkshopItems[Index].PreviewURL.IsEmpty())
+				{
+					DownloadPreviewTexture(this->CachedWorkshopItems[Index].PreviewURL, Index);
+				}
+			}
+
 			if (OnWorkshopQueryCompleted.IsBound())
 			{
 				OnWorkshopQueryCompleted.Broadcast(true, MovedItems);
@@ -205,4 +243,157 @@ void UWorkshopManager::UploadWorldContent(PublishedFileId_t nFileID)
 
 	SteamAPICall_t hSteamAPICall = SteamUGC()->SubmitItemUpdate(hUpdate, "Initial upload from client.");
 	m_SteamCallSubmitItem.Set(hSteamAPICall, this, &UWorkshopManager::WorkshopSubmittedCallback);
+}
+
+void UWorkshopManager::OnSubscribeCompleted(RemoteStorageSubscribePublishedFileResult_t* pCallback, bool bIOFailure)
+{
+	if (bIOFailure || !pCallback || pCallback->m_eResult != k_EResultOK)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Steam Workshop subscription failed."));
+		return;
+	}
+
+	// Step 3: Explicitly force Steam to begin downloading the contents immediately
+	// Second parameter 'true' forces high priority, bumping it to the top of Steam's download queue
+	bool bDownloadStarted = SteamUGC()->DownloadItem(pCallback->m_nPublishedFileId, true);
+	if (bDownloadStarted)
+	{
+		UE_LOG(LogTemp, Log, TEXT("Steam Workshop download initiated successfully."));
+	}
+}
+
+void UWorkshopManager::OnDownloadResult(DownloadItemResult_t* pCallback, bool bIOFailure)
+{
+	if (!pCallback || pCallback->m_eResult != k_EResultOK) return;
+
+	// Steam successfully finished the network download phase for an item.
+	// It will automatically unpack it now; track completion via OnItemInstalled.}
+}
+
+void UWorkshopManager::OnItemInstalled(ItemInstalled_t* pCallback, bool bIOFailure)
+{
+	if (!pCallback) return;
+
+	uint64 SizeOnDisk = 0;
+	char FolderPath[4096]; // Buffer to hold system path string
+
+	// Query Steam for where it placed the unpacked mod files
+	bool bFoundPath = SteamUGC()->GetItemInstallInfo(
+		pCallback->m_nPublishedFileId,
+		&SizeOnDisk,
+		FolderPath,
+		UE_ARRAY_COUNT(FolderPath),
+		nullptr
+	);
+
+	if (bFoundPath)
+	{
+		FString ClearFileId = FString::Printf(TEXT("%llu"), pCallback->m_nPublishedFileId);
+		FString AbsolutePath = FString(UTF8_TO_TCHAR(FolderPath));
+
+		// Bounce back to Unreal's Main GameThread before executing delegates
+		AsyncTask(ENamedThreads::GameThread, [this, ClearFileId, AbsolutePath]()
+			{
+				// Mod files are ready for Unreal to mount, load Pax files, or read configs!
+				OnWorkshopItemReady.Broadcast(ClearFileId, AbsolutePath);
+			});
+	}
+}
+
+void UWorkshopManager::DownloadPreviewTexture(const FString& URL, const int32& ItemIndex)
+{
+	TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request = FHttpModule::Get().CreateRequest();
+	Request->SetURL(URL);
+	Request->SetVerb(TEXT("GET"));
+
+	// Use a lambda binder instead of BindUObject to cleanly pass the integer index through the HTTP event
+	Request->OnProcessRequestComplete().BindLambda([this, ItemIndex](FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
+		{
+			if (!bWasSuccessful || !Response.IsValid() || Response->GetContentLength() <= 0) return;
+
+			// 1. Get the raw binary payload array
+			const TArray<uint8>& RawImageData = Response->GetContent();
+
+			// 2. Detect image format automatically (PNG, JPEG, etc.) via ImageWrapper
+			IImageWrapperModule& ImageWrapperModule = FModuleManager::LoadModuleChecked<IImageWrapperModule>(FName("ImageWrapper"));
+			EImageFormat ImageFormat = ImageWrapperModule.DetectImageFormat(RawImageData.GetData(), RawImageData.Num());
+
+			if (ImageFormat == EImageFormat::Invalid) return;
+
+			TSharedPtr<IImageWrapper> ImageWrapper = ImageWrapperModule.CreateImageWrapper(ImageFormat);
+			if (!ImageWrapper.IsValid() || !ImageWrapper->SetCompressed(RawImageData.GetData(), RawImageData.Num())) return;
+
+			// 3. Decompress the image into uncompressed raw RGBA byte data
+			TArray<uint8> UncompressedBGRA;
+			if (!ImageWrapper->GetRaw(ERGBFormat::BGRA, 8, UncompressedBGRA)) return;
+
+			// 4. Construct a new Transient Texture on the GameThread safely
+			int32 Width = ImageWrapper->GetWidth();
+			int32 Height = ImageWrapper->GetHeight();
+
+			UTexture2D* LoadedTexture = UTexture2D::CreateTransient(Width, Height, PF_B8G8R8A8);
+			if (!LoadedTexture) return;
+
+			// 5. Bulk copy the decoded pixel array directly into the texture's platform memory
+			void* TextureData = LoadedTexture->GetPlatformData()->Mips[0].BulkData.Lock(LOCK_READ_WRITE);
+			FMemory::Memcpy(TextureData, UncompressedBGRA.GetData(), UncompressedBGRA.Num());
+			LoadedTexture->GetPlatformData()->Mips[0].BulkData.Unlock();
+
+			// Update the texture properties so the GPU renders it correctly
+			LoadedTexture->UpdateResource();
+
+			// 5. Inject the texture back into the cached array matching this index
+			if (this->CachedWorkshopItems.IsValidIndex(ItemIndex))
+			{
+				this->CachedWorkshopItems[ItemIndex].PreviewTexture = LoadedTexture;
+
+				// 6. Broadcast a separate "Item Image Updated" delegate so the UI refresh button updates just this specific slot!
+				//OnItemImageUpdated.Broadcast(ItemIndex, LoadedTexture);
+			}
+		});
+
+	Request->ProcessRequest();
+}
+
+void UWorkshopManager::OnPreviewDownloaded(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
+{
+	if (!bWasSuccessful || !Response.IsValid() || Response->GetContentLength() <= 0)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Failed to download workshop preview image."));
+		return;
+	}
+
+	// 1. Get the raw binary payload array
+	const TArray<uint8>& RawImageData = Response->GetContent();
+
+	// 2. Detect image format automatically (PNG, JPEG, etc.) via ImageWrapper
+	IImageWrapperModule& ImageWrapperModule = FModuleManager::LoadModuleChecked<IImageWrapperModule>(FName("ImageWrapper"));
+	EImageFormat ImageFormat = ImageWrapperModule.DetectImageFormat(RawImageData.GetData(), RawImageData.Num());
+
+	if (ImageFormat == EImageFormat::Invalid) return;
+
+	TSharedPtr<IImageWrapper> ImageWrapper = ImageWrapperModule.CreateImageWrapper(ImageFormat);
+	if (!ImageWrapper.IsValid() || !ImageWrapper->SetCompressed(RawImageData.GetData(), RawImageData.Num())) return;
+
+	// 3. Decompress the image into uncompressed raw RGBA byte data
+	TArray<uint8> UncompressedBGRA;
+	if (!ImageWrapper->GetRaw(ERGBFormat::BGRA, 8, UncompressedBGRA)) return;
+
+	// 4. Construct a new Transient Texture on the GameThread safely
+	int32 Width = ImageWrapper->GetWidth();
+	int32 Height = ImageWrapper->GetHeight();
+
+	UTexture2D* LoadedTexture = UTexture2D::CreateTransient(Width, Height, PF_B8G8R8A8);
+	if (!LoadedTexture) return;
+
+	// 5. Bulk copy the decoded pixel array directly into the texture's platform memory
+	void* TextureData = LoadedTexture->GetPlatformData()->Mips[0].BulkData.Lock(LOCK_READ_WRITE);
+	FMemory::Memcpy(TextureData, UncompressedBGRA.GetData(), UncompressedBGRA.Num());
+	LoadedTexture->GetPlatformData()->Mips[0].BulkData.Unlock();
+
+	// Update the texture properties so the GPU renders it correctly
+	LoadedTexture->UpdateResource();
+
+	// 6. Broadcast your texture out to UI or Materials!
+	// OnPreviewTextureReady.Broadcast(LoadedTexture);
 }
