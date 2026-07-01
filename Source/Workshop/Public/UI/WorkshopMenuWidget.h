@@ -40,6 +40,9 @@ private:
 	class UWidget* UploadingMenu;
 
 	UPROPERTY(Meta = (BindWidget))
+	class UTextBlock* UploadProgressTextBlock;
+
+	UPROPERTY(Meta = (BindWidget))
 	class UProgressBar* UploadProgressBar;
 
 	UPROPERTY(Meta = (BindWidget))
@@ -52,9 +55,6 @@ private:
 	uint64 ItemUploadHandle;
 
 	FTimerHandle CheckUploadStatusTimerHandle;
-
-	UFUNCTION()
-	void OnUploadButtonClicked();
 
 	UFUNCTION()
 	void BackButtonClicked();

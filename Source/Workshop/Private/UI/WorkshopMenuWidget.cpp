@@ -3,6 +3,7 @@
 
 #include "UI/WorkshopMenuWidget.h"
 #include "Components/Button.h"
+#include "Components/TextBlock.h"
 #include "Components/WidgetSwitcher.h"
 #include "Components/ProgressBar.h"
 #include "UI/WorldSelectionWidget.h"
@@ -47,26 +48,38 @@ void UWorkshopMenuWidget::NativeTick(const FGeometry& MyGeomotry, float InDeltaT
 		return;
 	}
 
-	UploadProgressBar->SetPercent(WorkshopManager->GetItemUploadPercentage());
-}
+	if (MenuSwitcher->GetActiveWidget() == UploadingMenu)
+	{
+		float Percent = 0.0f;
+		EItemUpdateStatus Status = WorkshopManager->GetItemUploadStatus(Percent);
+		if (!WorkshopManager->IsUploadInProgress())
+		{
+			OpenWorkshopMenu();
+		}
 
-void UWorkshopMenuWidget::OnUploadButtonClicked()
-{
+		FString StatusString;
+		switch (Status)
+		{
+		case EItemUpdateStatus::k_EItemUpdateStatusPreparingConfig:
+			StatusString = TEXT("Preparing Config...");
+			break;
+		case EItemUpdateStatus::k_EItemUpdateStatusPreparingContent:
+			StatusString = TEXT("Preparing Content...");
+			break;
+		case EItemUpdateStatus::k_EItemUpdateStatusUploadingContent:
+			StatusString = TEXT("Uploading Content...");
+			break;
+		case EItemUpdateStatus::k_EItemUpdateStatusUploadingPreviewFile:
+			StatusString = TEXT("Uploading Preview File...");
+			break;
+		case EItemUpdateStatus::k_EItemUpdateStatusCommittingChanges:
+			StatusString = TEXT("Committing Changes...");
+			break;
 
-	//UWorkshopManager* WorkshopManager = UWorkshopManager::GetWorkshopManager();
-	//if (WorkshopManager == nullptr)
-	//{
-	//	UE_LOG(LogWorkshop, Warning, TEXT("Failed to start upload, WorkshopManager returned nullptr"));
-	//	return;
-	//}
-	//
-	//WorkshopManager->UploadWorkshopItem();
-
-	//FTimerDelegate CheckUploadStatusTimerDelegate;
-	////CheckUploadStatusTimerDelegate.BindUObject(this, &UWorkshopMenuWidget::CheckUploadStatus);
-	////GetWorld()->GetTimerManager().SetTimer(CheckUploadStatusTimerHandle, CheckUploadStatusTimerDelegate, 1.0f, true);
-	//MenuSwitcher->SetActiveWidget(UploadingMenu);
-
+		}
+		UploadProgressTextBlock->SetText(FText::FromString(StatusString));
+		UploadProgressBar->SetPercent(Percent);
+	}
 }
 
 void UWorkshopMenuWidget::BackButtonClicked()
@@ -111,4 +124,6 @@ void UWorkshopMenuWidget::UploadWorld(const FString& WorldName, const FString& W
 	}
 	UE_LOG(LogTemp, Display, TEXT("UWorkshopMenuWidget, uploading world: %s"), *WorldName);
 	WorkshopManager->UploadWorld(WorldName, WorkshopItemName, WorkshopItemDescription);
+
+	MenuSwitcher->SetActiveWidget(UploadingMenu);
 }

@@ -24,6 +24,7 @@ void UWorkshopManager::UploadWorld(const FString& WorldName, const FString& Work
 		return;
 	}
 
+	UploadInProgress = true;
 	PendingUploadWorldName = WorldName;
 	PendingUploadWorkshopItemName = WorkshopItemName;
 	PendingUploadWorkshopItemDescription = WorkshopItemDescription;
@@ -32,33 +33,31 @@ void UWorkshopManager::UploadWorld(const FString& WorldName, const FString& Work
 	m_SteamCallResultCreateItem.Set(SteamAPICall, this, &UWorkshopManager::OnItemCreated);
 }
 
-float UWorkshopManager::GetItemUploadPercentage() const
+bool UWorkshopManager::IsUploadInProgress() const
+{
+	return UploadInProgress;
+}
+
+EItemUpdateStatus UWorkshopManager::GetItemUploadStatus(float& OutPercent)
 {
 	if (SteamUGC() == nullptr)
 	{
-		UE_LOG(LogWorkshop, Warning, TEXT("Failed to get item upload percentage, STEAM_UGC nullptr"));
-		return 0.0f;
+		//UE_LOG(LogWorkshop, Warning, TEXT("Failed to get item upload percentage, STEAM_UGC nullptr"));
+		return EItemUpdateStatus::k_EItemUpdateStatusInvalid;
 	}
 
 	uint64_t BytesProcessed = 0;
-	uint64_t BytesTotal = 0;
-	//SteamUGC()->GetItemUpdateProgress(UploadHandle, &BytesProcessed, &BytesTotal);
+	uint64_t BytesTotal = 1;
+	EItemUpdateStatus Status = SteamUGC()->GetItemUpdateProgress(hUpdate, &BytesProcessed, &BytesTotal);
 
-	return 0.0f; //static_cast<float>(BytesProcessed) / static_cast<float>(BytesTotal);
-}
-
-bool UWorkshopManager::IsItemUpdateComplete(const int64& InUpdateHandle)
-{
-	if (SteamUGC() == nullptr)
+	OutPercent = 0.0f;
+	if (Status != k_EItemUpdateStatusInvalid && BytesTotal > 0)
 	{
-		UE_LOG(LogWorkshop, Warning, TEXT("Failed to query workshop content update status, SteamUGC() returned nullptr"));
-		return false;
+		UE_LOG(LogWorkshop, Warning, TEXT("Upload percent bytes processed: %i, bytes total: %i, percent %f"), BytesProcessed, BytesTotal, OutPercent);
+		OutPercent = (double)BytesProcessed / (double)BytesTotal;
 	}
 
-	uint64* bytesProcessed = nullptr;
-	uint64* bytesTotal = nullptr;
-	SteamUGC()->GetItemUpdateProgress(InUpdateHandle, bytesProcessed, bytesTotal);
-	return false;
+	return Status;
 }
 
 void UWorkshopManager::OnItemCreated(CreateItemResult_t* pCallback, bool bIOFailure)
@@ -98,23 +97,13 @@ void UWorkshopManager::OnItemCreated(CreateItemResult_t* pCallback, bool bIOFail
 
 void UWorkshopManager::WorkshopSubmittedCallback(SubmitItemUpdateResult_t* pCallback, bool bIOFailure)
 {
-	if (!IsValid(this))
-	{
-		return;
-	}
-
-	//pCallback->m_eResult == Ereselt
-	UE_LOG(LogWorkshop, Display, TEXT("Workshop item submitted %i"), bIOFailure);
-
-	//if (OnWorkshopItemSubmitted.IsBound())
-	//{
-	//	OnWorkshopItemSubmitted.Broadcast();
-	//}
+	UE_LOG(LogWorkshop, Display, TEXT("Workshop item submitted"));
+	UploadInProgress = false;
 }
 
 void UWorkshopManager::UploadWorldContent(PublishedFileId_t nFileID)
 {
-	UGCUpdateHandle_t hUpdate = SteamUGC()->StartItemUpdate(SteamUtils()->GetAppID(), nFileID);
+	hUpdate = SteamUGC()->StartItemUpdate(SteamUtils()->GetAppID(), nFileID);
 
 	// Populate item metadata
 	SteamUGC()->SetItemTitle(hUpdate, TCHAR_TO_ANSI(*PendingUploadWorkshopItemName));

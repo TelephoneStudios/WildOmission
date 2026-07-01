@@ -25,9 +25,8 @@ public:
 
 	void UploadWorld(const FString& WorldName, const FString& WorkshopItemName, const FString& WorkshopItemDescription);
 	
-	float GetItemUploadPercentage() const;
-
-	static bool IsItemUpdateComplete(const int64& InUpdateHandle);
+	bool IsUploadInProgress() const;
+	EItemUpdateStatus GetItemUploadStatus(float& OutPercent);
 
 	FOnWorkshopItemSubmittedSignature OnWorkshopItemSubmitted;
 
@@ -36,6 +35,9 @@ private:
 	void OnItemCreated(struct CreateItemResult_t* pCallback, bool bIOFailure);
 	void WorkshopSubmittedCallback(struct SubmitItemUpdateResult_t* pCallback, bool bIOFailure);
 	void UploadWorldContent(PublishedFileId_t nFileID);
+
+	bool UploadInProgress;
+	UGCUpdateHandle_t hUpdate;
 
 	// Steam call result wrapper
 	CCallResult<UWorkshopManager, CreateItemResult_t> m_SteamCallResultCreateItem;
