@@ -424,16 +424,43 @@ void UWildOmissionGameInstance::RenameWorld(const FString& OldWorldName, const F
 	UGameplayStatics::SaveGameToSlot(RenamingWorldInformation, NewWorldInformationDirectory, 0);
 	UGameplayStatics::SaveGameToSlot(RenamingWorldData, NewWorldDataDirectory, 0);
 	
-	// TODO move world icon too
-
+	// Move world icon
+	IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
+	const FString OldIconDirectory = FPaths::ProjectSavedDir() + TEXT("SaveGames/") + OldWorldName + TEXT("/Icon.png");
+	const FString NewIconDirectory = FPaths::ProjectSavedDir() + TEXT("SaveGames/") + NewWorldName + TEXT("/Icon.png");
+	//IFileManager::Get().Move();
+	if (PlatformFile.FileExists(*OldIconDirectory))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("moving file from %s to %s"), *OldIconDirectory, *NewIconDirectory);
+		PlatformFile.MoveFile(*NewIconDirectory, *OldIconDirectory);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Couldn't move %s to %s"), *OldIconDirectory, *NewIconDirectory);
+	}
 	// Delete the old save with the old name
 	UGameplayStatics::DeleteGameInSlot(OldWorldInformationDirectory, 0);
 	UGameplayStatics::DeleteGameInSlot(OldWorldDataDirectory, 0);
+
+	// Delete folder
+	const FString FolderDirectory = FPaths::ProjectSavedDir() + TEXT("SaveGames/") + OldWorldName;
+	IFileManager::Get().DeleteDirectory(*FolderDirectory, false, true);
+	UE_LOG(LogTemp, Warning, TEXT("deleting %s"), *FolderDirectory);
 }
 
 void UWildOmissionGameInstance::DeleteWorld(const FString& WorldName)
 {
-	UGameplayStatics::DeleteGameInSlot(WorldName, 0);
+	// Delete data
+	const FString WorldInformationDirectory = WorldName + TEXT("/WorldInformation");
+	const FString WorldDataDirectory = WorldName + TEXT("/WorldData");
+	UGameplayStatics::DeleteGameInSlot(WorldInformationDirectory, 0);
+	UGameplayStatics::DeleteGameInSlot(WorldDataDirectory, 0);
+
+	// Delete folder
+	const FString FolderDirectory = FPaths::ProjectSavedDir() + TEXT("SaveGames/") + WorldName;
+	IFileManager::Get().DeleteDirectory(*FolderDirectory, false, true);
+	UE_LOG(LogTemp, Warning, TEXT("deleting %s"), *FolderDirectory);
+
 }
 
 void UWildOmissionGameInstance::StartSession()
