@@ -36,6 +36,12 @@ public:
 	class UWorldInformation* GetWorldInformation() const;
 	class UWorldData* GetWorldData() const;
 
+	UFUNCTION(BlueprintCallable, Exec)
+	static void RenameWorld(const FString& OldWorldName, const FString& NewWorldName);
+
+	UFUNCTION(BlueprintCallable, Exec)
+	static void DeleteWorld(const FString& WorldName);
+
 	static TArray<FString> GetAllWorldNamesV1();
 	static TArray<FString> GetAllWorldFolderNames();
 	static bool WorldAlreadyExists(const FString& WorldNameToTest);

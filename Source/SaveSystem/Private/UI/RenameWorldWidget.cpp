@@ -46,16 +46,9 @@ void URenameWorldWidget::RenameWorld()
 		UE_LOG(LogSaveSystem, Warning, TEXT("World name error."));
 		return;
 	}
-
-	IGameSaveLoadController* GameSaveLoadController = Cast<IGameSaveLoadController>(GetGameInstance());
-	if (GameSaveLoadController == nullptr)
-	{
-		UE_LOG(LogSaveSystem, Warning, TEXT("RenameWorldWidget::GameSaveLoadController nullptr."));
-		return;
-	}
 	
 	// Rename world
-	GameSaveLoadController->RenameWorld(World, NewWorldName);
+	ASaveManager::RenameWorld(World, NewWorldName);
 
 	BroadcastRenameButtonClicked(NewWorldName);
 }

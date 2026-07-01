@@ -4,7 +4,7 @@
 #include "UI/DeleteWorldWidget.h"
 #include "Components/Button.h"
 #include "Components/TextBlock.h"
-#include "Interfaces/GameSaveLoadController.h"
+#include "SaveManager.h"
 
 UDeleteWorldWidget::UDeleteWorldWidget(const FObjectInitializer& ObjectInitializer) : UUserWidget(ObjectInitializer)
 {
@@ -37,13 +37,7 @@ void UDeleteWorldWidget::Open(const FString& InWorldName)
 
 void UDeleteWorldWidget::DeleteWorld()
 {
-	IGameSaveLoadController* GameSaveLoadController = Cast<IGameSaveLoadController>(GetGameInstance());
-	if (GameSaveLoadController == nullptr)
-	{
-		return;
-	}
-
-	GameSaveLoadController->DeleteWorld(WorldName);
+	ASaveManager::DeleteWorld(WorldName);
 
 	BroadcastDeleteButtonClicked();
 }

@@ -4,6 +4,9 @@
 #include "WorkshopManager.h"
 #include "Containers/UnrealString.h"
 #include "Engine/Texture2D.h"
+#include "SaveManager.h"
+#include "WorldInformation.h"
+#include "Kismet/GameplayStatics.h"
 #include "Log.h"
 
 static UWorkshopManager* WorkshopManagerInstance = nullptr;
@@ -230,8 +233,13 @@ float UWorkshopManager::GetItemDownloadProgress()
 			}
 
 			// Rename Folder to match world name
-			
-			
+
+			UWorldInformation* DownloadedWorldInformation = Cast<UWorldInformation>(UGameplayStatics::CreateSaveGameObject(UWorldInformation::StaticClass()));
+			FString SlotName = FolderName + TEXT("/WorldInformation");
+			DownloadedWorldInformation = Cast<UWorldInformation>(UGameplayStatics::LoadGameFromSlot(SlotName, 0));
+			FString WorldName = DownloadedWorldInformation->CreationInformation.Name;
+
+			ASaveManager::RenameWorld(FolderName, WorldName);
 		}
 		DownloadInProgress = false;
 	}
