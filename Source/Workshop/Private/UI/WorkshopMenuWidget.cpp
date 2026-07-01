@@ -219,6 +219,8 @@ void UWorkshopMenuWidget::OnUploadSubmitted()
 
 void UWorkshopMenuWidget::OpenWorkshopMenu()
 {
+	SelectedItem.Reset();
+	SelectedItemDetailsPanel->SetVisibility(ESlateVisibility::Collapsed);
 	MenuSwitcher->SetActiveWidget(WorkshopMenu);
 }
 
