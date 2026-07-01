@@ -28,48 +28,62 @@ protected:
 	virtual void NativeTick(const FGeometry& MyGeomotry, float InDeltaTime) override;
 
 private:
+	// Workshop menu
 	UPROPERTY(Meta = (BindWidget))
 	class UWidgetSwitcher* MenuSwitcher;
-
 	UPROPERTY(Meta = (BindWidget))
 	class UWrapBox* WorkshopItemsWrapBox;
-
 	UPROPERTY(Meta = (BindWidget))
 	class UButton* UploadButton;
-
 	UPROPERTY(Meta = (BindWidget))
 	class UButton* BackButton;
-
 	UPROPERTY(Meta = (BindWidget))
 	class UWidget* WorkshopMenu;
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class UWorkshopItemWidget> WorkshopItemClass;
 
+	// Loading menu
 	UPROPERTY(Meta = (BindWidget))
-	class UWidget* UploadingMenu;
-
+	class UWidget* LoadingMenu;
 	UPROPERTY(Meta = (BindWidget))
-	class UTextBlock* UploadProgressTextBlock;
-
+	class UTextBlock* LoadingMenuTitleTextBlock;
 	UPROPERTY(Meta = (BindWidget))
-	class UProgressBar* UploadProgressBar;
+	class UTextBlock* LoadingProgressTextBlock;
+	UPROPERTY(Meta = (BindWidget))
+	class UProgressBar* LoadingProgressBar;
 
+	// World uploading
 	UPROPERTY(Meta = (BindWidget))
 	class UWorldSelectionWidget* WorldSelectionMenu;
-
 	UPROPERTY(Meta = (BindWidget))
 	class UWorkshopUploadMenuWidget* UploadWorldMenu;
 
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<class UWorkshopItemWidget> WorkshopItemClass;
+
+
+	// Details panel
+	UPROPERTY(Meta = (BindWidget))
+	class UWidget* SelectedItemDetailsPanel;
+	UPROPERTY(Meta = (BindWidget))
+	class UTextBlock* SelectedItemTitleTextBlock;
+	UPROPERTY(Meta = (BindWidget))
+	class UTextBlock* SelectedItemDescriptionTextBlock;
+	UPROPERTY(Meta = (BindWidget))
+	class UImage* SelectedItemImage;
+	UPROPERTY(Meta = (BindWidget))
+	class UButton* DownloadSelectedWorldButton;
+	UPROPERTY(Meta = (BindWidget))
+	class UTextBlock* DownloadButtonTextBlock;
+
 
 	UPROPERTY()
 	uint64 ItemUploadHandle;
 
 	FTimerHandle CheckUploadStatusTimerHandle;
 
-	TOptional<FString> SelectedFileID;
+	TOptional<FSteamWorkshopItemDetails> SelectedItem;
 
 	UFUNCTION()
-	void SelectWorkshopItem(const FString& FileID);
+	void SelectWorkshopItem(const FSteamWorkshopItemDetails& Details);
 
 	UFUNCTION()
 	void BackButtonClicked();
@@ -91,4 +105,7 @@ private:
 
 	UFUNCTION()
 	void UploadWorld(const FString& WorldName, const FString& WorkshopItemName, const FString& WorkshopItemDescription);
+
+	UFUNCTION()
+	void DownloadWorld();
 };

@@ -4,6 +4,7 @@
 #include "UI/WorkshopMenuWidget.h"
 #include "Components/Button.h"
 #include "Components/TextBlock.h"
+#include "Components/Image.h"
 #include "Components/WrapBox.h"
 #include "Components/WidgetSwitcher.h"
 #include "Components/ProgressBar.h"
@@ -18,8 +19,28 @@ UWorkshopMenuWidget::UWorkshopMenuWidget(const FObjectInitializer& ObjectInitial
 {
 	SetIsFocusable(true);
 
-	// TODO initialize pointers
-	
+	// Workshop menu
+	MenuSwitcher = nullptr;
+	WorkshopItemsWrapBox = nullptr;
+	UploadButton = nullptr;
+	BackButton = nullptr;
+	WorkshopMenu = nullptr;
+	WorkshopItemClass = nullptr;
+
+	// Uploading
+	LoadingMenu = nullptr;
+	LoadingMenuTitleTextBlock = nullptr;
+	LoadingProgressTextBlock = nullptr;
+	LoadingProgressBar = nullptr;
+	WorldSelectionMenu = nullptr;
+	UploadWorldMenu = nullptr;
+
+	// Details panel
+	SelectedItemDetailsPanel = nullptr;
+	SelectedItemTitleTextBlock = nullptr;
+	SelectedItemImage = nullptr;
+	DownloadSelectedWorldButton = nullptr;
+
 	static ConstructorHelpers::FClassFinder<UWorkshopItemWidget> WorkshopItemWidgetBlueprint(TEXT("/Game/Workshop/UI/WBP_WorkshopItem"));
 	if (WorkshopItemWidgetBlueprint.Succeeded())
 	{
@@ -58,6 +79,9 @@ void UWorkshopMenuWidget::NativeConstruct()
 	UploadWorldMenu->OnCancelButtonClicked.AddDynamic(this, &UWorkshopMenuWidget::OpenWorldSelectionForUploading);
 	UploadWorldMenu->OnUploadButtonClicked.AddDynamic(this, &UWorkshopMenuWidget::UploadWorld);
 
+	DownloadSelectedWorldButton->OnClicked.AddDynamic(this, &UWorkshopMenuWidget::DownloadWorld);
+	SelectedItemDetailsPanel->SetVisibility(ESlateVisibility::Collapsed);
+
 	UWorkshopManager* WorkshopManager = UWorkshopManager::GetWorkshopManager();
 	if (WorkshopManager)
 	{
@@ -71,50 +95,92 @@ void UWorkshopMenuWidget::NativeTick(const FGeometry& MyGeomotry, float InDeltaT
 	Super::NativeTick(MyGeomotry, InDeltaTime);
 
 	UWorkshopManager* WorkshopManager = UWorkshopManager::GetWorkshopManager();
-	if (WorkshopManager == nullptr || UploadProgressBar == nullptr)
+	if (WorkshopManager == nullptr || LoadingProgressBar == nullptr)
 	{
 		return;
 	}
 
-	if (MenuSwitcher->GetActiveWidget() == UploadingMenu)
+	if (MenuSwitcher->GetActiveWidget() == LoadingMenu)
 	{
 		float Percent = 0.0f;
-		EItemUpdateStatus Status = WorkshopManager->GetItemUploadStatus(Percent);
-		if (!WorkshopManager->IsUploadInProgress())
+		if (WorkshopManager->IsUploadInProgress())
+		{
+			EItemUpdateStatus Status = WorkshopManager->GetItemUploadStatus(Percent);
+			FString StatusString;
+			switch (Status)
+			{
+			case EItemUpdateStatus::k_EItemUpdateStatusPreparingConfig:
+				StatusString = TEXT("Preparing Config...");
+				break;
+			case EItemUpdateStatus::k_EItemUpdateStatusPreparingContent:
+				StatusString = TEXT("Preparing Content...");
+				break;
+			case EItemUpdateStatus::k_EItemUpdateStatusUploadingContent:
+				StatusString = TEXT("Uploading Content...");
+				break;
+			case EItemUpdateStatus::k_EItemUpdateStatusUploadingPreviewFile:
+				StatusString = TEXT("Uploading Preview File...");
+				break;
+			case EItemUpdateStatus::k_EItemUpdateStatusCommittingChanges:
+				StatusString = TEXT("Committing Changes...");
+				break;
+
+			}
+			LoadingProgressTextBlock->SetText(FText::FromString(StatusString));
+			LoadingProgressBar->SetPercent(Percent);
+		}
+		else if (WorkshopManager->IsDownloadInProgress())
+		{
+			Percent = WorkshopManager->GetItemDownloadProgress();
+			LoadingProgressTextBlock->SetText(FText::FromString(TEXT("Downloading...")));
+			LoadingProgressBar->SetPercent(Percent);
+		}
+		else
 		{
 			OpenWorkshopMenu();
 		}
 
-		FString StatusString;
-		switch (Status)
-		{
-		case EItemUpdateStatus::k_EItemUpdateStatusPreparingConfig:
-			StatusString = TEXT("Preparing Config...");
-			break;
-		case EItemUpdateStatus::k_EItemUpdateStatusPreparingContent:
-			StatusString = TEXT("Preparing Content...");
-			break;
-		case EItemUpdateStatus::k_EItemUpdateStatusUploadingContent:
-			StatusString = TEXT("Uploading Content...");
-			break;
-		case EItemUpdateStatus::k_EItemUpdateStatusUploadingPreviewFile:
-			StatusString = TEXT("Uploading Preview File...");
-			break;
-		case EItemUpdateStatus::k_EItemUpdateStatusCommittingChanges:
-			StatusString = TEXT("Committing Changes...");
-			break;
-
-		}
-		UploadProgressTextBlock->SetText(FText::FromString(StatusString));
-		UploadProgressBar->SetPercent(Percent);
 	}
 }
 
-void UWorkshopMenuWidget::SelectWorkshopItem(const FString& FileID)
+void UWorkshopMenuWidget::SelectWorkshopItem(const FSteamWorkshopItemDetails& Details)
 {
-	SelectedFileID = FileID;
-	// TODO populate 
-	// Uncollapse the side panel
+	UWorkshopManager* WorkshopManager = UWorkshopManager::GetWorkshopManager();
+	if (WorkshopManager == nullptr)
+	{
+		return;
+	}
+
+	const bool IsSubscribed = WorkshopManager->IsWorkshopItemSubscribed(FCString::Atoi64(*Details.FileID));
+
+	DownloadSelectedWorldButton->SetIsEnabled(!IsSubscribed);
+	const FString DownloadString = IsSubscribed ? TEXT("Already downloaded") : TEXT("Download");
+	DownloadButtonTextBlock->SetText(FText::FromString(DownloadString));
+	
+
+	SelectedItem = Details;
+
+	// Show the details panel
+	SelectedItemDetailsPanel->SetVisibility(ESlateVisibility::Visible);
+
+	// Set title and description
+	SelectedItemTitleTextBlock->SetText(FText::FromString(Details.Title));
+	FString Description;
+	if (!Details.Description.IsEmpty())
+	{
+		Description = Details.Description;
+	}
+	else
+	{
+		Description = TEXT("No description provided.");
+	}
+	SelectedItemDescriptionTextBlock->SetText(FText::FromString(Description));
+	
+	// Set preview
+	if (Details.PreviewTexture)
+	{
+		SelectedItemImage->SetBrushFromTexture(Details.PreviewTexture);
+	}
 }
 
 void UWorkshopMenuWidget::BackButtonClicked()
@@ -137,6 +203,7 @@ void UWorkshopMenuWidget::OnQueryCompleted(bool bSuccess, const TArray<FSteamWor
 		}
 		// Populate new widget with details
 		NewWorkshopItemWidget->Setup(ItemDetails);
+		NewWorkshopItemWidget->OnClicked.AddDynamic(this, &UWorkshopMenuWidget::SelectWorkshopItem);
 		// Add to wrap box
 		WorkshopItemsWrapBox->AddChild(NewWorkshopItemWidget);
 		// Give it padding
@@ -147,7 +214,7 @@ void UWorkshopMenuWidget::OnQueryCompleted(bool bSuccess, const TArray<FSteamWor
 void UWorkshopMenuWidget::OnUploadSubmitted()
 {
 	UE_LOG(LogWorkshop, Display, TEXT("Item updates submitted"));	
-	MenuSwitcher->SetActiveWidget(WorkshopMenu);
+	OpenWorkshopMenu();
 }
 
 void UWorkshopMenuWidget::OpenWorkshopMenu()
@@ -178,6 +245,26 @@ void UWorkshopMenuWidget::UploadWorld(const FString& WorldName, const FString& W
 	}
 	UE_LOG(LogTemp, Display, TEXT("UWorkshopMenuWidget, uploading world: %s"), *WorldName);
 	WorkshopManager->UploadWorld(WorldName, WorkshopItemName, WorkshopItemDescription);
+	LoadingMenuTitleTextBlock->SetText(FText::FromString(TEXT("World is uploading... please wait.")));
+	MenuSwitcher->SetActiveWidget(LoadingMenu);
+}
 
-	MenuSwitcher->SetActiveWidget(UploadingMenu);
+void UWorkshopMenuWidget::DownloadWorld()
+{
+	UWorkshopManager* WorkshopManager = UWorkshopManager::GetWorkshopManager();
+	if (WorkshopManager == nullptr)
+	{
+		UE_LOG(LogWorkshop, Warning, TEXT("Failed to download world, couldn't get Workshop Manager"));
+		return;
+	}
+	if (!SelectedItem.IsSet())
+	{
+		UE_LOG(LogWorkshop, Warning, TEXT("Failed to download world, selected isn't set"));
+		return;
+	}
+
+	WorkshopManager->SubscribeAndDownloadWorld(SelectedItem.GetValue().FileID);
+	LoadingMenuTitleTextBlock->SetText(FText::FromString(TEXT("Downloading World... please wait.")));
+	UE_LOG(LogWorkshop, Display, TEXT("Bringing up loading menu."));
+	MenuSwitcher->SetActiveWidget(LoadingMenu);
 }

@@ -4,8 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
-#include "Interfaces/IHttpRequest.h"
-#include "Interfaces/IHttpResponse.h"
 #pragma warning(disable: 4996)
 #include "ThirdParty/Steamworks/sdk/public/steam/steam_api.h"
 #include "WorkshopManager.generated.h"
@@ -55,7 +53,11 @@ public:
 	void UploadWorld(const FString& WorldName, const FString& WorkshopItemName, const FString& WorkshopItemDescription);
 	
 	bool IsUploadInProgress() const;
+	bool IsDownloadInProgress() const;
+	bool IsWorkshopItemSubscribed(uint64 WorkshopItemID);
+
 	EItemUpdateStatus GetItemUploadStatus(float& OutPercent);
+	float GetItemDownloadProgress();
 	FOnWorkshopQueryCompletedSignature OnWorkshopQueryCompleted;
 	FOnWorkshopItemSubmittedSignature OnWorkshopItemSubmitted;
 	FOnWorkshopItemReadySignature OnWorkshopItemReady;
@@ -71,16 +73,12 @@ private:
 	void OnSubscribeCompleted(RemoteStorageSubscribePublishedFileResult_t* pCallback, bool bIOFailure);
 	void OnDownloadResult(DownloadItemResult_t* pCallback, bool bIOFailure);
 	void OnItemInstalled(ItemInstalled_t* pCallback, bool bIOFailure);
-	
-	// Preview Image
-	void DownloadPreviewTexture(const FString& URL, const int32& ItemIndex);
-	void OnPreviewDownloaded(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
 
 	bool UploadInProgress;
-	UGCUpdateHandle_t hUpdate;
+	bool DownloadInProgress;
 
-	UPROPERTY()
-	TArray<FSteamWorkshopItemDetails> CachedWorkshopItems;
+	PublishedFileId_t DownloadFileId;
+	UGCUpdateHandle_t hUpdate;
 
 	// Steam call result wrappers
 	CCallResult<UWorkshopManager, SteamUGCQueryCompleted_t> m_SteamCallResultQueryWorkshop;
