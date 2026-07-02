@@ -33,6 +33,9 @@ struct FSteamWorkshopItemDetails
 	UPROPERTY(BlueprintReadOnly, Category = "Steam Workshop")
 	UTexture2D* PreviewTexture = nullptr;
 
+	UPROPERTY(BlueprintReadOnly, Category = "Steam Workshop")
+	FString WorkshopURL;
+
 };
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnWorkshopQueryCompletedSignature, bool, bSuccess, const TArray<FSteamWorkshopItemDetails>&, Items);

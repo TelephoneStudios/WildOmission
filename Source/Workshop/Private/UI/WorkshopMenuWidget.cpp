@@ -22,6 +22,7 @@ UWorkshopMenuWidget::UWorkshopMenuWidget(const FObjectInitializer& ObjectInitial
 	// Workshop menu
 	MenuSwitcher = nullptr;
 	WorkshopItemsWrapBox = nullptr;
+	RefreshButton = nullptr;
 	UploadButton = nullptr;
 	BackButton = nullptr;
 	WorkshopMenu = nullptr;
@@ -39,6 +40,7 @@ UWorkshopMenuWidget::UWorkshopMenuWidget(const FObjectInitializer& ObjectInitial
 	SelectedItemDetailsPanel = nullptr;
 	SelectedItemTitleTextBlock = nullptr;
 	SelectedItemImage = nullptr;
+	OpenWorkshopPageForSelectedButton = nullptr;
 	DownloadSelectedWorldButton = nullptr;
 
 	static ConstructorHelpers::FClassFinder<UWorkshopItemWidget> WorkshopItemWidgetBlueprint(TEXT("/Game/Workshop/UI/WBP_WorkshopItem"));
@@ -51,6 +53,7 @@ UWorkshopMenuWidget::UWorkshopMenuWidget(const FObjectInitializer& ObjectInitial
 void UWorkshopMenuWidget::OnOpen()
 {
 	Refresh();
+
 }
 
 void UWorkshopMenuWidget::Refresh()
@@ -62,6 +65,10 @@ void UWorkshopMenuWidget::Refresh()
 		return;
 	}
 	
+	SelectedItem.Reset();
+	SelectedItemDetailsPanel->SetVisibility(ESlateVisibility::Collapsed);
+	MenuSwitcher->SetActiveWidget(WorkshopMenu);
+
 	WorkshopItemsWrapBox->ClearChildren();
 	WorkshopManager->QueryPopularWorlds();
 }
@@ -70,6 +77,7 @@ void UWorkshopMenuWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
+	RefreshButton->OnClicked.AddDynamic(this, &UWorkshopMenuWidget::Refresh);
 	UploadButton->OnClicked.AddDynamic(this, &UWorkshopMenuWidget::OpenWorldSelectionForUploading);
 	BackButton->OnClicked.AddDynamic(this, &UWorkshopMenuWidget::BackButtonClicked);
 
@@ -79,6 +87,7 @@ void UWorkshopMenuWidget::NativeConstruct()
 	UploadWorldMenu->OnCancelButtonClicked.AddDynamic(this, &UWorkshopMenuWidget::OpenWorldSelectionForUploading);
 	UploadWorldMenu->OnUploadButtonClicked.AddDynamic(this, &UWorkshopMenuWidget::UploadWorld);
 
+	OpenWorkshopPageForSelectedButton->OnClicked.AddDynamic(this, &UWorkshopMenuWidget::OpenWorkshopForSelectedWorld);
 	DownloadSelectedWorldButton->OnClicked.AddDynamic(this, &UWorkshopMenuWidget::DownloadWorld);
 	SelectedItemDetailsPanel->SetVisibility(ESlateVisibility::Collapsed);
 
@@ -249,6 +258,16 @@ void UWorkshopMenuWidget::UploadWorld(const FString& WorldName, const FString& W
 	WorkshopManager->UploadWorld(WorldName, WorkshopItemName, WorkshopItemDescription);
 	LoadingMenuTitleTextBlock->SetText(FText::FromString(TEXT("World is uploading... please wait.")));
 	MenuSwitcher->SetActiveWidget(LoadingMenu);
+}
+
+void UWorkshopMenuWidget::OpenWorkshopForSelectedWorld()
+{
+	if (!SelectedItem.IsSet())
+	{
+		return;
+	}
+
+	UKismetSystemLibrary::LaunchURL(SelectedItem.GetValue().WorkshopURL);
 }
 
 void UWorkshopMenuWidget::DownloadWorld()

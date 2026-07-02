@@ -278,7 +278,10 @@ void UWorkshopManager::OnWorkshopQueryCompletedCallback(SteamUGCQueryCompleted_t
 			WorkshopItem.Description = FString(UTF8_TO_TCHAR(details.m_rgchDescription));
 			WorkshopItem.FileID = FString::Printf(TEXT("%llu"), details.m_nPublishedFileId);
 			WorkshopItem.Likes = static_cast<int32>(details.m_unVotesUp);
-			
+
+			uint64 WorkshopItemID = details.m_nPublishedFileId;
+			WorkshopItem.WorkshopURL = FString::Printf(TEXT("https://steamcommunity.com/%i"), WorkshopItemID);
+
 			char URLBuffer[1024];
 			if (SteamUGC()->GetQueryUGCPreviewURL(pCallback->m_handle, i, URLBuffer, sizeof(URLBuffer)))
 			{

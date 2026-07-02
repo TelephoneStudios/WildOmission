@@ -34,6 +34,8 @@ private:
 	UPROPERTY(Meta = (BindWidget))
 	class UWrapBox* WorkshopItemsWrapBox;
 	UPROPERTY(Meta = (BindWidget))
+	class UButton* RefreshButton;
+	UPROPERTY(Meta = (BindWidget))
 	class UButton* UploadButton;
 	UPROPERTY(Meta = (BindWidget))
 	class UButton* BackButton;
@@ -58,8 +60,6 @@ private:
 	UPROPERTY(Meta = (BindWidget))
 	class UWorkshopUploadMenuWidget* UploadWorldMenu;
 
-
-
 	// Details panel
 	UPROPERTY(Meta = (BindWidget))
 	class UWidget* SelectedItemDetailsPanel;
@@ -70,10 +70,11 @@ private:
 	UPROPERTY(Meta = (BindWidget))
 	class UImage* SelectedItemImage;
 	UPROPERTY(Meta = (BindWidget))
+	class UButton* OpenWorkshopPageForSelectedButton;
+	UPROPERTY(Meta = (BindWidget))
 	class UButton* DownloadSelectedWorldButton;
 	UPROPERTY(Meta = (BindWidget))
 	class UTextBlock* DownloadButtonTextBlock;
-
 
 	UPROPERTY()
 	uint64 ItemUploadHandle;
@@ -105,6 +106,9 @@ private:
 
 	UFUNCTION()
 	void UploadWorld(const FString& WorldName, const FString& WorkshopItemName, const FString& WorkshopItemDescription);
+
+	UFUNCTION()
+	void OpenWorkshopForSelectedWorld();
 
 	UFUNCTION()
 	void DownloadWorld();
