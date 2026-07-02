@@ -36,3 +36,13 @@ void USteamHelperFunctionLibrary::OpenStore(int32 DLC_AppID)
 
 	SteamFriends()->ActivateGameOverlayToStore(DLC_AppID, k_EOverlayToStoreFlag_None);
 }
+
+void USteamHelperFunctionLibrary::OpenWebPageInOverlay(const FString& URL)
+{
+	if (SteamUser() == nullptr)
+	{
+		return;
+	}
+
+	SteamFriends()->ActivateGameOverlayToWebPage(TCHAR_TO_ANSI(*URL));
+}

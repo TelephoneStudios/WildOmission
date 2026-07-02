@@ -11,6 +11,6 @@ public class Workshop : ModuleRules
             "Core", "CoreUObject", "InputCore", "Slate", "SlateCore",
              "CustomUI", "SaveSystem",
             "OnlineSubsystem", "OnlineSubsystemSteam", "Steamworks", 
-            "SaveSystem", "HTTP", "ImageWrapper" });
+            "SaveSystem", "HTTP", "ImageWrapper", "SteamHelpers" });
     }
 }

@@ -11,6 +11,7 @@
 #include "UI/WorkshopItemWidget.h"
 #include "UI/WorldSelectionWidget.h"
 #include "UI/WorkshopUploadMenuWidget.h"
+#include "SteamHelperFunctionLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "SaveManager.h"
 #include "Log.h"
@@ -267,7 +268,7 @@ void UWorkshopMenuWidget::OpenWorkshopForSelectedWorld()
 		return;
 	}
 
-	UKismetSystemLibrary::LaunchURL(SelectedItem.GetValue().WorkshopURL);
+	USteamHelperFunctionLibrary::OpenWebPageInOverlay(SelectedItem.GetValue().WorkshopURL);
 }
 
 void UWorkshopMenuWidget::DownloadWorld()

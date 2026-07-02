@@ -17,6 +17,7 @@
 #include "UI/WorkshopMenuWidget.h"
 #include "CreditsWidget.h"
 #include "ErrorMessagePrompt.h"
+#include "SteamHelperFunctionLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Log.h"
 
@@ -380,8 +381,8 @@ void UMainMenuWidget::OpenWorkshopMenu()
 
 void UMainMenuWidget::OpenFeedbackPage()
 {
-	//TODO update this to use the steam overlay browser
-	UKismetSystemLibrary::LaunchURL(TEXT("https://steamcommunity.com/app/2348700/discussions/3/"));
+	const FString URL = TEXT("https://steamcommunity.com/app/2348700/discussions/3/");
+	USteamHelperFunctionLibrary::OpenWebPageInOverlay(URL);
 }
 
 void UMainMenuWidget::OpenCreditsMenu()
