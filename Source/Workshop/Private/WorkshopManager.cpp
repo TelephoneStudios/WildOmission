@@ -180,8 +180,7 @@ float UWorkshopManager::GetItemDownloadProgress()
 
 	if (ItemState & k_EItemStateInstalled)
 	{
-		FString WorkshopFolderName;
-		(void*)CopyWorldToSaveGamesFolder(DownloadFileId, WorkshopFolderName);
+		(void*)CopyWorldToSaveGamesFolder(DownloadFileId);
 
 		// Add this to the transfer data, so it doesn't get processed twice
 		FWorkshopTransferData TransferData;
@@ -189,7 +188,7 @@ float UWorkshopManager::GetItemDownloadProgress()
 		TransferData.LastTransferCheck = FDateTime::UtcNow();
 		FWorkshopDownload NewProcessedDownload;
 		NewProcessedDownload.ItemID = DownloadFileId;
-		NewProcessedDownload.FolderName = WorkshopFolderName;
+		NewProcessedDownload.FolderName = FString::Printf(TEXT("%llu"), NewProcessedDownload.ItemID);
 		TransferData.ProcessedDownloads.Add(NewProcessedDownload);
 		(void*)SaveTransferDataToJsonFile(TransferData);
 
@@ -232,7 +231,7 @@ void UWorkshopManager::OnWorkshopQueryCompletedCallback(SteamUGCQueryCompleted_t
 			WorkshopItem.Likes = static_cast<int32>(details.m_unVotesUp);
 
 			uint64 WorkshopItemID = details.m_nPublishedFileId;
-			WorkshopItem.WorkshopURL = FString::Printf(TEXT("https://steamcommunity.com/%i"), WorkshopItemID);
+			WorkshopItem.WorkshopURL = FString::Printf(TEXT("https://steamcommunity.com/sharedfiles/filedetails/?id=%llu"), WorkshopItemID);
 
 			char URLBuffer[1024];
 			if (SteamUGC()->GetQueryUGCPreviewURL(pCallback->m_handle, i, URLBuffer, sizeof(URLBuffer)))
@@ -379,7 +378,7 @@ void UWorkshopManager::OnItemInstalled(ItemInstalled_t* pCallback, bool bIOFailu
 	}
 }
 
-bool UWorkshopManager::CopyWorldToSaveGamesFolder(PublishedFileId_t FileId, FString& OutWorkshopFolderName)
+bool UWorkshopManager::CopyWorldToSaveGamesFolder(PublishedFileId_t FileId)
 {
 	if (SteamUGC() == nullptr)
 	{
@@ -397,7 +396,6 @@ bool UWorkshopManager::CopyWorldToSaveGamesFolder(PublishedFileId_t FileId, FStr
 	{
 		const FString SourcePath = FString(UTF8_TO_TCHAR(FolderPath));
 		const FString FolderName = FPaths::GetCleanFilename(SourcePath);
-		OutWorkshopFolderName = FolderName;
 		const FString DestinationPath = FPaths::ProjectSavedDir() + TEXT("SaveGames/") + FolderName;
 
 		IFileManager& FileManager = IFileManager::Get();
@@ -530,8 +528,7 @@ void UWorkshopManager::CheckAndCopyNewWorkshopItems()
 				if (IsNew)
 				{
 					UE_LOG(LogWorkshop, Display, TEXT("New world detected: %s"), *SteamWorkshopItemFolderName);
-					FString WorkshopFolderName;
-					(void*)CopyWorldToSaveGamesFolder(ItemID, WorkshopFolderName);
+					(void*)CopyWorldToSaveGamesFolder(ItemID);
 					FWorkshopDownload NewProcessedDownload;
 					NewProcessedDownload.FolderName = SteamWorkshopItemFolderName;
 					NewProcessedDownload.ItemID = ItemID;

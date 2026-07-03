@@ -106,7 +106,7 @@ private:
 	void OnItemInstalled(ItemInstalled_t* pCallback, bool bIOFailure);
 
 	// returns if operation was successful
-	bool CopyWorldToSaveGamesFolder(PublishedFileId_t FileId, FString& OutWorkshopFolderName);
+	bool CopyWorldToSaveGamesFolder(PublishedFileId_t FileId);
 
 	bool SaveTransferDataToJsonFile(const FWorkshopTransferData& Data);
 	bool LoadTransferDataFromJsonFile(FWorkshopTransferData& OutTransferData);
