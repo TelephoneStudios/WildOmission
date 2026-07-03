@@ -21,7 +21,7 @@ public:
 	UFUNCTION()
 	void OpenMainMenu();
 	UFUNCTION()
-	void OpenWorldSelectionMenu();
+	void OpenPlayWorldSelectionMenu();
 	UFUNCTION()
 	void OpenWorldCreationMenu();
 	UFUNCTION()
@@ -38,6 +38,8 @@ public:
 	void OpenServerBrowserMenu();
 	UFUNCTION()
 	void OpenOptionsMenu();
+	UFUNCTION()
+	void OpenWorkshopMenu();
 	UFUNCTION()
 	void OpenFeedbackPage();
 	UFUNCTION()
@@ -63,6 +65,8 @@ private:
 	UPROPERTY(Meta = (BindWidget))
 	class UButton* OptionsButton;
 	UPROPERTY(Meta = (BindWidget))
+	class UButton* WorkshopButton;
+	UPROPERTY(Meta = (BindWidget))
 	class UButton* FeedbackButton;
 	UPROPERTY(Meta = (BindWidget))
 	class UButton* CreditsButton;
@@ -77,9 +81,11 @@ private:
 	UPROPERTY(Meta = (BindWidget))
 	class UWidget* MainMenu;
 	UPROPERTY(Meta = (BindWidget))
+	class UWidget* UpdatingWorldsMenu;
+	UPROPERTY(Meta = (BindWidget))
 	class UWidget* WorldSelectionMenuPanel;
 	UPROPERTY(Meta = (BindWidget))
-	class UWorldSelectionWidget* WorldSelectionMenu;
+	class UPlayWorldSelectionWidget* PlayWorldSelectionMenu;
 	UPROPERTY(Meta = (BindWidget))
 	class UWorldCreationWidget* WorldCreationMenu;
 	UPROPERTY(Meta = (BindWidget))
@@ -99,11 +105,16 @@ private:
 	UPROPERTY(Meta = (BindWidget))
 	class UOptionsWidget* OptionsMenu;
 	UPROPERTY(Meta = (BindWidget))
+	class UWorkshopMenuWidget* WorkshopMenu;
+	UPROPERTY(Meta = (BindWidget))
 	class UWidget* CreditsMenuPanel;
 	UPROPERTY(Meta = (BindWidget))
 	class UCreditsWidget* CreditsMenu;
 	UPROPERTY(Meta = (BindWidget))
 	class UErrorMessagePrompt* ErrorMessagePrompt;
+
+	UPROPERTY(Meta = (BindWidget))
+	class UWidget* InstallingWorkshopWorldsMenu;
 
 	class IMenuInterface* MenuInterface;
 	

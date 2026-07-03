@@ -14,7 +14,8 @@
 #include "MonsterSpawnManager.h"
 #include "GameChatManager.h"
 #include "WildOmissionCore/WildOmissionGameInstance.h"
-#include "WildOmissionSaveGame.h"
+#include "WorldInformation.h"
+#include "WorldData.h"
 #include "OnlineSubsystem.h"
 #include "Interfaces/OnlineSessionInterface.h"
 #include "Interfaces/OnlineFriendsInterface.h" 
@@ -35,7 +36,9 @@ void AWildOmissionGameMode::InitGame(const FString& MapName, const FString& Opti
 {
 	Super::InitGame(MapName, Options, ErrorMessage);
 
-	FString SaveFile = UGameplayStatics::ParseOption(Options, "SaveGame");
+	FString WorldName = UGameplayStatics::ParseOption(Options, "WorldName");
+	UE_LOG(LogTemp, Display, TEXT("Parsed world name in init game: %"), *WorldName);
+
 	FriendsOnly = UGameplayStatics::ParseOption(Options, "FriendsOnly") == TEXT("1");
 	const FString GameModeString = UGameplayStatics::ParseOption(Options, "GameMode");
 		
@@ -94,13 +97,13 @@ void AWildOmissionGameMode::InitGame(const FString& MapName, const FString& Opti
 	}
 
 	SaveManager->SetGameSaveLoadController(Cast<IGameSaveLoadController>(GetGameInstance()));
-	SaveManager->SetSaveFile(SaveFile);
+	SaveManager->SetWorld(WorldName);
 	SaveManager->LoadWorld();
 
-	UWildOmissionSaveGame* SaveGame = SaveManager->GetSaveFile();
-	if (SaveGame)
+	UWorldData* WorldData = SaveManager->GetWorldData();
+	if (WorldData)
 	{
-		CachedSpawnOverride = SaveGame->PlayerSpawnOverride;
+		CachedSpawnOverride = WorldData->PlayerSpawnOverride;
 	}
 }
 
@@ -183,10 +186,10 @@ void AWildOmissionGameMode::PostLogin(APlayerController* NewPlayer)
 
 	if (SaveManager)
 	{
-		UWildOmissionSaveGame* SaveGame = SaveManager->GetSaveFile();
-		if (SaveGame)
+		UWorldInformation* WorldInformation = SaveManager->GetWorldInformation();
+		if (WorldInformation)
 		{
-			NewWildOmissionPlayer->SetInCheatedWorld(SaveGame->CheatsEnabled);
+			NewWildOmissionPlayer->SetInCheatedWorld(WorldInformation->CheatsEnabled);
 		}
 	}
 
@@ -300,11 +303,12 @@ void AWildOmissionGameMode::SetWorldSpawnCurrentLocation()
 		return;
 	}
 
-	UWildOmissionSaveGame* SaveFile = SaveManager->GetSaveFile();
-	if (SaveFile == nullptr)
+	UWorldData* WorldData = SaveManager->GetWorldData();
+	if (WorldData == nullptr)
 	{
 		return;
 	}
+
 	APlayerController* FirstPlayerController = World->GetFirstPlayerController();
 	if (FirstPlayerController == nullptr)
 	{
@@ -317,11 +321,11 @@ void AWildOmissionGameMode::SetWorldSpawnCurrentLocation()
 		return;
 	}
 
-	SaveFile->PlayerSpawnOverride.Location = FirstPawn->GetActorLocation();
-	SaveFile->PlayerSpawnOverride.Rotation = FirstPawn->GetActorRotation();
-	SaveFile->PlayerSpawnOverride.IsSet = true;
+	WorldData->PlayerSpawnOverride.Location = FirstPawn->GetActorLocation();
+	WorldData->PlayerSpawnOverride.Rotation = FirstPawn->GetActorRotation();
+	WorldData->PlayerSpawnOverride.IsSet = true;
 
-	CachedSpawnOverride = SaveFile->PlayerSpawnOverride;
+	CachedSpawnOverride = WorldData->PlayerSpawnOverride;
 
 	SaveManager->SaveWorld();
 }
@@ -333,17 +337,17 @@ void AWildOmissionGameMode::ClearSpawnPointOverride()
 		return;
 	}
 
-	UWildOmissionSaveGame* SaveFile = SaveManager->GetSaveFile();
-	if (SaveFile == nullptr)
+	UWorldData* WorldData = SaveManager->GetWorldData();
+	if (WorldData == nullptr)
 	{
 		return;
 	}
 
-	SaveFile->PlayerSpawnOverride.Location = FVector::ZeroVector;
-	SaveFile->PlayerSpawnOverride.Rotation = FRotator::ZeroRotator;
-	SaveFile->PlayerSpawnOverride.IsSet = false;
+	WorldData->PlayerSpawnOverride.Location = FVector::ZeroVector;
+	WorldData->PlayerSpawnOverride.Rotation = FRotator::ZeroRotator;
+	WorldData->PlayerSpawnOverride.IsSet = false;
 
-	CachedSpawnOverride = SaveFile->PlayerSpawnOverride;
+	CachedSpawnOverride = WorldData->PlayerSpawnOverride;
 
 	SaveManager->SaveWorld();
 }

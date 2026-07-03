@@ -23,4 +23,8 @@ public:
 
 	UFUNCTION(BlueprintCallable, META = (DisplayName = "Open Store", CompactNodeTitle = "Open Store", Category = "Steam Helper Functions"))
 	static void OpenStore(int32 DLC_AppID);
+
+	UFUNCTION(BlueprintCallable, META = (DisplayName = "Open Web Page In Overlay", CompactNodeTitle = "Open Web Page", Category = "Steam Helper Functions"))
+	static void OpenWebPageInOverlay(const FString& URL);
+
 };

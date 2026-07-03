@@ -3,7 +3,6 @@
 
 #include "ItemCategoryButton.h"
 #include "UI/CreativeMenuWidget.h"
-#include "Structs/ItemData.h"
 #include "Components/Button.h"
 #include "Components/TextBlock.h"
 #include "Color/UIColors.h"

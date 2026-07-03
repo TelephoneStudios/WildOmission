@@ -2,18 +2,22 @@
 
 
 #include "UI/MainMenuWidget.h"
+#include "SaveUpdater.h"
 #include "Components/WidgetSwitcher.h"
 #include "Components/Button.h"
 #include "Components/TextBlock.h"
-#include "WorldSelectionWidget.h"
-#include "WorldCreationWidget.h"
-#include "WorldMenuWidget.h"
-#include "RenameWorldWidget.h"
-#include "DeleteWorldWidget.h"
+#include "PlayWorldSelectionWidget.h"
+#include "UI/WorldCreationWidget.h"
+#include "UI/WorldMenuWidget.h"
+#include "UI/RenameWorldWidget.h"
+#include "UI/DeleteWorldWidget.h"
 #include "ServerBrowserWidget.h"
+#include "SaveManager.h"
 #include "UI/OptionsWidget.h"
+#include "UI/WorkshopMenuWidget.h"
 #include "CreditsWidget.h"
 #include "ErrorMessagePrompt.h"
+#include "SteamHelperFunctionLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Log.h"
 
@@ -56,6 +60,7 @@ UMainMenuWidget::UMainMenuWidget(const FObjectInitializer& ObjectInitializer) : 
 
 	PlayButton = nullptr;
 	OptionsButton = nullptr;
+	WorkshopButton = nullptr;
 	FeedbackButton = nullptr;
 	CreditsButton = nullptr;
 	ExitButton = nullptr;
@@ -65,8 +70,10 @@ UMainMenuWidget::UMainMenuWidget(const FObjectInitializer& ObjectInitializer) : 
 	MainMenuPanel = nullptr;
 	MainMenu = nullptr;
 
+	UpdatingWorldsMenu = nullptr;
+
 	WorldSelectionMenuPanel = nullptr;
-	WorldSelectionMenu = nullptr;
+	PlayWorldSelectionMenu = nullptr;
 	WorldCreationMenu = nullptr;
 	WorldMenuPanel = nullptr;
 	WorldMenu = nullptr;
@@ -76,6 +83,7 @@ UMainMenuWidget::UMainMenuWidget(const FObjectInitializer& ObjectInitializer) : 
 	ServerBrowserMenu = nullptr;
 	OptionsMenuPanel = nullptr;
 	OptionsMenu = nullptr;
+	WorkshopMenu = nullptr;
 	CreditsMenuPanel = nullptr;
 	CreditsMenu = nullptr;
 	ErrorMessagePrompt = nullptr;
@@ -86,38 +94,41 @@ void UMainMenuWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	PlayButton->OnClicked.AddDynamic(this, &UMainMenuWidget::OpenWorldSelectionMenu);
+	PlayButton->OnClicked.AddDynamic(this, &UMainMenuWidget::OpenPlayWorldSelectionMenu);
 	OptionsButton->OnClicked.AddDynamic(this, &UMainMenuWidget::OpenOptionsMenu);
+	WorkshopButton->OnClicked.AddDynamic(this, &UMainMenuWidget::OpenWorkshopMenu);
 	FeedbackButton->OnClicked.AddDynamic(this, &UMainMenuWidget::OpenFeedbackPage);
 	CreditsButton->OnClicked.AddDynamic(this, &UMainMenuWidget::OpenCreditsMenu);
 	ExitButton->OnClicked.AddDynamic(this, &UMainMenuWidget::ExitGame);
 
 	RefreshSplashText();
 
-	WorldSelectionMenu->OnSelectButtonClicked.AddDynamic(this, &UMainMenuWidget::OpenWorldMenu);
-	WorldSelectionMenu->OnCreateNewWorldButtonClicked.AddDynamic(this, &UMainMenuWidget::OpenWorldCreationMenu);
-	WorldSelectionMenu->OnMultiplayerButtonClicked.AddDynamic(this, &UMainMenuWidget::OpenServerBrowserMenu);
-	WorldSelectionMenu->OnCancelButtonClicked.AddDynamic(this, &UMainMenuWidget::OpenMainMenu);
+	PlayWorldSelectionMenu->OnSelectButtonClicked.AddDynamic(this, &UMainMenuWidget::OpenWorldMenu);
+	PlayWorldSelectionMenu->OnCreateNewWorldButtonClicked.AddDynamic(this, &UMainMenuWidget::OpenWorldCreationMenu);
+	PlayWorldSelectionMenu->OnMultiplayerButtonClicked.AddDynamic(this, &UMainMenuWidget::OpenServerBrowserMenu);
+	PlayWorldSelectionMenu->OnCancelButtonClicked.AddDynamic(this, &UMainMenuWidget::OpenMainMenu);
 
 	WorldCreationMenu->OnOpenWorldMenuRequested.AddDynamic(this, &UMainMenuWidget::OpenWorldMenuForWorld);
-	WorldCreationMenu->OnCancelButtonClicked.AddDynamic(this, &UMainMenuWidget::OpenWorldSelectionMenu);
+	WorldCreationMenu->OnCancelButtonClicked.AddDynamic(this, &UMainMenuWidget::OpenPlayWorldSelectionMenu);
 
 	WorldMenu->OnPlayButtonClicked.AddDynamic(this, &UMainMenuWidget::HostGame);
 	WorldMenu->OnRenameButtonClicked.AddDynamic(this, &UMainMenuWidget::OpenRenameWorldMenu);
 	WorldMenu->OnDeleteButtonClicked.AddDynamic(this, &UMainMenuWidget::OpenDeleteWorldMenu);
-	WorldMenu->OnCancelButtonClicked.AddDynamic(this, &UMainMenuWidget::OpenWorldSelectionMenu);
+	WorldMenu->OnCancelButtonClicked.AddDynamic(this, &UMainMenuWidget::OpenPlayWorldSelectionMenu);
 
 	RenameWorldMenu->OnRenameButtonClicked.AddDynamic(this, &UMainMenuWidget::OpenWorldMenuForWorld);
 	RenameWorldMenu->OnCancelButtonClicked.AddDynamic(this, &UMainMenuWidget::OpenWorldMenu);
 
-	DeleteWorldMenu->OnDeleteButtonClicked.AddDynamic(this, &UMainMenuWidget::OpenWorldSelectionMenu);
+	DeleteWorldMenu->OnDeleteButtonClicked.AddDynamic(this, &UMainMenuWidget::OpenPlayWorldSelectionMenu);
 	DeleteWorldMenu->OnCancelButtonClicked.AddDynamic(this, &UMainMenuWidget::OpenWorldMenu);
 
 	ServerBrowserMenu->OnJoinButtonClicked.AddDynamic(this, &UMainMenuWidget::JoinServer);
 	ServerBrowserMenu->OnRefreshButtonClicked.AddDynamic(this, &UMainMenuWidget::RefreshServerList);
-	ServerBrowserMenu->OnCancelButtonClicked.AddDynamic(this, &UMainMenuWidget::OpenWorldSelectionMenu);
+	ServerBrowserMenu->OnCancelButtonClicked.AddDynamic(this, &UMainMenuWidget::OpenPlayWorldSelectionMenu);
 
 	OptionsMenu->OnBackButtonClicked.AddDynamic(this, &UMainMenuWidget::OpenMainMenu);
+
+	WorkshopMenu->OnBackButtonClicked.AddDynamic(this, &UMainMenuWidget::OpenMainMenu);
 
 	CreditsMenu->OnBackButtonClicked.AddDynamic(this, &UMainMenuWidget::OpenMainMenu);
 
@@ -143,6 +154,37 @@ void UMainMenuWidget::Setup(IMenuInterface* InMenuInterface)
 	}
 
 	MenuInterface = InMenuInterface;
+
+	// do any world/workshop processing on separate thread so game doesn't lock up
+	MenuSwitcher->SetActiveWidget(UpdatingWorldsMenu);
+	Async(EAsyncExecution::Thread, [this]()
+		{
+			TArray<FString> OldWorldNames = ASaveManager::GetAllWorldNamesV1();
+			if (!OldWorldNames.IsEmpty())
+			{
+				USaveUpdater::UpdateWorldFiles(OldWorldNames);
+			}
+			
+			AsyncTask(ENamedThreads::GameThread, [this]()
+				{
+					MenuSwitcher->SetActiveWidget(InstallingWorkshopWorldsMenu);
+				});
+
+			Async(EAsyncExecution::Thread, [this]()
+				{
+					UWorkshopManager* WorkshopManager = UWorkshopManager::GetWorkshopManager();
+					if (WorkshopManager)
+					{
+						WorkshopManager->CheckAndCopyNewWorkshopItems();
+					}
+					AsyncTask(ENamedThreads::GameThread, [this]()
+						{
+							OpenMainMenu();
+						});
+				});
+		});
+
+	
 }
 
 void UMainMenuWidget::Teardown()
@@ -231,24 +273,25 @@ void UMainMenuWidget::RefreshServerList(bool IsDedicated)
 
 void UMainMenuWidget::OpenMainMenu()
 {
-	if (MenuSwitcher == nullptr || MainMenuPanel == nullptr)
+	if (MenuSwitcher == nullptr || MainMenuPanel == nullptr || UpdatingWorldsMenu == nullptr)
 	{
 		UE_LOG(LogMenuSystem, Warning, TEXT("Failed to switch to main menu"));
 		return;
 	}
+
 	UE_LOG(LogMenuSystem, Verbose, TEXT("Switching to main menu"));
 	MenuSwitcher->SetActiveWidget(MainMenuPanel);
 }
 
-void UMainMenuWidget::OpenWorldSelectionMenu()
+void UMainMenuWidget::OpenPlayWorldSelectionMenu()
 {
 	if (MenuSwitcher == nullptr || WorldSelectionMenuPanel == nullptr 
-		|| WorldSelectionMenu == nullptr || MenuInterface == nullptr)
+		|| PlayWorldSelectionMenu == nullptr || MenuInterface == nullptr)
 	{
 		return;
 	}
 
-	WorldSelectionMenu->SetWorldList(MenuInterface->GetAllWorldNames());
+	PlayWorldSelectionMenu->SetWorldList(ASaveManager::GetAllWorldFolderNames());
 	MenuSwitcher->SetActiveWidget(WorldSelectionMenuPanel);
 }
 
@@ -264,12 +307,12 @@ void UMainMenuWidget::OpenWorldCreationMenu()
 
 void UMainMenuWidget::OpenWorldMenu()
 {
-	if (MenuSwitcher == nullptr || WorldMenu == nullptr || WorldSelectionMenu->SelectedWorldName.IsSet() == false)
+	if (MenuSwitcher == nullptr || WorldMenu == nullptr || PlayWorldSelectionMenu->SelectedWorldName.IsSet() == false)
 	{
 		return;
 	}
 
-	OpenWorldMenuForWorld(WorldSelectionMenu->SelectedWorldName.GetValue());
+	OpenWorldMenuForWorld(PlayWorldSelectionMenu->SelectedWorldName.GetValue());
 }
 
 void UMainMenuWidget::OpenWorldMenuForWorld(const FString& WorldName)
@@ -291,6 +334,7 @@ void UMainMenuWidget::HostGame(const FString& WorldName, const FString& ServerNa
 		return;
 	}
 
+	UE_LOG(LogMenuSystem, Display, TEXT("Host game, World Name is %s"), *WorldName);
 	IsMultiplayer ? MenuInterface->HostServer(ServerName, WorldName, IsFriendsOnly, MaxPlayerCount, GameMode) : MenuInterface->StartSingleplayer(WorldName, GameMode);
 }
 
@@ -302,7 +346,7 @@ void UMainMenuWidget::OpenRenameWorldMenu()
 	}
 
 	MenuSwitcher->SetActiveWidget(RenameWorldMenu);
-	RenameWorldMenu->Open(WorldSelectionMenu->SelectedWorldName.GetValue());
+	RenameWorldMenu->Open(PlayWorldSelectionMenu->SelectedWorldName.GetValue());
 }
 
 void UMainMenuWidget::OpenDeleteWorldMenu()
@@ -313,7 +357,7 @@ void UMainMenuWidget::OpenDeleteWorldMenu()
 	}
 
 	MenuSwitcher->SetActiveWidget(DeleteWorldMenu);
-	DeleteWorldMenu->Open(WorldSelectionMenu->SelectedWorldName.GetValue());
+	DeleteWorldMenu->Open(PlayWorldSelectionMenu->SelectedWorldName.GetValue());
 }
 
 void UMainMenuWidget::OpenServerBrowserMenu()
@@ -340,9 +384,21 @@ void UMainMenuWidget::OpenOptionsMenu()
 	OptionsMenu->Refresh();
 }
 
+void UMainMenuWidget::OpenWorkshopMenu()
+{
+	if (MenuSwitcher == nullptr || WorkshopMenu == nullptr)
+	{
+		return;
+	}
+
+	WorkshopMenu->OnOpen();
+	MenuSwitcher->SetActiveWidget(WorkshopMenu);
+}
+
 void UMainMenuWidget::OpenFeedbackPage()
 {
-	UKismetSystemLibrary::LaunchURL(TEXT("https://steamcommunity.com/app/2348700/discussions/3/"));
+	const FString URL = TEXT("https://steamcommunity.com/app/2348700/discussions/3/");
+	USteamHelperFunctionLibrary::OpenWebPageInOverlay(URL);
 }
 
 void UMainMenuWidget::OpenCreditsMenu()

@@ -4,7 +4,7 @@
 #include "MonsterSpawnManager.h"
 #include "SaveManager.h"
 #include "TimeOfDayManager.h"
-#include "WildOmissionSaveGame.h"
+#include "WorldInformation.h"
 #include "Engine/DataTable.h"
 #include "Monsters/Monster.h"
 #include "Net/UnrealNetwork.h"
@@ -67,7 +67,7 @@ bool AMonsterSpawnManager::IsSpawnConditionValid()
 		return false;
 	}
 
-	const UWildOmissionSaveGame* SaveFile = SaveManager->GetSaveFile();
+	const UWorldInformation* SaveFile = SaveManager->GetWorldInformation();
 	if (SaveFile == nullptr)
 	{
 		return false;

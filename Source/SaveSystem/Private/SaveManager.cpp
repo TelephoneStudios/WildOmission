@@ -7,11 +7,17 @@
 #include "TimeOfDayManager.h"
 #include "WeatherManager.h"
 #include "Interfaces/GameSaveLoadController.h"
-#include "WildOmissionSaveGame.h"
+#include "Components/SceneCaptureComponent2D.h"
+#include "Engine/TextureRenderTarget2D.h"
+#include "ImageUtils.h"
+#include "Misc/FileHelper.h"
+#include "WorldInformation.h"
+#include "WorldData.h"
 #include "Kismet/GameplayStatics.h"
+#include "Camera/CameraComponent.h"
 #include "Log.h"
 
-static ASaveManager* Instance = nullptr;
+static ASaveManager* SaveManagerInstance = nullptr;
 
 // Sets default values
 ASaveManager::ASaveManager()
@@ -20,7 +26,9 @@ ASaveManager::ASaveManager()
 	PrimaryActorTick.bCanEverTick = false;
 
 	GameSaveLoadController = nullptr;
-	CurrentSaveFile = nullptr;
+
+	CurrentWorldInformation = nullptr;
+	CurrentWorldData = nullptr;
 
 	PlayerSaveManagerComponent = CreateDefaultSubobject<UPlayerSaveManagerComponent>(TEXT("PlayerSaveManagerComponent"));
 }
@@ -30,129 +38,397 @@ void ASaveManager::SetGameSaveLoadController(IGameSaveLoadController* InGameSave
 	GameSaveLoadController = InGameSaveLoadController;
 }
 
-void ASaveManager::SetSaveManager(ASaveManager* NewInstance)
+void ASaveManager::SetSaveManager(ASaveManager* NewSaveManagerInstance)
 {
-	Instance = NewInstance;
+	SaveManagerInstance = NewSaveManagerInstance;
 }
 
 ASaveManager* ASaveManager::GetSaveManager()
 {
-	return Instance;
+	return SaveManagerInstance;
 }
 
 void ASaveManager::SaveWorld()
 {
-	UWildOmissionSaveGame* SaveFile = GetSaveFile();
-	if (SaveFile == nullptr)
+	if (CurrentWorldData == nullptr
+		|| CurrentWorldInformation == nullptr)
 	{
-		UE_LOG(LogSaveSystem, Error, TEXT("Aborting save, SaveFile was nullptr."));
+		UE_LOG(LogSaveSystem, Error, TEXT("Aborting save, CurrentWorldInformation or CurrentWorldData was nullptr."));
 		return;
 	}
 
-	SaveFile->LastPlayedTime = FDateTime::Now();
-
+	// Populate World Information
+	CurrentWorldInformation->LastPlayedTime = FDateTime::Now();
+	
+	// Save Chunks
 	AChunkManager* ChunkManager = AChunkManager::GetChunkManager();
 	if (ChunkManager)
 	{
-		SaveFile->PlayerSpawnChunk = ChunkManager->GetPlayerSpawnChunk();
-		SaveFile->Seed = ChunkManager->GetGenerationSeed();
+		// Populate World Information
+		CurrentWorldInformation->Seed = ChunkManager->GetGenerationSeed();
+		
+		// Populate World Data
+		CurrentWorldData->PlayerSpawnChunk = ChunkManager->GetPlayerSpawnChunk();
+		
 		ChunkManager->SaveAllSpawnedChunks();
-		SaveFile->ChunkData = ChunkManager->GetAllChunkData();
+		CurrentWorldData->ChunkData = ChunkManager->GetAllChunkData();
 	}
 
+	// Save TimeOfDay
 	ATimeOfDayManager* TimeOfDayManager = ATimeOfDayManager::GetTimeOfDayManager();
 	if (TimeOfDayManager)
 	{
-		SaveFile->DaysPlayed = TimeOfDayManager->GetDaysPlayed();
-		SaveFile->NormalizedTimeOfDay = TimeOfDayManager->GetTimeOfDay();
+		// Populate World Information
+		CurrentWorldInformation->DaysPlayed = TimeOfDayManager->GetDaysPlayed();
+		CurrentWorldInformation->NormalizedTimeOfDay = TimeOfDayManager->GetTimeOfDay();
 	}
 
+	// Save Weather
 	AWeatherManager* WeatherManager = AWeatherManager::GetWeatherManager();
 	if (WeatherManager)
 	{
-		WeatherManager->Save(SaveFile->WeatherData);
+		WeatherManager->Save(CurrentWorldData->WeatherData);
 	}
 
+	// Save Players
 	if (PlayerSaveManagerComponent)
 	{
-		PlayerSaveManagerComponent->Save(SaveFile->PlayerData);
+		PlayerSaveManagerComponent->Save(CurrentWorldData->PlayerData);
 	}
 	
-	SaveFile->Version = UWildOmissionSaveGame::GetCurrentVersion();
+	CurrentWorldInformation->Version = UWorldInformation::GetCurrentVersion();
 
-	UpdateSaveFile(SaveFile);
+	// Capture World Icon
+	CaptureWorldIcon();
+
+	UpdateWorldFile(CurrentWorldInformation, CurrentWorldData);
 }
 
-void ASaveManager::SetSaveFile(const FString& SaveFileName)
+void ASaveManager::RenameWorld(const FString& OldWorldName, const FString& NewWorldName)
 {
-	CurrentSaveFileName = SaveFileName;
+	// Directory strings
+	const FString OldWorldInformationDirectory = OldWorldName + TEXT("/WorldInformation");
+	const FString OldWorldDataDirectory = OldWorldName + TEXT("/WorldData");
+	const FString NewWorldInformationDirectory = NewWorldName + TEXT("/WorldInformation");
+	const FString NewWorldDataDirectory = NewWorldName + TEXT("/WorldData");
+
+	// Load the world with the old name
+	UWorldInformation* RenamingWorldInformation = Cast<UWorldInformation>(UGameplayStatics::CreateSaveGameObject(UWorldInformation::StaticClass()));
+	RenamingWorldInformation = Cast<UWorldInformation>(UGameplayStatics::LoadGameFromSlot(OldWorldInformationDirectory, 0));
+	UWorldData* RenamingWorldData = Cast<UWorldData>(UGameplayStatics::CreateSaveGameObject(UWorldData::StaticClass()));
+	RenamingWorldData = Cast<UWorldData>(UGameplayStatics::LoadGameFromSlot(OldWorldDataDirectory, 0));
+
+	// Change world name in WorldInformation
+	RenamingWorldInformation->CreationInformation.Name = NewWorldName;
+
+	// Save world under new name
+	UGameplayStatics::SaveGameToSlot(RenamingWorldInformation, NewWorldInformationDirectory, 0);
+	UGameplayStatics::SaveGameToSlot(RenamingWorldData, NewWorldDataDirectory, 0);
+
+	// Move world icon
+	IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
+	const FString OldIconDirectory = FPaths::ProjectSavedDir() + TEXT("SaveGames/") + OldWorldName + TEXT("/Icon.png");
+	const FString NewIconDirectory = FPaths::ProjectSavedDir() + TEXT("SaveGames/") + NewWorldName + TEXT("/Icon.png");
+	//IFileManager::Get().Move();
+	if (PlatformFile.FileExists(*OldIconDirectory))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("moving file from %s to %s"), *OldIconDirectory, *NewIconDirectory);
+		PlatformFile.MoveFile(*NewIconDirectory, *OldIconDirectory);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Couldn't move %s to %s"), *OldIconDirectory, *NewIconDirectory);
+	}
+	// Delete the old save with the old name
+	UGameplayStatics::DeleteGameInSlot(OldWorldInformationDirectory, 0);
+	UGameplayStatics::DeleteGameInSlot(OldWorldDataDirectory, 0);
+
+	// Delete folder
+	const FString FolderDirectory = FPaths::ProjectSavedDir() + TEXT("SaveGames/") + OldWorldName;
+	IFileManager::Get().DeleteDirectory(*FolderDirectory, false, true);
+	UE_LOG(LogTemp, Warning, TEXT("deleting %s"), *FolderDirectory);
+}
+
+void ASaveManager::DeleteWorld(const FString& WorldName)
+{
+	// Delete data
+	const FString WorldInformationDirectory = WorldName + TEXT("/WorldInformation");
+	const FString WorldDataDirectory = WorldName + TEXT("/WorldData");
+	UGameplayStatics::DeleteGameInSlot(WorldInformationDirectory, 0);
+	UGameplayStatics::DeleteGameInSlot(WorldDataDirectory, 0);
+
+	// Delete folder
+	const FString FolderDirectory = FPaths::ProjectSavedDir() + TEXT("SaveGames/") + WorldName;
+	IFileManager::Get().DeleteDirectory(*FolderDirectory, false, true);
+	UE_LOG(LogTemp, Warning, TEXT("deleting %s"), *FolderDirectory);
+
+}
+
+void ASaveManager::SetWorld(const FString& WorldName)
+{
+	CurrentWorldName = WorldName;
 	ValidateSave();
 
-	CurrentSaveFile = Cast<UWildOmissionSaveGame>(UGameplayStatics::CreateSaveGameObject(UWildOmissionSaveGame::StaticClass()));
-	CurrentSaveFile = Cast<UWildOmissionSaveGame>(UGameplayStatics::LoadGameFromSlot(CurrentSaveFileName, 0));
+	CurrentWorldInformation = Cast<UWorldInformation>(UGameplayStatics::CreateSaveGameObject(UWorldInformation::StaticClass()));
+	CurrentWorldInformation = Cast<UWorldInformation>(UGameplayStatics::LoadGameFromSlot(CurrentWorldName + TEXT("/WorldInformation"), 0));
+
+	CurrentWorldData = Cast<UWorldData>(UGameplayStatics::CreateSaveGameObject(UWorldData::StaticClass()));
+	CurrentWorldData = Cast<UWorldData>(UGameplayStatics::LoadGameFromSlot(CurrentWorldName + TEXT("/WorldData"), 0));
 }
 
 void ASaveManager::LoadWorld()
 {
-	UWildOmissionSaveGame* SaveFile = GetSaveFile();
-	if (SaveFile == nullptr)
+	if (CurrentWorldInformation == nullptr || CurrentWorldData == nullptr)
 	{
+		UE_LOG(LogSaveSystem, Warning, TEXT("Attemped to load world but CurrentWorldInformation or CurrentWorldData was nullptr."));
 		return;
 	}
 	
-	if (SaveFile->CreationInformation.LevelHasGenerated == false)
+	// Check if the world needs to be generated first
+	if (CurrentWorldInformation->CreationInformation.LevelHasGenerated == false)
 	{
+		// Generate world
 		SetLoadingSubtitle(TEXT("Generating level."));
 
-		AChunkManager::SetGenerationSeed(SaveFile->Seed);
+		AChunkManager::SetGenerationSeed(CurrentWorldInformation->Seed);
 
-		SaveFile->CreationInformation.LevelHasGenerated = true;
-		UpdateSaveFile(SaveFile);
+		CurrentWorldInformation->CreationInformation.LevelHasGenerated = true;
+		UpdateWorldFile(CurrentWorldInformation, CurrentWorldData);
 		return;
 	}
 
 	SetLoadingSubtitle(TEXT("Loading level."));
 
-	if (SaveFile->GameMode == 1)
+	if (CurrentWorldInformation->GameMode == 1)
 	{
-		SaveFile->CheatsEnabled = true;
+		CurrentWorldInformation->CheatsEnabled = true;
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("GameMode is %i"), SaveFile->GameMode);
+	UE_LOG(LogSaveSystem, Warning, TEXT("Loading world GameMode is %i"), CurrentWorldInformation->GameMode);
 
 	ATimeOfDayManager* TimeOfDayManager = ATimeOfDayManager::GetTimeOfDayManager();
 	if (TimeOfDayManager)
 	{
-		TimeOfDayManager->SetDaysPlayed(SaveFile->DaysPlayed);
-		TimeOfDayManager->SetTimeOfDay(SaveFile->NormalizedTimeOfDay);
+		TimeOfDayManager->SetDaysPlayed(CurrentWorldInformation->DaysPlayed);
+		TimeOfDayManager->SetTimeOfDay(CurrentWorldInformation->NormalizedTimeOfDay);
 	}
 	
 	AChunkManager* ChunkManager = AChunkManager::GetChunkManager();
 	if (ChunkManager)
 	{
-		ChunkManager->SetPlayerSpawnChunk(SaveFile->PlayerSpawnChunk);
-		ChunkManager->SetGenerationSeed(SaveFile->Seed);
-		ChunkManager->SetChunkData(SaveFile->ChunkData);
+		ChunkManager->SetPlayerSpawnChunk(CurrentWorldData->PlayerSpawnChunk);
+		ChunkManager->SetGenerationSeed(CurrentWorldInformation->Seed);
+		ChunkManager->SetChunkData(CurrentWorldData->ChunkData);
 	}
 
 	AWeatherManager* WeatherManager = AWeatherManager::GetWeatherManager();
 	if (WeatherManager)
 	{
-		WeatherManager->Load(SaveFile->WeatherData);
+		WeatherManager->Load(CurrentWorldData->WeatherData);
 	}
 }
 
-UWildOmissionSaveGame* ASaveManager::GetSaveFile() const
+void ASaveManager::UpdateWorldFile(UWorldInformation* UpdatedWorldInformation, UWorldData* UpdatedWorldData)
 {
-	return CurrentSaveFile;
+	UpdateWorldInformation(UpdatedWorldInformation);
+	UpdateWorldData(UpdatedWorldData);
 }
+
+void ASaveManager::UpdateWorldInformation(UWorldInformation* UpdatedWorldInformation)
+{
+	if (UpdatedWorldInformation == nullptr)
+	{
+		UE_LOG(LogSaveSystem, Error, TEXT("Aborting update to world files, UpdatedWorldInformation was nullptr."));
+		return;
+	}
+
+	UGameplayStatics::SaveGameToSlot(UpdatedWorldInformation, CurrentWorldName + TEXT("/WorldInformation"), 0);
+}
+
+void ASaveManager::UpdateWorldData(UWorldData* UpdatedWorldData)
+{
+	if (UpdatedWorldData == nullptr)
+	{
+		UE_LOG(LogSaveSystem, Error, TEXT("Aborting update to world files, UpdatedWorldData was nullptr."));
+		return;
+	}
+
+	UGameplayStatics::SaveGameToSlot(UpdatedWorldData, CurrentWorldName + TEXT("/WorldData"), 0);
+}
+
+void ASaveManager::CaptureWorldIcon()
+{
+	UWorld* World = GetWorld();
+	if (World == nullptr)
+	{
+		UE_LOG(LogSaveSystem, Error, TEXT("Failed to capture world thumbnail, world was nullptr"));
+		return;
+	}
+
+	// Create 512 x 512 render target
+	UTextureRenderTarget2D* RenderTarget = NewObject<UTextureRenderTarget2D>(World);
+	RenderTarget->InitAutoFormat(512, 512);
+	RenderTarget->TargetGamma = 2.2f;
+	RenderTarget->UpdateResource();
+
+	// Spawn a temporary Scene Capture Component from the player's camera view
+	APlayerController* FirstPlayerController = World->GetFirstPlayerController();
+	if (FirstPlayerController == nullptr || FirstPlayerController->PlayerCameraManager == nullptr)
+	{
+		UE_LOG(LogSaveSystem, Warning, TEXT("Failed to capture world thumbnail, FirstPlayerController was nullptr"));
+		return;
+	}
+
+	USceneCaptureComponent2D* CaptureComponent = NewObject<USceneCaptureComponent2D>(FirstPlayerController);
+	CaptureComponent->RegisterComponent();
+
+	CaptureComponent->SetWorldLocationAndRotation(
+		FirstPlayerController->PlayerCameraManager->GetCameraLocation(),
+		FirstPlayerController->PlayerCameraManager->GetCameraRotation()
+	);
+
+	// Configure capture settings
+	CaptureComponent->TextureTarget = RenderTarget;
+	CaptureComponent->CaptureSource = ESceneCaptureSource::SCS_FinalColorLDR;
+	CaptureComponent->bCaptureEveryFrame = false;
+	CaptureComponent->bCaptureOnMovement = false;
+	CaptureComponent->bAlwaysPersistRenderingState = true;
+
+	// Override individual ShowFlags to ensure GI and Lumen are allowed in the render loop
+	FEngineShowFlags& ShowFlags = CaptureComponent->ShowFlags;
+	ShowFlags.SetGlobalIllumination(true);
+	ShowFlags.SetLumenGlobalIllumination(true);
+	ShowFlags.SetLumenReflections(true);
+	ShowFlags.SetAmbientOcclusion(true);
+	ShowFlags.SetDirectLighting(true);
+	ShowFlags.SetIndirectLightingCache(true);
+
+	// Capture
+	CaptureComponent->CaptureScene();
+
+	// Read the raw pixel data from the render target
+	TArray<FColor> RawPixels;
+	FTextureRenderTargetResource* RenderTargetResource = RenderTarget->GameThread_GetRenderTargetResource();
+	RenderTargetResource->ReadPixels(RawPixels);
+
+	// Compress raw pixel array into PNG format
+	TArray64<uint8> CompressedPNG;
+	FImageUtils::PNGCompressImageArray(512, 512, RawPixels, CompressedPNG);
+
+	// Save the PNG into the world directory
+	const FString FilePath = FPaths::ProjectSavedDir() + "/SaveGames/" + CurrentWorldName + "/Icon.png";
+	FFileHelper::SaveArrayToFile(CompressedPNG, *FilePath);
+
+	// Clean up
+	CaptureComponent->DestroyComponent();
+}
+
+UTexture2D* ASaveManager::GetWorldIcon(const FString& WorldName)
+{
+	// Build file path
+	const FString FilePath = FPaths::ProjectSavedDir() + "/SaveGames/" + WorldName + "/Icon.png";
+	// Check if it actually exists
+	if (!FPaths::FileExists(FilePath))
+	{
+		UE_LOG(LogSaveSystem, Warning, TEXT("World icon not found at: %s"), *FilePath);
+		return nullptr;
+	}
+
+	// Load the raw compressed binary data from disk
+	TArray<uint8> RawFileData;
+	if (!FFileHelper::LoadFileToArray(RawFileData, *FilePath))
+	{
+		return nullptr;
+	}
+
+	// Convert png back into texture
+	UTexture2D* LoadedTexture = FImageUtils::ImportBufferAsTexture2D(RawFileData);
+
+	return LoadedTexture;
+}
+
+UWorldInformation* ASaveManager::GetWorldInformation() const
+{
+	return CurrentWorldInformation;
+}
+
+UWorldData* ASaveManager::GetWorldData() const
+{
+	return CurrentWorldData;
+}
+
+
+TArray<FString> ASaveManager::GetAllWorldNamesV1()
+{
+	////////////////////////////////////////////////////////////////////////////////////
+	// Special thanks to Ixiguis on the Unreal Engine forums for this useful function //
+	////////////////////////////////////////////////////////////////////////////////////
+	class FFindSavesVisitor : public IPlatformFile::FDirectoryVisitor
+	{
+	public:
+		FFindSavesVisitor() {}
+
+		virtual bool Visit(const TCHAR* FilenameOrDirectory, bool bIsDirectory)
+		{
+			if (!bIsDirectory)
+			{
+				FString FullFilePath(FilenameOrDirectory);
+				if (FPaths::GetExtension(FullFilePath) == TEXT("sav"))
+				{
+					FString CleanFilename = FPaths::GetBaseFilename(FullFilePath);
+					CleanFilename = CleanFilename.Replace(TEXT(".sav"), TEXT(""));
+					SavesFound.Add(CleanFilename);
+				}
+			}
+			return true;
+		}
+		TArray<FString> SavesFound;
+	};
+
+	TArray<FString> Saves;
+	const FString SavesFolder = FPaths::ProjectSavedDir() + TEXT("SaveGames");
+
+	if (!SavesFolder.IsEmpty())
+	{
+		FFindSavesVisitor Visitor;
+		FPlatformFileManager::Get().GetPlatformFile().IterateDirectory(*SavesFolder, Visitor);
+		Saves = Visitor.SavesFound;
+	}
+
+	return Saves;
+}
+
+TArray<FString> ASaveManager::GetAllWorldFolderNames()
+{
+	TArray<FString> FolderNames;
+	FString SearchDirectory = FPaths::ProjectSavedDir() + TEXT("SaveGames/") + TEXT("*");
+
+	IFileManager::Get().FindFiles(FolderNames, *SearchDirectory, false, true);
+
+	return FolderNames;
+}
+
+bool ASaveManager::WorldAlreadyExists(const FString& WorldNameToTest)
+{
+	TArray<FString> WorldNames = GetAllWorldFolderNames();
+	for (const FString& WorldName : WorldNames)
+	{
+		if (WorldNameToTest.ToLower() == WorldName.ToLower())
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
 
 void ASaveManager::BeginPlay()
 {
 	Super::BeginPlay();
 
 	UWorld* World = GetWorld();
-	if (World == nullptr || World->IsEditorWorld() && IsValid(Instance))
+	if (World == nullptr || World->IsEditorWorld() && IsValid(SaveManagerInstance))
 	{
 		return;
 	}
@@ -167,7 +443,7 @@ void ASaveManager::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	Super::EndPlay(EndPlayReason);
 
-	Instance = nullptr;
+	SaveManagerInstance = nullptr;
 }
 
 UPlayerSaveManagerComponent* ASaveManager::GetPlayerManager() const
@@ -177,31 +453,22 @@ UPlayerSaveManagerComponent* ASaveManager::GetPlayerManager() const
 
 void ASaveManager::ValidateSave()
 {
-	if (CurrentSaveFileName.Len() > 0)
+	if (CurrentWorldName.Len() > 0)
 	{
-		UE_LOG(LogSaveSystem, Display, TEXT("Loading into valid save file: %s."), *CurrentSaveFileName);
+		UE_LOG(LogSaveSystem, Display, TEXT("Loading into valid world: %s."), *CurrentWorldName);
 		return;
 	}
 
-	CurrentSaveFileName = TEXT("New_World");
-	
-	if (DoesWorldAlreadExist(CurrentSaveFileName))
+	// If loaded world name is blank create populate it with "New_World"
+	CurrentWorldName = TEXT("New_World");
+	UE_LOG(LogSaveSystem, Display, TEXT("World Name was 0 in length, using default world name of New_World"));
+
+	if (DoesWorldAlreadExist(CurrentWorldName))
 	{
 		return;
 	}
 
-	CreateWorld(CurrentSaveFileName);
-}
-
-void ASaveManager::UpdateSaveFile(UWildOmissionSaveGame* UpdatedSaveFile)
-{
-	if (UpdatedSaveFile == nullptr)
-	{
-		UE_LOG(LogSaveSystem, Error, TEXT("Aborting update to save file, updated save file passed in was a nullptr."));
-		return;
-	}
-
-	UGameplayStatics::SaveGameToSlot(UpdatedSaveFile, CurrentSaveFileName, 0);
+	CreateWorld(CurrentWorldName);
 }
 
 void ASaveManager::StartLoading()

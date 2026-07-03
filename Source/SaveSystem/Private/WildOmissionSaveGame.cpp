@@ -3,8 +3,6 @@
 
 #include "WildOmissionSaveGame.h"
 
-const static int32 CURRENT_SAVE_FILE_VERSION = 2;
-
 FWildOmissionSaveCreationInformation::FWildOmissionSaveCreationInformation()
 {
 	Name = TEXT("");

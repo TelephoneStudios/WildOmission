@@ -12,10 +12,13 @@
 #include "UI/MainMenuWidget.h"
 #include "UI/GameplayMenuWidget.h"
 #include "UI/LoadingMenuWidget.h"
-#include "WildOmissionSaveGame.h"
+#include "WorldInformation.h"
+#include "WorldData.h"
 #include "WildOmissionGameUserSettings.h"
 #include "AchievementsManager.h"
 #include "ServerAdministrators.h"
+#include "WorkshopManager.h"
+#include "SaveManager.h"
 #include "GameFramework/PlayerState.h"
 #include "Sound/SoundMix.h"
 #include "Sound/SoundClass.h"
@@ -30,7 +33,7 @@ const static FName GAME_VERSION_SETTINGS_KEY = TEXT("GameVersion");
 const static FName SEARCH_PRESENCE = TEXT("PRESENCESEARCH");
 const static FName SEARCH_DEDICATED_ONLY = TEXT("DEDICATEDONLY");
 
-const static FString GameVersion = TEXT("Beta 1.2.1");
+const static FString GameVersion = TEXT("Beta 1.3.0");
 
 static USoundMix* MasterSoundMixModifier = nullptr;
 static USoundClass* MasterSoundClass = nullptr;
@@ -58,7 +61,9 @@ UWildOmissionGameInstance::UWildOmissionGameInstance(const FObjectInitializer& O
 
 	FriendsInterface = nullptr;
 
+	ServerAdministrators = nullptr;
 	AchievementsManager = nullptr;
+	WorkshopManager = nullptr;
 
 	DesiredServerName = TEXT("Server");
 	WorldToLoad = TEXT("NAN");
@@ -66,7 +71,6 @@ UWildOmissionGameInstance::UWildOmissionGameInstance(const FObjectInitializer& O
 	DesiredMaxPlayerCount = 8;
 
 	GameModeIndex = 0;
-	ServerAdministrators = nullptr;
 
 	OnMainMenu = false;
 	Loading = false;
@@ -184,6 +188,15 @@ void UWildOmissionGameInstance::Init()
 	SessionInterface->OnJoinSessionCompleteDelegates.AddUObject(this, &UWildOmissionGameInstance::OnJoinSessionComplete);
 	GEngine->OnNetworkFailure().AddUObject(this, &UWildOmissionGameInstance::OnNetworkFailure);
 
+	ServerAdministrators = NewObject<UServerAdministrators>(this);
+	if (ServerAdministrators == nullptr)
+	{
+		UE_LOG(LogInit, Error, TEXT("Failed to create server administrators"))
+			return;
+	}
+
+	ServerAdministrators->OnCreation();
+
 	AchievementsManager = NewObject<UAchievementsManager>(this);
 	if (AchievementsManager == nullptr)
 	{
@@ -193,14 +206,14 @@ void UWildOmissionGameInstance::Init()
 
 	AchievementsManager->OnCreation();
 
-	ServerAdministrators = NewObject<UServerAdministrators>(this);
-	if (ServerAdministrators == nullptr)
+	WorkshopManager = NewObject<UWorkshopManager>(this);
+	if (WorkshopManager == nullptr)
 	{
-		UE_LOG(LogInit, Error, TEXT("Failed to create server administrators"))
+		UE_LOG(LogInit, Error, TEXT("Failed to create workshop manager."));
 		return;
 	}
 
-	ServerAdministrators->OnCreation();
+	WorkshopManager->OnCreation();
 
 	ApplyAudioSettings();
 	RunAutoConfigQualitySettings();
@@ -343,20 +356,23 @@ void UWildOmissionGameInstance::SetLoadingSubtitle(const FString& InLoadingSubti
 
 void UWildOmissionGameInstance::CreateWorld(const FString& WorldName, const FString& SeedOverride)
 {
-	UWildOmissionSaveGame* NewSaveGame = Cast<UWildOmissionSaveGame>(UGameplayStatics::CreateSaveGameObject(UWildOmissionSaveGame::StaticClass()));
+	const FString NewWorldInformationDirectory = WorldName + TEXT("/WorldInformation");
+	const FString NewWorldDataDirectory = WorldName + TEXT("/WorldData");
+	UWorldInformation* NewWorldInformation = Cast<UWorldInformation>(UGameplayStatics::CreateSaveGameObject(UWorldInformation::StaticClass()));
+	UWorldData* NewWorldData = Cast<UWorldData>(UGameplayStatics::CreateSaveGameObject(UWorldData::StaticClass()));
 
 	FDateTime Time;
 	Time = FDateTime::Now();
 
-	NewSaveGame->LastPlayedTime = Time;
+	NewWorldInformation->LastPlayedTime = Time;
 
-	NewSaveGame->LevelFile = TEXT("LV_Procedural");
-	NewSaveGame->Version = UWildOmissionSaveGame::GetCurrentVersion();
+	NewWorldInformation->LevelFile = TEXT("LV_Procedural");
+	NewWorldInformation->Version = UWorldInformation::GetCurrentVersion();
 
-	NewSaveGame->CreationInformation.Name = WorldName;
-	NewSaveGame->CreationInformation.Day = Time.GetDay();
-	NewSaveGame->CreationInformation.Month = Time.GetMonth();
-	NewSaveGame->CreationInformation.Year = Time.GetYear();
+	NewWorldInformation->CreationInformation.Name = WorldName;
+	NewWorldInformation->CreationInformation.Day = Time.GetDay();
+	NewWorldInformation->CreationInformation.Month = Time.GetMonth();
+	NewWorldInformation->CreationInformation.Year = Time.GetYear();
 
 	const int32 MinSeed = 0;
 	const int32 MaxSeed = 999999999;
@@ -364,14 +380,15 @@ void UWildOmissionGameInstance::CreateWorld(const FString& WorldName, const FStr
 	const uint32 CustomSeed = SeedOverride.IsNumeric() ? FCString::Atoi(*SeedOverride) : GetTypeHash(SeedOverride);
 	const uint32 Seed = SeedOverride.IsEmpty() ? RandomSeed : CustomSeed;
 
-	NewSaveGame->Seed = Seed;
+	NewWorldInformation->Seed = Seed;
 
-	UGameplayStatics::SaveGameToSlot(NewSaveGame, WorldName, 0);
+	UGameplayStatics::SaveGameToSlot(NewWorldInformation, NewWorldInformationDirectory, 0);
+	UGameplayStatics::SaveGameToSlot(NewWorldData, NewWorldDataDirectory, 0);
 }
 
 bool UWildOmissionGameInstance::DoesWorldAlreadyExist(const FString& WorldName) const
 {
-	const TArray<FString> WorldNames = GetAllWorldNames();
+	const TArray<FString> WorldNames = ASaveManager::GetAllWorldFolderNames();
 
 	for (const FString& CurrentWorldName : WorldNames)
 	{
@@ -384,22 +401,6 @@ bool UWildOmissionGameInstance::DoesWorldAlreadyExist(const FString& WorldName) 
 	}
 
 	return false;
-}
-
-void UWildOmissionGameInstance::RenameWorld(const FString& OldWorldName, const FString& NewWorldName)
-{
-	UWildOmissionSaveGame* RenamingSave = Cast<UWildOmissionSaveGame>(UGameplayStatics::CreateSaveGameObject(UWildOmissionSaveGame::StaticClass()));
-	RenamingSave = Cast<UWildOmissionSaveGame>(UGameplayStatics::LoadGameFromSlot(OldWorldName, 0));
-
-	RenamingSave->CreationInformation.Name = NewWorldName;
-
-	UGameplayStatics::SaveGameToSlot(RenamingSave, NewWorldName, 0);
-	UGameplayStatics::DeleteGameInSlot(OldWorldName, 0);
-}
-
-void UWildOmissionGameInstance::DeleteWorld(const FString& WorldName)
-{
-	UGameplayStatics::DeleteGameInSlot(WorldName, 0);
 }
 
 void UWildOmissionGameInstance::StartSession()
@@ -509,17 +510,19 @@ void UWildOmissionGameInstance::StartSingleplayer(const FString& WorldName, cons
 
 	WorldToLoad = WorldName;
 	GameModeIndex = GameMode;
+	UE_LOG(LogTemp, Warning, TEXT("StartSingleplayer WorldName: %s"), *WorldName);
+	FString WorldInformationDirectory = WorldToLoad + TEXT("/WorldInformation");
 
 	UWorld* World = GetWorld();
-	UWildOmissionSaveGame* SaveGame = Cast<UWildOmissionSaveGame>(UGameplayStatics::LoadGameFromSlot(WorldToLoad, 0));
-	if (World == nullptr || SaveGame == nullptr)
+	UWorldInformation* WorldInformation = Cast<UWorldInformation>(UGameplayStatics::LoadGameFromSlot(WorldInformationDirectory, 0));
+	if (World == nullptr || WorldInformation== nullptr)
 	{
 		return;
 	}
 
-	const FString LevelFileString = SaveGame->LevelFile;
+	const FString LevelFileString = WorldInformation->LevelFile;
 	const FString GameModeString = FString::Printf(TEXT("%i"), GameModeIndex);
-	const FString LoadString = FString::Printf(TEXT("/Game/WildOmissionCore/Levels/%s?savegame=%s?gamemode=%s"), *LevelFileString, *WorldName, *GameModeString);
+	const FString LoadString = FString::Printf(TEXT("/Game/WildOmissionCore/Levels/%s?worldname=%s?gamemode=%s"), *LevelFileString, *WorldName, *GameModeString);
 	// Server travel to the game level
 	World->ServerTravel(LoadString);
 }
@@ -655,17 +658,19 @@ void UWildOmissionGameInstance::OnCreateSessionComplete(FName SessionName, bool 
 	SetLoadingTitle(TEXT("Loading Game"));
 	SetLoadingSubtitle(TEXT("Loading level."));
 
+	FString WorldInformationDirectory = WorldToLoad + TEXT("/WorldInformation");
+
 	UWorld* World = GetWorld();
-	UWildOmissionSaveGame* SaveGame = Cast<UWildOmissionSaveGame>(UGameplayStatics::LoadGameFromSlot(WorldToLoad, 0));
-	if (World == nullptr || SaveGame == nullptr)
+	UWorldInformation* WorldInformation = Cast<UWorldInformation>(UGameplayStatics::LoadGameFromSlot(WorldInformationDirectory, 0));
+	if (World == nullptr || WorldInformation == nullptr)
 	{
 		return;
 	}
 
 	const FString FriendsOnlyString = FString::Printf(TEXT("%i"), FriendsOnlySession);
-	const FString LevelFileString = SaveGame->LevelFile;
+	const FString LevelFileString = WorldInformation->LevelFile;
 	const FString GameModeString = FString::Printf(TEXT("%i"), GameModeIndex);
-	const FString LoadString = FString::Printf(TEXT("/Game/WildOmissionCore/Levels/%s?listen?savegame=%s?friendsonly=%s?gamemode=%s"),
+	const FString LoadString = FString::Printf(TEXT("/Game/WildOmissionCore/Levels/%s?listen?worldname=%s?friendsonly=%s?gamemode=%s"),
 		*LevelFileString, *WorldToLoad, *FriendsOnlyString, *GameModeString);
 	// Server travel to the game level
 	World->ServerTravel(LoadString);

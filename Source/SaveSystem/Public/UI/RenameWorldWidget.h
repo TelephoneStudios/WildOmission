@@ -10,7 +10,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FRenameWorldOnRenameButtonClickedSig
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FRenameWorldOnCancelButtonClickedSignature);
 
 UCLASS()
-class URenameWorldWidget : public UUserWidget
+class SAVESYSTEM_API URenameWorldWidget : public UUserWidget
 {
 	GENERATED_BODY()
 public:

@@ -6,7 +6,7 @@ public class Achievements : ModuleRules
 {
     public Achievements(ReadOnlyTargetRules Target) : base(Target)
     {
-        PublicDependencyModuleNames.AddRange(new string[] { "Engine", "UMG" });
-        PrivateDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "OnlineSubsystem", "OnlineSubsystemSteam" });
+        PublicDependencyModuleNames.AddRange(new string[] { "Engine", "UMG", "OnlineSubsystem", "OnlineSubsystemSteam" });
+        PrivateDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject" });
     }
 }

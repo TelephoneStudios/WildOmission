@@ -1,7 +1,7 @@
 // Copyright Telephone Studios. All Rights Reserved.
 
 
-#include "WorldMenuWidget.h"
+#include "UI/WorldMenuWidget.h"
 #include "Components/Button.h"
 #include "Components/EditableTextBox.h"
 #include "OptionBoxes/MultiOptionBox.h"
@@ -10,7 +10,7 @@
 #include "Components/TextBlock.h"
 #include "Enums/GameDifficulty.h"
 #include "Kismet/GameplayStatics.h"
-#include "WildOmissionSaveGame.h"
+#include "WorldInformation.h"
 #include "SteamHelperFunctionLibrary.h"
 #include "GameFramework/PlayerState.h"
 #include "Log.h"
@@ -66,26 +66,28 @@ void UWorldMenuWidget::NativeConstruct()
 
 void UWorldMenuWidget::Open(const FString& InWorldName)
 {
+	FString InformationDirectory = InWorldName + TEXT("/WorldInformation");
 	WorldName = InWorldName;
+	UWorldInformation* WorldInformation = Cast<UWorldInformation>(UGameplayStatics::CreateSaveGameObject(UWorldInformation::StaticClass()));
 
-	UWildOmissionSaveGame* SaveFile = Cast<UWildOmissionSaveGame>(UGameplayStatics::CreateSaveGameObject(UWildOmissionSaveGame::StaticClass()));
-	SaveFile = Cast<UWildOmissionSaveGame>(UGameplayStatics::LoadGameFromSlot(WorldName, 0));
-	if (SaveFile == nullptr)
+	WorldInformation= Cast<UWorldInformation>(UGameplayStatics::LoadGameFromSlot(InformationDirectory, 0));
+	if (WorldInformation == nullptr)
 	{
+		UE_LOG(LogSaveSystem, Warning, TEXT("Failed to open world menu, WorldInformation is nullptr."));
 		return;
 	}
 
 	Title->SetText(FText::FromString(WorldName));
 
 	// Get Save File and select options
-	DifficultyMultiOptionBox->SetSelectedIndex(SaveFile->Difficulty.GetIntValue());
+	DifficultyMultiOptionBox->SetSelectedIndex(WorldInformation->Difficulty.GetIntValue());
 
 	HasCreativeMode = USteamHelperFunctionLibrary::IsDLCInstalled(CreativeModeAppID);
 
 	if (HasCreativeMode)
 	{
 		// load game mode normally
-		GameModeMultiOptionBox->SetSelectedIndex(SaveFile->GameMode);
+		GameModeMultiOptionBox->SetSelectedIndex(WorldInformation->GameMode);
 	}
 	else
 	{
@@ -94,7 +96,7 @@ void UWorldMenuWidget::Open(const FString& InWorldName)
 	}
 
 	// Set the seed text block
-	SeedTextBlock->SetText(FText::FromString(FString::Printf(TEXT("Seed: %i"), SaveFile->Seed)));
+	SeedTextBlock->SetText(FText::FromString(FString::Printf(TEXT("Seed: %i"), WorldInformation->Seed)));
 
 	// Set Placeholder Server Name
 	FString PlaceholderServerName;
@@ -106,7 +108,7 @@ void UWorldMenuWidget::Open(const FString& InWorldName)
 	PlaceholderServerName = FString::Printf(TEXT("%s's Server"), *PlayerState->GetPlayerName());
 	ServerNameInputBox->SetText(FText::FromString(PlaceholderServerName));
 
-	const int32 WorldVersion = SaveFile->Version;
+	const int32 WorldVersion = WorldInformation->Version;
 
 	// If this is an old world, prevent it from being played
 	if (WorldVersion < 2)
@@ -115,7 +117,7 @@ void UWorldMenuWidget::Open(const FString& InWorldName)
 		PlayButtonTextBlock->SetColorAndOpacity(FSlateColor(FColor::Red));
 		PlayButtonTextBlock->SetText(FText::FromString(TEXT("This world can only be played on an older version of Wild Omission")));
 	}
-	else if (WorldVersion > UWildOmissionSaveGame::GetCurrentVersion())
+	else if (WorldVersion > UWorldInformation::GetCurrentVersion())
 	{
 		PlayButton->SetIsEnabled(false);
 		PlayButtonTextBlock->SetColorAndOpacity(FSlateColor(FColor::Red));
@@ -126,45 +128,50 @@ void UWorldMenuWidget::Open(const FString& InWorldName)
 int32 UWorldMenuWidget::GetWorldVersion() const
 {
 	// Get the save file
-	UWildOmissionSaveGame* SaveFile = Cast<UWildOmissionSaveGame>(UGameplayStatics::LoadGameFromSlot(WorldName, 0));
-	if (SaveFile == nullptr)
+	FString InformationDirectory = WorldName + TEXT("/WorldInformation");
+	UWorldInformation* WorldInformation = Cast<UWorldInformation>(UGameplayStatics::LoadGameFromSlot(InformationDirectory, 0));
+	if (WorldInformation == nullptr)
 	{
+
+		UE_LOG(LogSaveSystem, Warning, TEXT("Failed to get world infomation in UWorldMenuWidget::GetWorldVersion"));
 		return -1;
 	}
 
 	// Return the version
-	return SaveFile->Version;
+	return WorldInformation->Version;
 }
 
 TEnumAsByte<EGameDifficulty> UWorldMenuWidget::GetWorldDifficulty() const
 {
 	// Get the save file
-	UWildOmissionSaveGame* SaveFile = Cast<UWildOmissionSaveGame>(UGameplayStatics::LoadGameFromSlot(WorldName, 0));
-	if (SaveFile == nullptr)
+	FString InformationDirectory = WorldName + TEXT("/WorldInformation");
+	UWorldInformation* WorldInformation = Cast<UWorldInformation>(UGameplayStatics::LoadGameFromSlot(InformationDirectory, 0));
+	if (WorldInformation == nullptr)
 	{
 		return EGameDifficulty::EGD_Normal;
 	}
 
 	// Return the save difficulty value
-	return SaveFile->Difficulty;
+	return WorldInformation->Difficulty;
 }
 
 void UWorldMenuWidget::SetWorldDifficultyAndGameMode(const TEnumAsByte<EGameDifficulty>& NewDifficulty, const uint8& NewGameMode)
 {
 	// Get the save file
-	UWildOmissionSaveGame* SaveFile = Cast<UWildOmissionSaveGame>(UGameplayStatics::LoadGameFromSlot(WorldName, 0));
-	if (SaveFile == nullptr)
+	FString InformationDirectory = WorldName + TEXT("/WorldInformation");
+	UWorldInformation* WorldInformation = Cast<UWorldInformation>(UGameplayStatics::LoadGameFromSlot(InformationDirectory, 0));
+	if (WorldInformation == nullptr)
 	{
 		return;
 	}
 
 	// Set the difficulty value to NewDifficulty
-	SaveFile->Difficulty = NewDifficulty;
+	WorldInformation->Difficulty = NewDifficulty;
 	
-	SaveFile->GameMode = NewGameMode;
+	WorldInformation->GameMode = NewGameMode;
 
 	// Save the save game
-	UGameplayStatics::SaveGameToSlot(SaveFile, WorldName, 0);
+	UGameplayStatics::SaveGameToSlot(WorldInformation, InformationDirectory, 0);
 }
 
 void UWorldMenuWidget::ServerNameOnTextChanged(const FText& Text)

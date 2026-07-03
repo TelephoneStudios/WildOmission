@@ -44,6 +44,8 @@ class SAVESYSTEM_API UWildOmissionSaveGame : public USaveGame
 public:
 	UWildOmissionSaveGame();
 
+	const static int32 CURRENT_SAVE_FILE_VERSION = 2;
+
 	static int32 GetCurrentVersion();
 
 	UPROPERTY()

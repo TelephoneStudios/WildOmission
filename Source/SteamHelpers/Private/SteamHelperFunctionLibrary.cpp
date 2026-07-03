@@ -3,6 +3,9 @@
 
 #include "SteamHelperFunctionLibrary.h"
 #include "ThirdParty/Steamworks/sdk/public/steam/steam_api.h"
+#include "Log.h"
+
+static const int32 Game_App_ID = 2348700;
 
 bool USteamHelperFunctionLibrary::IsDLCInstalled(int32 AppID)
 {
@@ -32,4 +35,14 @@ void USteamHelperFunctionLibrary::OpenStore(int32 DLC_AppID)
 	}
 
 	SteamFriends()->ActivateGameOverlayToStore(DLC_AppID, k_EOverlayToStoreFlag_None);
+}
+
+void USteamHelperFunctionLibrary::OpenWebPageInOverlay(const FString& URL)
+{
+	if (SteamUser() == nullptr)
+	{
+		return;
+	}
+
+	SteamFriends()->ActivateGameOverlayToWebPage(TCHAR_TO_ANSI(*URL));
 }

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Structs/ItemData.h"
 #include "CreativeMenuWidget.generated.h"
 
 UCLASS()
@@ -18,8 +19,8 @@ public:
 	UFUNCTION()
 	void Refresh();
 
-	void SetCategoryFilter(TEnumAsByte<enum EItemCategory> NewCategory);
-	TEnumAsByte<enum EItemCategory> GetCategoryFilter() const;
+	void SetCategoryFilter(TEnumAsByte<EItemCategory> NewCategory);
+	TEnumAsByte<EItemCategory> GetCategoryFilter() const;
 
 	void SetSelectedItem(const FName& SelectedItemName);
 	FName GetSelectedItem() const;
@@ -83,7 +84,7 @@ private:
 	UPROPERTY()
 	TSubclassOf<class UItemIconWidget> ItemIconWidgetClass;
 	
-	TEnumAsByte<enum EItemCategory> CategoryFilter;
+	TEnumAsByte<EItemCategory> CategoryFilter;
 
 	FName SelectedItem;
 

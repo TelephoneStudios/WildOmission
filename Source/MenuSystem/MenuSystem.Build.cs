@@ -10,6 +10,6 @@ public class MenuSystem: ModuleRules
         PrivateDependencyModuleNames.AddRange(new string[] { 
             "Core", "CoreUObject", "InputCore", "Slate", "SlateCore",
             "Achievements", "CustomUI", "DedicatedServer", "GameSettings", "SaveSystem",
-            "OnlineSubsystem", "OnlineSubsystemSteam", "SteamHelpers" });
+            "OnlineSubsystem", "OnlineSubsystemSteam", "SteamHelpers", "Workshop" });
     }
 }

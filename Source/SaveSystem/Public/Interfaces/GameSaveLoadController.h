@@ -40,10 +40,4 @@ public:
 	UFUNCTION(BlueprintCallable, Exec)
 	virtual bool DoesWorldAlreadyExist(const FString& WorldName) const = 0;
 
-	UFUNCTION(BlueprintCallable, Exec)
-	virtual void RenameWorld(const FString& OldWorldName, const FString& NewWorldName) = 0;
-
-	UFUNCTION(BlueprintCallable, Exec)
-	virtual void DeleteWorld(const FString& WorldName) = 0;
-
 };

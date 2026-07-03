@@ -17,24 +17,41 @@ public:
 
 	void SetGameSaveLoadController(class IGameSaveLoadController* InGameSaveLoadController);
 
-	static void SetSaveManager(ASaveManager* NewInstance);
+	static void SetSaveManager(ASaveManager* NewSaveManagerInstance);
 	static ASaveManager* GetSaveManager();
 
 	void SaveWorld();
-	void SetSaveFile(const FString& SaveFileName);
+	void SetWorld(const FString& WorldName);
 	void LoadWorld();
 
-	void UpdateSaveFile(class UWildOmissionSaveGame* UpdatedSaveFile);
+	void UpdateWorldFile(class UWorldInformation* UpdatedWorldInformation, class UWorldData* UpdatedWorldData);
+	void UpdateWorldInformation(class UWorldInformation* UpdatedWorldInformation);
+	void UpdateWorldData(class UWorldData* UpdatedWorldData);
+
+	void CaptureWorldIcon();
+	static UTexture2D* GetWorldIcon(const FString& WorldName);
 
 	class UPlayerSaveManagerComponent* GetPlayerManager() const;
-	class UWildOmissionSaveGame* GetSaveFile() const;
+
+	class UWorldInformation* GetWorldInformation() const;
+	class UWorldData* GetWorldData() const;
+
+	UFUNCTION(BlueprintCallable, Exec)
+	static void RenameWorld(const FString& OldWorldName, const FString& NewWorldName);
+
+	UFUNCTION(BlueprintCallable, Exec)
+	static void DeleteWorld(const FString& WorldName);
+
+	static TArray<FString> GetAllWorldNamesV1();
+	static TArray<FString> GetAllWorldFolderNames();
+	static bool WorldAlreadyExists(const FString& WorldNameToTest);
 
 protected:
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 private:
-	FString CurrentSaveFileName;
+	FString CurrentWorldName;
 
 	UPROPERTY(VisibleAnywhere)
 	class UPlayerSaveManagerComponent* PlayerSaveManagerComponent;
@@ -44,7 +61,10 @@ private:
 	void ValidateSave();
 
 	UPROPERTY()
-	class UWildOmissionSaveGame* CurrentSaveFile;
+	class UWorldData* CurrentWorldData;
+
+	UPROPERTY()
+	class UWorldInformation* CurrentWorldInformation;
 
 	UFUNCTION()
 	void StartLoading();

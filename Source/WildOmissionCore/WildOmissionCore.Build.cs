@@ -16,7 +16,7 @@ public class WildOmissionCore : ModuleRules
 			"EquipableItems", "GameChat", "GameMusic", "GameSettings", "GatherableResources",
 			"Interaction", "Inventory", "Locks", "MenuSystem", "Maps", "Monsters", "Notifications", "Ragdoll", "SavableObject",
 			"SaveSystem", "SurfaceProperties", "TimeOfDay", "Vitals", "Weapons", "Weather",
-			"WildOmissionAI", "WorldGeneration", "PhysicsGrabber"
+			"WildOmissionAI", "WorldGeneration", "PhysicsGrabber", "Workshop"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore", "OnlineSubsystem", "OnlineSubsystemSteam" });
