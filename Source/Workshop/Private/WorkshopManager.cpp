@@ -180,7 +180,8 @@ float UWorkshopManager::GetItemDownloadProgress()
 
 	if (ItemState & k_EItemStateInstalled)
 	{
-		(void*)CopyWorldToSaveGamesFolder(DownloadFileId);
+		FString WorkshopFolderName;
+		(void*)CopyWorldToSaveGamesFolder(DownloadFileId, WorkshopFolderName);
 
 		// Add this to the transfer data, so it doesn't get processed twice
 		FWorkshopTransferData TransferData;
@@ -188,7 +189,7 @@ float UWorkshopManager::GetItemDownloadProgress()
 		TransferData.LastTransferCheck = FDateTime::UtcNow();
 		FWorkshopDownload NewProcessedDownload;
 		NewProcessedDownload.ItemID = DownloadFileId;
-		NewProcessedDownload.FolderName = FString::FromInt(NewProcessedDownload.ItemID);
+		NewProcessedDownload.FolderName = WorkshopFolderName;
 		TransferData.ProcessedDownloads.Add(NewProcessedDownload);
 		(void*)SaveTransferDataToJsonFile(TransferData);
 
@@ -378,7 +379,7 @@ void UWorkshopManager::OnItemInstalled(ItemInstalled_t* pCallback, bool bIOFailu
 	}
 }
 
-bool UWorkshopManager::CopyWorldToSaveGamesFolder(PublishedFileId_t FileId)
+bool UWorkshopManager::CopyWorldToSaveGamesFolder(PublishedFileId_t FileId, FString& OutWorkshopFolderName)
 {
 	if (SteamUGC() == nullptr)
 	{
@@ -396,6 +397,7 @@ bool UWorkshopManager::CopyWorldToSaveGamesFolder(PublishedFileId_t FileId)
 	{
 		const FString SourcePath = FString(UTF8_TO_TCHAR(FolderPath));
 		const FString FolderName = FPaths::GetCleanFilename(SourcePath);
+		OutWorkshopFolderName = FolderName;
 		const FString DestinationPath = FPaths::ProjectSavedDir() + TEXT("SaveGames/") + FolderName;
 
 		IFileManager& FileManager = IFileManager::Get();
@@ -528,7 +530,8 @@ void UWorkshopManager::CheckAndCopyNewWorkshopItems()
 				if (IsNew)
 				{
 					UE_LOG(LogWorkshop, Display, TEXT("New world detected: %s"), *SteamWorkshopItemFolderName);
-					(void*)CopyWorldToSaveGamesFolder(ItemID);
+					FString WorkshopFolderName;
+					(void*)CopyWorldToSaveGamesFolder(ItemID, WorkshopFolderName);
 					FWorkshopDownload NewProcessedDownload;
 					NewProcessedDownload.FolderName = SteamWorkshopItemFolderName;
 					NewProcessedDownload.ItemID = ItemID;
