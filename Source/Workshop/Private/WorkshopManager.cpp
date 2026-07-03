@@ -7,6 +7,9 @@
 #include "SaveManager.h"
 #include "WorldInformation.h"
 #include "Kismet/GameplayStatics.h"
+#include "JsonObjectConverter.h"
+#include "Misc/FileHelper.h"
+#include "Misc/Paths.h"
 #include "Log.h"
 
 static UWorkshopManager* WorkshopManagerInstance = nullptr;
@@ -429,6 +432,31 @@ bool UWorkshopManager::CopyWorldToSaveGamesFolder(PublishedFileId_t FileId)
 	return true;
 }
 
+bool UWorkshopManager::SaveTransferDataToJsonFile(const FWorkshopTransferData& Data)
+{
+	FString OutputString;
+	if (!FJsonObjectConverter::UStructToJsonObjectString(Data, OutputString))
+	{
+		return false;
+	}
+
+	const FString Filename = FPaths::ProjectSavedDir() + TEXT("Workshop/WorkshopTransferData.json");
+
+	return FFileHelper::SaveStringToFile(OutputString, *Filename, FFileHelper::EEncodingOptions::ForceUTF8WithoutBOM);
+}
+
+bool UWorkshopManager::LoadTransferDataFromJsonFile(FWorkshopTransferData& OutTransferData)
+{
+	const FString Filename = FPaths::ProjectSavedDir() + TEXT("Workshop/WorkshopTransferData.json");
+	FString JsonString;
+	if (!FFileHelper::LoadFileToString(JsonString, *Filename))
+	{
+		return false;
+	}
+
+	return FJsonObjectConverter::JsonObjectStringToUStruct(JsonString, &OutTransferData, 0, 0);
+}
+
 void UWorkshopManager::CheckAndCopyNewWorkshopItems()
 {
 	if (SteamUGC() == nullptr)
@@ -450,6 +478,9 @@ void UWorkshopManager::CheckAndCopyNewWorkshopItems()
 
 	IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
 
+	FWorkshopTransferData TransferData;
+	(void*)LoadTransferDataFromJsonFile(TransferData);
+
 	// Scan through current workshop items
 	for (uint32 i = 0; i < SubscribedCount; ++i)
 	{
@@ -468,7 +499,36 @@ void UWorkshopManager::CheckAndCopyNewWorkshopItems()
 				FString SteamSourcePath = FString(UTF8_TO_TCHAR(PathBuffer));
 				FString SteamWorkshopItemFolderName = FPaths::GetCleanFilename(SteamSourcePath);
 				UE_LOG(LogWorkshop, Display, TEXT("Got subscribed workshop item with folder name: %s"), *SteamWorkshopItemFolderName);
+				
+				bool IsNew = true;
+				if (!TransferData.ProcessedDownloads.IsEmpty())
+				{
+					for (const FWorkshopDownload& ProcessedDownload : TransferData.ProcessedDownloads)
+					{
+						if (ProcessedDownload.FolderName != SteamWorkshopItemFolderName)
+						{
+							continue;
+						}
+						IsNew = true;
+					}
+				}
+				
+				if (IsNew)
+				{
+					UE_LOG(LogWorkshop, Display, TEXT("New world detected: %s"), *SteamWorkshopItemFolderName);
+					CopyWorldToSaveGamesFolder(ItemID);
+					FWorkshopDownload NewProcessedDownload;
+					NewProcessedDownload.FolderName = SteamWorkshopItemFolderName;
+					NewProcessedDownload.ItemID = ItemID;
+					TransferData.ProcessedDownloads.Add(NewProcessedDownload);
+				}
+				else
+				{
+					UE_LOG(LogWorkshop, Display, TEXT("World %s has already been processed"), *SteamWorkshopItemFolderName);
+				}
 			}
 		}
 	}
+	TransferData.LastTransferCheck = FDateTime::UtcNow();
+	SaveTransferDataToJsonFile(TransferData);
 }

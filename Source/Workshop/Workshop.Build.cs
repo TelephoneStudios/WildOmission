@@ -9,8 +9,9 @@ public class Workshop : ModuleRules
         PublicDependencyModuleNames.AddRange(new string[] { "Engine", "UMG" });
         PrivateDependencyModuleNames.AddRange(new string[] { 
             "Core", "CoreUObject", "InputCore", "Slate", "SlateCore",
-             "CustomUI", "SaveSystem",
+            "CustomUI", "SaveSystem",
             "OnlineSubsystem", "OnlineSubsystemSteam", "Steamworks", 
-            "SaveSystem", "HTTP", "ImageWrapper", "SteamHelpers" });
+            "SaveSystem", "HTTP", "ImageWrapper", "SteamHelpers",
+            "Json", "JsonUtilities" });
     }
 }

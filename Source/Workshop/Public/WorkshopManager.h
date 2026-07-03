@@ -11,6 +11,32 @@
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnWorkshopItemSubmittedSignature);
 
 USTRUCT(BlueprintType)
+struct FWorkshopDownload
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	uint64 ItemID;
+
+	UPROPERTY()
+	FString FolderName;
+
+};
+
+USTRUCT(BlueprintType)
+struct FWorkshopTransferData
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	TArray<FWorkshopDownload> ProcessedDownloads;
+
+	UPROPERTY()
+	FDateTime LastTransferCheck;
+
+};
+
+USTRUCT(BlueprintType)
 struct FSteamWorkshopItemDetails
 {
 	GENERATED_BODY()
@@ -82,6 +108,8 @@ private:
 	// returns if operation was successful
 	bool CopyWorldToSaveGamesFolder(PublishedFileId_t FileId);
 
+	bool SaveTransferDataToJsonFile(const FWorkshopTransferData& Data);
+	bool LoadTransferDataFromJsonFile(FWorkshopTransferData& OutTransferData);
 
 	bool UploadInProgress;
 	bool DownloadInProgress;
