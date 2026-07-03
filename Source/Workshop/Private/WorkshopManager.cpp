@@ -509,10 +509,12 @@ void UWorkshopManager::CheckAndCopyNewWorkshopItems()
 						{
 							continue;
 						}
-						IsNew = true;
+						// if folder of the same name has already been processed then this
+						// isnt a new file
+						IsNew = false;
 					}
 				}
-				
+			
 				if (IsNew)
 				{
 					UE_LOG(LogWorkshop, Display, TEXT("New world detected: %s"), *SteamWorkshopItemFolderName);
