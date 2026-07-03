@@ -177,70 +177,8 @@ float UWorkshopManager::GetItemDownloadProgress()
 
 	if (ItemState & k_EItemStateInstalled)
 	{
-
-		// Copy the file
-		uint64 SizeOnDisk = 0;
-		char FolderPath[1024]; // Buffer array to store the system path
-		uint32 FolderPathSize = sizeof(FolderPath);
-		uint32 Timestamp = 0;
-		bool IsInstalled = SteamUGC()->GetItemInstallInfo(DownloadFileId, &SizeOnDisk, FolderPath, FolderPathSize, &Timestamp);
+		(void*)CopyWorldToSaveGamesFolder(DownloadFileId);
 		
-		if (IsInstalled)
-		{
-			FString SourcePath = FString(UTF8_TO_TCHAR(FolderPath));
-			FString FolderName = FPaths::GetCleanFilename(SourcePath);
-			FString DestinationPath = FPaths::ProjectSavedDir() + TEXT("SaveGames/") + FolderName;
-			//if (IFileManager::Get().DirectoryExists(*SourcePath))
-			//{
-			//	uint32 CopyResult = IFileManager::Get().(*DestinationPath, *SourcePath, true);
-			//	IFileManager::Get().Copy
-			//}
-			//else
-			//{
-			//	UE_LOG(LogTemp, Error, TEXT("Source workshop save file not found! %s"), *SourcePath);
-			//}
-
-			IFileManager& FileManager = IFileManager::Get();
-			TArray<FString> FoundFiles;
-			FileManager.FindFilesRecursive(FoundFiles, *SourcePath, TEXT("*.*"), true, false, false);
-
-			if (FoundFiles.Num() == 0)
-			{
-				UE_LOG(LogTemp, Warning, TEXT("Workshop directory is empty: %s"), *SourcePath);
-				return false;
-			}
-
-			bool bAllFilesCopied = true;
-
-			// 4. Loop through every discovered file and mirror it to the new destination
-			for (const FString& SourceFilePath : FoundFiles)
-			{
-				// Get the relative path of the file compared to the original workshop root folder
-				FString RelativePath = SourceFilePath;
-				FPaths::MakePathRelativeTo(RelativePath, *(SourcePath + TEXT("/")));
-
-				// Combine the relative path with our new SaveGames destination path
-				FString DestinationFilePath = DestinationPath / RelativePath;
-
-				// Perform the copy operation (true = overwrite existing files)
-				uint32 CopyResult = FileManager.Copy(*DestinationFilePath, *SourceFilePath, true, false);
-
-				if (CopyResult != COPY_OK)
-				{
-					UE_LOG(LogTemp, Error, TEXT("Failed to copy file: %s -> %s"), *SourceFilePath, *DestinationFilePath);
-					bAllFilesCopied = false;
-				}
-			}
-
-			// Rename Folder to match world name
-
-			UWorldInformation* DownloadedWorldInformation = Cast<UWorldInformation>(UGameplayStatics::CreateSaveGameObject(UWorldInformation::StaticClass()));
-			FString SlotName = FolderName + TEXT("/WorldInformation");
-			DownloadedWorldInformation = Cast<UWorldInformation>(UGameplayStatics::LoadGameFromSlot(SlotName, 0));
-			FString WorldName = DownloadedWorldInformation->CreationInformation.Name;
-
-			ASaveManager::RenameWorld(FolderName, WorldName);
-		}
 		DownloadInProgress = false;
 	}
 
@@ -425,6 +363,112 @@ void UWorkshopManager::OnItemInstalled(ItemInstalled_t* pCallback, bool bIOFailu
 	{
 		DownloadInProgress = false;
 	}
+}
 
+bool UWorkshopManager::CopyWorldToSaveGamesFolder(PublishedFileId_t FileId)
+{
+	if (SteamUGC() == nullptr)
+	{
+		return false;
+	}
 
+	// Copy the file
+	uint64 SizeOnDisk = 0;
+	char FolderPath[1024]; // Buffer array to store the system path
+	uint32 FolderPathSize = sizeof(FolderPath);
+	uint32 Timestamp = 0;
+	bool IsInstalled = SteamUGC()->GetItemInstallInfo(FileId, &SizeOnDisk, FolderPath, FolderPathSize, &Timestamp);
+
+	if (IsInstalled)
+	{
+		const FString SourcePath = FString(UTF8_TO_TCHAR(FolderPath));
+		const FString FolderName = FPaths::GetCleanFilename(SourcePath);
+		const FString DestinationPath = FPaths::ProjectSavedDir() + TEXT("SaveGames/") + FolderName;
+
+		IFileManager& FileManager = IFileManager::Get();
+		TArray<FString> FoundFiles;
+		FileManager.FindFilesRecursive(FoundFiles, *SourcePath, TEXT("*.*"), true, false, false);
+
+		if (FoundFiles.Num() == 0)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Workshop directory is empty: %s"), *SourcePath);
+			return false;
+		}
+
+		bool bAllFilesCopied = true;
+
+		// 4. Loop through every discovered file and mirror it to the new destination
+		for (const FString& SourceFilePath : FoundFiles)
+		{
+			// Get the relative path of the file compared to the original workshop root folder
+			FString RelativePath = SourceFilePath;
+			FPaths::MakePathRelativeTo(RelativePath, *(SourcePath + TEXT("/")));
+
+			// Combine the relative path with our new SaveGames destination path
+			FString DestinationFilePath = DestinationPath / RelativePath;
+
+			// Perform the copy operation (true = overwrite existing files)
+			uint32 CopyResult = FileManager.Copy(*DestinationFilePath, *SourceFilePath, true, false);
+
+			if (CopyResult != COPY_OK)
+			{
+				UE_LOG(LogTemp, Error, TEXT("Failed to copy file: %s -> %s"), *SourceFilePath, *DestinationFilePath);
+				bAllFilesCopied = false;
+			}
+		}
+
+		// Rename Folder to match world name
+		UWorldInformation* DownloadedWorldInformation = Cast<UWorldInformation>(UGameplayStatics::CreateSaveGameObject(UWorldInformation::StaticClass()));
+		FString SlotName = FolderName + TEXT("/WorldInformation");
+		DownloadedWorldInformation = Cast<UWorldInformation>(UGameplayStatics::LoadGameFromSlot(SlotName, 0));
+		FString WorldName = DownloadedWorldInformation->CreationInformation.Name;
+
+		ASaveManager::RenameWorld(FolderName, WorldName);
+	}
+
+	return true;
+}
+
+void UWorkshopManager::CheckAndCopyNewWorkshopItems()
+{
+	if (SteamUGC() == nullptr)
+	{
+		return;
+	}
+
+	// Get all subscribed ids
+	uint32 SubscribedCount = SteamUGC()->GetNumSubscribedItems();
+	UE_LOG(LogWorkshop, Display, TEXT("Subscribed item count: %i"), SubscribedCount);
+	if (SubscribedCount == 0)
+	{
+		return;
+	}
+
+	TArray<PublishedFileId_t> SubscribedItems;
+	SubscribedItems.SetNum(SubscribedCount);
+	SteamUGC()->GetSubscribedItems(SubscribedItems.GetData(), SubscribedCount);
+
+	IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
+
+	// Scan through current workshop items
+	for (uint32 i = 0; i < SubscribedCount; ++i)
+	{
+		PublishedFileId_t ItemID = SubscribedItems[i];
+		uint32 ItemState = SteamUGC()->GetItemState(ItemID);
+		
+		// Could check for updates in the future but the world 
+		// workshop will not support updates by its very nature
+		if ((ItemState & k_EItemStateInstalled))
+		{
+			uint64 SizeOnDisk = 0;
+			char PathBuffer[1024];
+			uint32 SteamFolderTimestamp = 0;
+			if (SteamUGC()->GetItemInstallInfo(ItemID, &SizeOnDisk, PathBuffer, sizeof(PathBuffer), &SteamFolderTimestamp))
+			{
+				FString SteamSourcePath = FString(UTF8_TO_TCHAR(PathBuffer));
+				FString SteamWorkshopItemFolderName = FPaths::GetCleanFilename(SteamSourcePath);
+				UE_LOG(LogWorkshop, Display, TEXT("Got subscribed workshop item with folder name: %s"), *SteamWorkshopItemFolderName);
+			}
+		}
+	}
 }

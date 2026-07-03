@@ -17,7 +17,9 @@ class WORKSHOP_API UWorkshopMenuWidget : public UUserWidget
 public:
 	UWorkshopMenuWidget(const FObjectInitializer& ObjectInitializer);
 	
+	UFUNCTION()
 	void OnOpen();
+	UFUNCTION()
 	void Refresh();
 
 	virtual void NativeConstruct() override;

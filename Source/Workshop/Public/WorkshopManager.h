@@ -51,6 +51,8 @@ public:
 
 	static UWorkshopManager* GetWorkshopManager();
 
+	void CheckAndCopyNewWorkshopItems();
+
 	void QueryPopularWorlds();
 	void SubscribeAndDownloadWorld(const FString& PublishedFileIdStr);
 	void UploadWorld(const FString& WorldName, const FString& WorkshopItemName, const FString& WorkshopItemDescription);
@@ -76,6 +78,10 @@ private:
 	void OnSubscribeCompleted(RemoteStorageSubscribePublishedFileResult_t* pCallback, bool bIOFailure);
 	void OnDownloadResult(DownloadItemResult_t* pCallback, bool bIOFailure);
 	void OnItemInstalled(ItemInstalled_t* pCallback, bool bIOFailure);
+
+	// returns if operation was successful
+	bool CopyWorldToSaveGamesFolder(PublishedFileId_t FileId);
+
 
 	bool UploadInProgress;
 	bool DownloadInProgress;

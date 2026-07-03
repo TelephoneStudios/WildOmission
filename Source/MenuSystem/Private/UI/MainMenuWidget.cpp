@@ -169,6 +169,12 @@ void UMainMenuWidget::Setup(IMenuInterface* InMenuInterface)
 					OpenMainMenu();
 				});
 		});
+
+	UWorkshopManager* WorkshopManager = UWorkshopManager::GetWorkshopManager();
+	if (WorkshopManager)
+	{
+		WorkshopManager->CheckAndCopyNewWorkshopItems();
+	}
 }
 
 void UMainMenuWidget::Teardown()
