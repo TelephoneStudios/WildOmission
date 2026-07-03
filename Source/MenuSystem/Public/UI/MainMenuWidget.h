@@ -113,6 +113,9 @@ private:
 	UPROPERTY(Meta = (BindWidget))
 	class UErrorMessagePrompt* ErrorMessagePrompt;
 
+	UPROPERTY(Meta = (BindWidget))
+	class UWidget* InstallingWorkshopWorldsMenu;
+
 	class IMenuInterface* MenuInterface;
 	
 	UFUNCTION()

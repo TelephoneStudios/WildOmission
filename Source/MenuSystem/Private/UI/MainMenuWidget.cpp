@@ -155,6 +155,7 @@ void UMainMenuWidget::Setup(IMenuInterface* InMenuInterface)
 
 	MenuInterface = InMenuInterface;
 
+	// do any world/workshop processing on separate thread so game doesn't lock up
 	MenuSwitcher->SetActiveWidget(UpdatingWorldsMenu);
 	Async(EAsyncExecution::Thread, [this]()
 		{
@@ -163,18 +164,27 @@ void UMainMenuWidget::Setup(IMenuInterface* InMenuInterface)
 			{
 				USaveUpdater::UpdateWorldFiles(OldWorldNames);
 			}
-
-			AsyncTask(ENamedThreads::GameThread, [this]() 
+			
+			AsyncTask(ENamedThreads::GameThread, [this]()
 				{
-					OpenMainMenu();
+					MenuSwitcher->SetActiveWidget(InstallingWorkshopWorldsMenu);
+				});
+
+			Async(EAsyncExecution::Thread, [this]()
+				{
+					UWorkshopManager* WorkshopManager = UWorkshopManager::GetWorkshopManager();
+					if (WorkshopManager)
+					{
+						WorkshopManager->CheckAndCopyNewWorkshopItems();
+					}
+					AsyncTask(ENamedThreads::GameThread, [this]()
+						{
+							OpenMainMenu();
+						});
 				});
 		});
 
-	UWorkshopManager* WorkshopManager = UWorkshopManager::GetWorkshopManager();
-	if (WorkshopManager)
-	{
-		WorkshopManager->CheckAndCopyNewWorkshopItems();
-	}
+	
 }
 
 void UMainMenuWidget::Teardown()

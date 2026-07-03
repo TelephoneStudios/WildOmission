@@ -181,7 +181,17 @@ float UWorkshopManager::GetItemDownloadProgress()
 	if (ItemState & k_EItemStateInstalled)
 	{
 		(void*)CopyWorldToSaveGamesFolder(DownloadFileId);
-		
+
+		// Add this to the transfer data, so it doesn't get processed twice
+		FWorkshopTransferData TransferData;
+		(void*)LoadTransferDataFromJsonFile(TransferData);
+		TransferData.LastTransferCheck = FDateTime::UtcNow();
+		FWorkshopDownload NewProcessedDownload;
+		NewProcessedDownload.ItemID = DownloadFileId;
+		NewProcessedDownload.FolderName = FString::FromInt(NewProcessedDownload.ItemID);
+		TransferData.ProcessedDownloads.Add(NewProcessedDownload);
+		(void*)SaveTransferDataToJsonFile(TransferData);
+
 		DownloadInProgress = false;
 	}
 
@@ -518,7 +528,7 @@ void UWorkshopManager::CheckAndCopyNewWorkshopItems()
 				if (IsNew)
 				{
 					UE_LOG(LogWorkshop, Display, TEXT("New world detected: %s"), *SteamWorkshopItemFolderName);
-					CopyWorldToSaveGamesFolder(ItemID);
+					(void*)CopyWorldToSaveGamesFolder(ItemID);
 					FWorkshopDownload NewProcessedDownload;
 					NewProcessedDownload.FolderName = SteamWorkshopItemFolderName;
 					NewProcessedDownload.ItemID = ItemID;
@@ -532,5 +542,5 @@ void UWorkshopManager::CheckAndCopyNewWorkshopItems()
 		}
 	}
 	TransferData.LastTransferCheck = FDateTime::UtcNow();
-	SaveTransferDataToJsonFile(TransferData);
+	(void*)SaveTransferDataToJsonFile(TransferData);
 }
