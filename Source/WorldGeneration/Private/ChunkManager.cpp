@@ -371,7 +371,7 @@ void AChunkManager::ClearDecorationsAroundChunk(const FIntVector2& Origin, const
 
 					AsyncTask(ENamedThreads::GameThread, [this, SpawnedChunkIndex]() 
 						{
-							SpawnedChunks[SpawnedChunkIndex].Chunk->ClearAllAttachedActors();
+							SpawnedChunks[SpawnedChunkIndex].Chunk->ClearAllAttachedDecorations();
 						});
 					
 				}

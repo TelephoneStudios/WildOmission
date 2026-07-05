@@ -13,6 +13,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "KismetProceduralMeshLibrary.h"
 #include "Net/UnrealNetwork.h"
+#include "Structures/Structure.h"
 #include "UObject/ConstructorHelpers.h"
 
 static siv::PerlinNoise Noise(10);
@@ -314,14 +315,14 @@ void AChunk::SetSurfaceData(const TArray<uint8>& InSurfaceData)
 	SurfaceData = InSurfaceData;
 }
 
-void AChunk::ClearAllAttachedActors()
+void AChunk::ClearAllAttachedDecorations()
 {
 	TArray<AActor*> AttachedActors;
 	this->GetAttachedActors(AttachedActors);
 	
 	for (AActor* AttachedActor : AttachedActors)
 	{
-		if (AttachedActor == nullptr)
+		if (Cast<AStructure>(AttachedActor) || AttachedActor == nullptr )
 		{
 			continue;
 		}
@@ -332,7 +333,7 @@ void AChunk::ClearAllAttachedActors()
 
 void AChunk::Redecorate()
 {
-	ClearAllAttachedActors();
+	ClearAllAttachedDecorations();
 	GenerateDecorations();
 }
 
@@ -688,7 +689,7 @@ void AChunk::GenerateStructures()
 		return;
 	}
 	
-	ChunkInvoker->SetRenderDistance(16);
+	ChunkInvoker->SetRenderDistance(4);
 	ChunkInvoker->InvokeChunksNow();
 
 	AActor* SpawnedStructure = World->SpawnActor<AActor>(Biome->Structures[StructureIndex].BlueprintClass, SpawnLocation, FRotator::ZeroRotator);
@@ -709,7 +710,8 @@ void AChunk::GenerateStructures()
 	
 	const FIntVector2 StructureChunkBounds((StructureBounds.X / CHUNK_SIZE_CENTIMETERS) * 1.5f, (StructureBounds.Y / CHUNK_SIZE_CENTIMETERS) * 1.5f);
 
-	ChunkManager->ClearDecorationsAroundChunk(GetChunkLocation(), StructureChunkBounds);
+	// Clear Decorations is called on redecorate, which is called on flatten terrain
+	//ChunkManager->ClearDecorationsAroundChunk(GetChunkLocation(), StructureChunkBounds);
 	ChunkManager->FlattenTerrainAroundChunk(GetChunkLocation(), StructureChunkBounds * 2, SpawnLocation.Z);
 	
 	ChunkInvoker->Destroy();
@@ -719,77 +721,86 @@ void AChunk::GenerateStructures()
 
 void AChunk::GenerateDecorations()
 {
-	UWorld* World = GetWorld();
-	if (World == nullptr)
-	{
-		return;
-	}
-
-	const float ChunkOffset = (VERTEX_SIZE * VERTEX_DISTANCE_SCALE) * 0.5f;
-	const FVector ThisChunkLocation = GetActorLocation();
-
-	// Use less than so nothing can spawn on the border between chunks, confusing the snow systems
-	for (int32 X = 0; X < VERTEX_SIZE; ++X)
-	{
-		for (int32 Y = 0; Y < VERTEX_SIZE; ++Y)
+	Async(EAsyncExecution::ThreadPool, [this]()
 		{
-			const int32 TerrainDataIndex = (X * (VERTEX_SIZE + 1)) + Y;
-
-			if (SurfaceData[TerrainDataIndex] == 1)
+			UWorld* World = GetWorld();
+			if (World == nullptr)
 			{
-				continue;
+				return;
 			}
 
-			const FVector2D BiomeTestLocation = FVector2D((X * VERTEX_DISTANCE_SCALE) + ThisChunkLocation.X, (Y * VERTEX_DISTANCE_SCALE) + ThisChunkLocation.Y);
-			FBiomeGenerationData* Biome = GetBiomeAtLocation(BiomeTestLocation);
-			
-			if (Biome == nullptr)
+			const float ChunkOffset = (VERTEX_SIZE * VERTEX_DISTANCE_SCALE) * 0.5f;
+			const FVector ThisChunkLocation = GetActorLocation();
+
+			// Use less than so nothing can spawn on the border between chunks, confusing the snow systems
+			for (int32 X = 0; X < VERTEX_SIZE; ++X)
 			{
-				continue;
+				for (int32 Y = 0; Y < VERTEX_SIZE; ++Y)
+				{
+					const int32 TerrainDataIndex = (X * (VERTEX_SIZE + 1)) + Y;
+
+					if (SurfaceData[TerrainDataIndex] == 1)
+					{
+						continue;
+					}
+
+					const FVector2D BiomeTestLocation = FVector2D((X * VERTEX_DISTANCE_SCALE) + ThisChunkLocation.X, (Y * VERTEX_DISTANCE_SCALE) + ThisChunkLocation.Y);
+					FBiomeGenerationData* Biome = GetBiomeAtLocation(BiomeTestLocation);
+
+					if (Biome == nullptr)
+					{
+						continue;
+					}
+
+					TArray<FSpawnQuery> SpawnQueryList
+					{
+						FSpawnQuery(Biome->Trees, 0.25f),
+						FSpawnQuery(Biome->Nodes, 0.0f),
+						FSpawnQuery(Biome->Collectables, -0.25f),
+						FSpawnQuery(Biome->Lootables, -0.5f)
+					};
+
+					const float DecorationNoiseScale = 0.5f;
+					const float Spawn = (FMath::FRand() * 2.0f) - 1.0f;//Noise.noise2D((X + (GridLocation.X * VERTEX_SIZE)) * DecorationNoiseScale, (Y + (GridLocation.Y * VERTEX_SIZE)) * DecorationNoiseScale);
+
+					for (const FSpawnQuery& Query : SpawnQueryList)
+					{
+						if (Query.SpawnData.Spawnables.IsEmpty()
+							|| !FMath::IsNearlyEqual(Spawn, Query.TestValue, Query.SpawnData.NoiseParameters.Tolerance))
+						{
+							continue;
+						}
+
+						const int32 SpawnDataIndex = FMath::RandRange(0, Query.SpawnData.Spawnables.Num() - 1);
+						if (!UKismetMathLibrary::RandomBoolWithWeight(Query.SpawnData.Spawnables[SpawnDataIndex].SpawnChance))
+						{
+							continue;
+						}
+
+						const FVector SpawnLocation = FVector(
+							(X * VERTEX_DISTANCE_SCALE) - ChunkOffset,
+							(Y * VERTEX_DISTANCE_SCALE) - ChunkOffset,
+							HeightData[TerrainDataIndex])
+							+ ThisChunkLocation;
+						const FRotator SpawnRotation = FRotator(0.0f, FMath::RandRange(0.0f, 360.0f), 0.0f);
+						TSubclassOf<AActor> DecorationBlueprintClass = Query.SpawnData.Spawnables[SpawnDataIndex].BlueprintClass;
+						AsyncTask(ENamedThreads::GameThread, [this, DecorationBlueprintClass, SpawnLocation, SpawnRotation]()
+							{
+								if (GetWorld())
+								{
+									AActor* SpawnedActor = GetWorld()->SpawnActor<AActor>(DecorationBlueprintClass, SpawnLocation, SpawnRotation);
+									if (SpawnedActor)
+									{
+										SpawnedActor->AttachToActor(this, FAttachmentTransformRules::KeepWorldTransform);
+
+									}
+								}
+							});
+
+					}
+				}
 			}
-
-			TArray<FSpawnQuery> SpawnQueryList
-			{
-				FSpawnQuery(Biome->Trees, 0.25f),
-				FSpawnQuery(Biome->Nodes, 0.0f),
-				FSpawnQuery(Biome->Collectables, -0.25f),
-				FSpawnQuery(Biome->Lootables, -0.5f)
-			};
-
-			const float DecorationNoiseScale = 0.5f;
-			const float Spawn = (FMath::FRand() * 2.0f) - 1.0f;//Noise.noise2D((X + (GridLocation.X * VERTEX_SIZE)) * DecorationNoiseScale, (Y + (GridLocation.Y * VERTEX_SIZE)) * DecorationNoiseScale);
-
-			for (const FSpawnQuery& Query : SpawnQueryList)
-			{
-				if (Query.SpawnData.Spawnables.IsEmpty()
-					|| !FMath::IsNearlyEqual(Spawn, Query.TestValue, Query.SpawnData.NoiseParameters.Tolerance))
-				{
-					continue;
-				}
-
-				const int32 SpawnDataIndex = FMath::RandRange(0, Query.SpawnData.Spawnables.Num() - 1);
-				if (!UKismetMathLibrary::RandomBoolWithWeight(Query.SpawnData.Spawnables[SpawnDataIndex].SpawnChance))
-				{
-					continue;
-				}
-
-				const FVector SpawnLocation = FVector(
-					(X * VERTEX_DISTANCE_SCALE) - ChunkOffset,
-					(Y * VERTEX_DISTANCE_SCALE) - ChunkOffset,
-					HeightData[TerrainDataIndex])
-					+ ThisChunkLocation;
-				const FRotator SpawnRotation = FRotator(0.0f, FMath::RandRange(0.0f, 360.0f), 0.0f);
-
-				AActor* SpawnedActor = World->SpawnActor<AActor>(Query.SpawnData.Spawnables[SpawnDataIndex].BlueprintClass, SpawnLocation, SpawnRotation);
-				if (SpawnedActor == nullptr)
-				{
-					continue;
-				}
-				
-				SpawnedActor->AttachToActor(this, FAttachmentTransformRules::KeepWorldTransform);
-			}
-		}
-	}
+		});
 }
 
 void AChunk::GenerateTerrainData(const TArray<FChunkData>& Neighbors)
