@@ -8,6 +8,9 @@
 #include "HttpModule.h"
 #include "IImageWrapper.h"
 #include "IImageWrapperModule.h"
+#include "OnlineSubsystem.h"
+#include "OnlineSubsystemUtils.h"
+#include "Interfaces/OnlineUserInterface.h"
 #include "Log.h"
 
 UWorkshopItemWidget::UWorkshopItemWidget(const FObjectInitializer& ObjectInitializer) : UUserWidget(ObjectInitializer)
@@ -31,9 +34,7 @@ void UWorkshopItemWidget::Setup(const FSteamWorkshopItemDetails& InDetails)
 {
 	ItemDetails = InDetails;
 	NameTextBlock->SetText(FText::FromString(InDetails.Title));
-	
-	FString AuthorString = TEXT("by: ") + InDetails.AuthorName;
-	AuthorTextBlock->SetText(FText::FromString(AuthorString));
+	AuthorTextBlock->SetText(FText::FromString(TEXT("by: ...")));
 
 	DownloadPreviewTexture(InDetails.PreviewURL);
 }

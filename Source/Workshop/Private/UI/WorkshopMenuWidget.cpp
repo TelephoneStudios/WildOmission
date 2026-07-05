@@ -13,6 +13,9 @@
 #include "UI/WorkshopUploadMenuWidget.h"
 #include "SteamHelperFunctionLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "OnlineSubsystem.h"
+#include "OnlineSubsystemUtils.h"
+#include "Interfaces/OnlineUserInterface.h"
 #include "SaveManager.h"
 #include "Log.h"
 
@@ -172,12 +175,9 @@ void UWorkshopMenuWidget::SelectWorkshopItem(const FSteamWorkshopItemDetails& De
 	// Show the details panel
 	SelectedItemDetailsPanel->SetVisibility(ESlateVisibility::Visible);
 
-	// Set title, author, and description
+	// Set title and description
 	SelectedItemTitleTextBlock->SetText(FText::FromString(Details.Title));
 
-	const FString AuthorString = TEXT("by: ") + Details.AuthorName;
-	SelectedItemAuthorTextBlock->SetText(FText::FromString(AuthorString));
-	
 	FString Description;
 	if (!Details.Description.IsEmpty())
 	{
@@ -194,6 +194,10 @@ void UWorkshopMenuWidget::SelectWorkshopItem(const FSteamWorkshopItemDetails& De
 	{
 		SelectedItemImage->SetBrushFromTexture(Details.PreviewTexture);
 	}
+
+	//TODO
+	// Set author
+	SelectedItemAuthorTextBlock->SetText(FText::FromString(TEXT("by: ...")));
 }
 
 void UWorkshopMenuWidget::BackButtonClicked()
