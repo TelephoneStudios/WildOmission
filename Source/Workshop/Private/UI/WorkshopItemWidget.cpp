@@ -16,6 +16,7 @@ UWorkshopItemWidget::UWorkshopItemWidget(const FObjectInitializer& ObjectInitial
 
 	Button = nullptr;
 	NameTextBlock = nullptr;
+	AuthorTextBlock = nullptr;
 	PreviewImage = nullptr;
 	
 }
@@ -31,11 +32,10 @@ void UWorkshopItemWidget::Setup(const FSteamWorkshopItemDetails& InDetails)
 	ItemDetails = InDetails;
 	NameTextBlock->SetText(FText::FromString(InDetails.Title));
 	
-	DownloadPreviewTexture(InDetails.PreviewURL);
-	//PreviewImage->SetBrushFromTexture(Details.PreviewTexture);
+	FString AuthorString = TEXT("by: ") + InDetails.AuthorName;
+	AuthorTextBlock->SetText(FText::FromString(AuthorString));
 
-	// todo set preview image
-	// todo set identification
+	DownloadPreviewTexture(InDetails.PreviewURL);
 }
 
 void UWorkshopItemWidget::NativeTick(const FGeometry& MyGeomotry, float InDeltaTime)
@@ -102,10 +102,10 @@ void UWorkshopItemWidget::OnPreviewDownloaded(FHttpRequestPtr Request, FHttpResp
 		return;
 	}
 
-	// 1. Get the raw binary payload array
+	// Get the raw binary payload array
 	const TArray<uint8>& RawImageData = Response->GetContent();
 
-	// 2. Detect image format automatically (PNG, JPEG, etc.) via ImageWrapper
+	// Detect image format automatically (PNG, JPEG, etc.) via ImageWrapper
 	IImageWrapperModule& ImageWrapperModule = FModuleManager::LoadModuleChecked<IImageWrapperModule>(FName("ImageWrapper"));
 	EImageFormat ImageFormat = ImageWrapperModule.DetectImageFormat(RawImageData.GetData(), RawImageData.Num());
 
@@ -114,27 +114,24 @@ void UWorkshopItemWidget::OnPreviewDownloaded(FHttpRequestPtr Request, FHttpResp
 	TSharedPtr<IImageWrapper> ImageWrapper = ImageWrapperModule.CreateImageWrapper(ImageFormat);
 	if (!ImageWrapper.IsValid() || !ImageWrapper->SetCompressed(RawImageData.GetData(), RawImageData.Num())) return;
 
-	// 3. Decompress the image into uncompressed raw RGBA byte data
+	// Decompress the image into uncompressed raw RGBA byte data
 	TArray<uint8> UncompressedBGRA;
 	if (!ImageWrapper->GetRaw(ERGBFormat::BGRA, 8, UncompressedBGRA)) return;
 
-	// 4. Construct a new Transient Texture on the GameThread safely
+	// Construct a new Transient Texture on the GameThread safely
 	int32 Width = ImageWrapper->GetWidth();
 	int32 Height = ImageWrapper->GetHeight();
 
 	UTexture2D* LoadedTexture = UTexture2D::CreateTransient(Width, Height, PF_B8G8R8A8);
 	if (!LoadedTexture) return;
 
-	// 5. Bulk copy the decoded pixel array directly into the texture's platform memory
+	// Bulk copy the decoded pixel array directly into the texture's platform memory
 	void* TextureData = LoadedTexture->GetPlatformData()->Mips[0].BulkData.Lock(LOCK_READ_WRITE);
 	FMemory::Memcpy(TextureData, UncompressedBGRA.GetData(), UncompressedBGRA.Num());
 	LoadedTexture->GetPlatformData()->Mips[0].BulkData.Unlock();
 
 	// Update the texture properties so the GPU renders it correctly
 	LoadedTexture->UpdateResource();
-
-	// 6. Broadcast your texture out to UI or Materials!
-	// OnPreviewTextureReady.Broadcast(LoadedTexture);
 }
 
 void UWorkshopItemWidget::OnButtonClicked()

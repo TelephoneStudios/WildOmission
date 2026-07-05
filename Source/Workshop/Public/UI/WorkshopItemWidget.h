@@ -34,6 +34,8 @@ private:
 	UPROPERTY(Meta = (BindWidget))
 	class UTextBlock* NameTextBlock;
 	UPROPERTY(Meta = (BindWidget))
+	class UTextBlock* AuthorTextBlock;
+	UPROPERTY(Meta = (BindWidget))
 	class UImage* PreviewImage;
 
 	FSteamWorkshopItemDetails ItemDetails;

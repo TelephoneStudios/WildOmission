@@ -229,7 +229,8 @@ void UWorkshopManager::OnWorkshopQueryCompletedCallback(SteamUGCQueryCompleted_t
 			WorkshopItem.Description = FString(UTF8_TO_TCHAR(details.m_rgchDescription));
 			WorkshopItem.FileID = FString::Printf(TEXT("%llu"), details.m_nPublishedFileId);
 			WorkshopItem.Likes = static_cast<int32>(details.m_unVotesUp);
-
+			const char* SteamAccountName = SteamFriends()->GetFriendPersonaName(details.m_ulSteamIDOwner);
+			WorkshopItem.AuthorName = FString(SteamAccountName);
 			uint64 WorkshopItemID = details.m_nPublishedFileId;
 			WorkshopItem.WorkshopURL = FString::Printf(TEXT("https://steamcommunity.com/sharedfiles/filedetails/?id=%llu"), WorkshopItemID);
 

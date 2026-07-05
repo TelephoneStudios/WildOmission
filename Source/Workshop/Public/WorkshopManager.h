@@ -51,6 +51,9 @@ struct FSteamWorkshopItemDetails
 	FString FileID;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Steam Workshop")
+	FString AuthorName;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Steam Workshop")
 	int32 Likes = 0;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Steam Workshop")

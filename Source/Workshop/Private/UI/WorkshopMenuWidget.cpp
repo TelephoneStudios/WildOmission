@@ -40,6 +40,7 @@ UWorkshopMenuWidget::UWorkshopMenuWidget(const FObjectInitializer& ObjectInitial
 	// Details panel
 	SelectedItemDetailsPanel = nullptr;
 	SelectedItemTitleTextBlock = nullptr;
+	SelectedItemAuthorTextBlock = nullptr;
 	SelectedItemImage = nullptr;
 	OpenWorkshopPageForSelectedButton = nullptr;
 	DownloadSelectedWorldButton = nullptr;
@@ -149,7 +150,6 @@ void UWorkshopMenuWidget::NativeTick(const FGeometry& MyGeomotry, float InDeltaT
 		{
 			OpenWorkshopMenu();
 		}
-
 	}
 }
 
@@ -167,14 +167,17 @@ void UWorkshopMenuWidget::SelectWorkshopItem(const FSteamWorkshopItemDetails& De
 	const FString DownloadString = IsSubscribed ? TEXT("Already downloaded") : TEXT("Download");
 	DownloadButtonTextBlock->SetText(FText::FromString(DownloadString));
 	
-
 	SelectedItem = Details;
 
 	// Show the details panel
 	SelectedItemDetailsPanel->SetVisibility(ESlateVisibility::Visible);
 
-	// Set title and description
+	// Set title, author, and description
 	SelectedItemTitleTextBlock->SetText(FText::FromString(Details.Title));
+
+	const FString AuthorString = TEXT("by: ") + Details.AuthorName;
+	SelectedItemAuthorTextBlock->SetText(FText::FromString(AuthorString));
+	
 	FString Description;
 	if (!Details.Description.IsEmpty())
 	{

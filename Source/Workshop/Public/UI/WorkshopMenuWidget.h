@@ -68,6 +68,8 @@ private:
 	UPROPERTY(Meta = (BindWidget))
 	class UTextBlock* SelectedItemTitleTextBlock;
 	UPROPERTY(Meta = (BindWidget))
+	class UTextBlock* SelectedItemAuthorTextBlock;
+	UPROPERTY(Meta = (BindWidget))
 	class UTextBlock* SelectedItemDescriptionTextBlock;
 	UPROPERTY(Meta = (BindWidget))
 	class UImage* SelectedItemImage;
