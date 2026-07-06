@@ -16,6 +16,7 @@ UWorkshopItemWidget::UWorkshopItemWidget(const FObjectInitializer& ObjectInitial
 
 	Button = nullptr;
 	NameTextBlock = nullptr;
+	AuthorTextBlock = nullptr;
 	PreviewImage = nullptr;
 	
 }
@@ -23,25 +24,66 @@ void UWorkshopItemWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
+	m_personaCallback.Register(this, &UWorkshopItemWidget::OnPersonaStateChange);
+	
 	Button->OnClicked.AddDynamic(this, &UWorkshopItemWidget::OnButtonClicked);
+}
+
+void UWorkshopItemWidget::NativeDestruct()
+{
+	m_personaCallback.Unregister();
+	Super::NativeDestruct();
 }
 
 void UWorkshopItemWidget::Setup(const FSteamWorkshopItemDetails& InDetails)
 {
+	// Set the details we currently have
 	ItemDetails = InDetails;
 	NameTextBlock->SetText(FText::FromString(InDetails.Title));
 	
+	// Queue up the details that need to be fetched
+	FetchAuthorName(InDetails.AuthorID);
 	DownloadPreviewTexture(InDetails.PreviewURL);
-	//PreviewImage->SetBrushFromTexture(Details.PreviewTexture);
-
-	// todo set preview image
-	// todo set identification
 }
 
 void UWorkshopItemWidget::NativeTick(const FGeometry& MyGeomotry, float InDeltaTime)
 {
 	Super::NativeTick(MyGeomotry, InDeltaTime);
 
+}
+
+void UWorkshopItemWidget::FetchAuthorName(CSteamID SteamID)
+{
+	if (SteamFriends() == nullptr)
+	{
+		return;
+	}
+
+	// Set to false if we need their avatar
+	if (SteamFriends()->RequestUserInformation(SteamID, true))
+	{
+		UE_LOG(LogWorkshop, Display, TEXT("Getting author information from steam servers..."));
+	}
+	else
+	{
+		const char* AuthorName = SteamFriends()->GetFriendPersonaName(SteamID);
+		const FString AuthorString = TEXT("by: ") + FString(AuthorName);
+		AuthorTextBlock->SetText(FText::FromString(AuthorString));
+	}
+}
+
+void UWorkshopItemWidget::OnPersonaStateChange(PersonaStateChange_t* pParam)
+{
+	// Check if the change flag includes status/name updates
+	if (pParam->m_nChangeFlags & k_EPersonaChangeName) {
+		CSteamID updatedUser(pParam->m_ulSteamID);
+		AsyncTask(ENamedThreads::GameThread, [this, updatedUser]() {
+			// Grab the newly downloaded name
+			const char* AuthorName = SteamFriends()->GetFriendPersonaName(updatedUser);
+			const FString AuthorString = TEXT("by: ") + FString(AuthorName);
+			AuthorTextBlock->SetText(FText::FromString(AuthorString));
+			});
+	}
 }
 
 void UWorkshopItemWidget::DownloadPreviewTexture(const FString& URL)
