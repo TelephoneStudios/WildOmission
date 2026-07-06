@@ -40,6 +40,10 @@ UWorkshopMenuWidget::UWorkshopMenuWidget(const FObjectInitializer& ObjectInitial
 	// Details panel
 	SelectedItemDetailsPanel = nullptr;
 	SelectedItemTitleTextBlock = nullptr;
+	SelectedItemDescriptionTextBlock = nullptr;
+	SelectedItemLikesTextBlock = nullptr;
+	SelectedItemDislikesTextBlock = nullptr;
+	SelectedItemSubscribersTextBlock = nullptr;
 	SelectedItemImage = nullptr;
 	OpenWorkshopPageForSelectedButton = nullptr;
 	DownloadSelectedWorldButton = nullptr;
@@ -186,6 +190,13 @@ void UWorkshopMenuWidget::SelectWorkshopItem(const FSteamWorkshopItemDetails& De
 	}
 	SelectedItemDescriptionTextBlock->SetText(FText::FromString(Description));
 	
+	const FString LikesString = FString::Printf(TEXT("Likes: %i"), Details.Likes);
+	const FString DislikesString = FString::Printf(TEXT("Dislikes %i"), Details.Dislikes);
+	const FString SubscribersString = FString::Printf(TEXT("Subscribers: %llu"), Details.Subscribers);
+	SelectedItemLikesTextBlock->SetText(FText::FromString(LikesString));
+	SelectedItemDislikesTextBlock->SetText(FText::FromString(DislikesString));
+	SelectedItemSubscribersTextBlock->SetText(FText::FromString(SubscribersString));
+
 	// Set preview
 	if (Details.PreviewTexture)
 	{
