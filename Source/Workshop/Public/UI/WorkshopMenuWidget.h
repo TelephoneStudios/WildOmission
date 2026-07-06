@@ -70,6 +70,12 @@ private:
 	UPROPERTY(Meta = (BindWidget))
 	class UTextBlock* SelectedItemDescriptionTextBlock;
 	UPROPERTY(Meta = (BindWidget))
+	class UTextBlock* SelectedItemLikesTextBlock;
+	UPROPERTY(Meta = (BindWidget))
+	class UTextBlock* SelectedItemDislikesTextBlock;
+	UPROPERTY(Meta = (BindWidget))
+	class UTextBlock* SelectedItemSubscribersTextBlock;
+	UPROPERTY(Meta = (BindWidget))
 	class UImage* SelectedItemImage;
 	UPROPERTY(Meta = (BindWidget))
 	class UButton* OpenWorkshopPageForSelectedButton;

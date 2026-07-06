@@ -52,9 +52,18 @@ struct FSteamWorkshopItemDetails
 
 	UPROPERTY(BlueprintReadOnly, Category = "Steam Workshop")
 	int32 Likes = 0;
+	
+	UPROPERTY(BlueprintReadOnly, Category = "Steam Workshop")
+	int32 Dislikes = 0;
+	
+	UPROPERTY()
+	uint64 Subscribers = 0;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Steam Workshop")
 	FString PreviewURL;
+
+	UPROPERTY()
+	uint64 AuthorID = 0;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Steam Workshop")
 	UTexture2D* PreviewTexture = nullptr;
