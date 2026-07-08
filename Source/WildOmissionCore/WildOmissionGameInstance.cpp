@@ -33,7 +33,7 @@ const static FName GAME_VERSION_SETTINGS_KEY = TEXT("GameVersion");
 const static FName SEARCH_PRESENCE = TEXT("PRESENCESEARCH");
 const static FName SEARCH_DEDICATED_ONLY = TEXT("DEDICATEDONLY");
 
-const static FString GameVersion = TEXT("Beta 1.3.2");
+const static FString GameVersion = TEXT("Beta 1.3.3");
 
 static USoundMix* MasterSoundMixModifier = nullptr;
 static USoundClass* MasterSoundClass = nullptr;
