@@ -40,6 +40,8 @@ private:
 	UPROPERTY(SaveGame)
 	float TimeTillNextSpawnSeconds;
 	
+	void SpawnLoot();
+
 	UPROPERTY()
 	class ADeployable* CurrentLoot;
 		

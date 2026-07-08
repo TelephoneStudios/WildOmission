@@ -48,27 +48,37 @@ void ULootSpawnComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 		return;
 	}
 
+	SpawnLoot();
+}
+
+void ULootSpawnComponent::SpawnLoot()
+{
+	// If loot was already spawned, destroy it
 	if (IsValid(CurrentLoot))
 	{
 		CurrentLoot->Destroy();
 		CurrentLoot = nullptr;
 	}
-	
+
+	// Set the next spawn time
 	TimeTillNextSpawnSeconds = FMath::RandRange(MinSpawnFrequencySeconds, MaxSpawnFrequencySeconds);
 
 	UWorld* World = GetWorld();
 	const int32 LootIndex = FMath::RandRange(0, LootToSpawn.Num() - 1);
+	// Make sure that the loot item we are attempting to spawn is valid
 	if (World == nullptr || !LootToSpawn.IsValidIndex(LootIndex) || LootToSpawn[LootIndex] == nullptr)
 	{
 		return;
 	}
-	
+
 	//https://forums.somethingawful.com/showthread.php?threadid=3817946
 	const FRotator SpawnRotation = UseRandomYawRotation ? FRotator(0.0, FMath::RandRange(0.0f, 360.0f), 0.0f) : this->GetComponentRotation();
 
+	// Spawn loot item
 	CurrentLoot = World->SpawnActor<ADeployable>(LootToSpawn[LootIndex], this->GetComponentLocation(), SpawnRotation);
 	CurrentLoot->OnSpawn();
 
+	// Make sure that if there is another deployable overlapping that it is destroyed
 	TArray<AActor*> OverlappingActors;
 	CurrentLoot->GetOverlappingActors(OverlappingActors);
 	for (AActor* OverlappingActor : OverlappingActors)

@@ -710,8 +710,8 @@ void AChunk::GenerateStructures()
 	
 	const FIntVector2 StructureChunkBounds((StructureBounds.X / CHUNK_SIZE_CENTIMETERS) * 1.5f, (StructureBounds.Y / CHUNK_SIZE_CENTIMETERS) * 1.5f);
 
-	// Clear Decorations is called on redecorate, which is called on flatten terrain
-	//ChunkManager->ClearDecorationsAroundChunk(GetChunkLocation(), StructureChunkBounds);
+	// Nessasary to prevent floating/sinking trees and other decorations
+	ChunkManager->ClearDecorationsAroundChunk(GetChunkLocation(), StructureChunkBounds);
 	ChunkManager->FlattenTerrainAroundChunk(GetChunkLocation(), StructureChunkBounds * 2, SpawnLocation.Z);
 	
 	ChunkInvoker->Destroy();
