@@ -6,14 +6,6 @@
 #include "Blueprint/UserWidget.h"
 #include "InventoryMenuWidget.generated.h"
 
-class UHorizontalBox;
-class UInventoryWidget;
-class UPlayerInventoryWidget;
-class USelectedItemWidget;
-class UHoveredItemNameTag;
-
-class UInventoryComponent;
-
 UCLASS()
 class INVENTORY_API UInventoryMenuWidget : public UUserWidget
 {
@@ -22,41 +14,49 @@ class INVENTORY_API UInventoryMenuWidget : public UUserWidget
 public:
 	UInventoryMenuWidget(const FObjectInitializer& ObjectInitializer);
 
+
+	UFUNCTION(BlueprintCallable)
+	void Open();
+	UFUNCTION(BlueprintCallable)
+	void Close(bool ShouldCloseContainer = false);
+
+	UFUNCTION(BlueprintCallable)
+	bool IsOpen() const;
+	UFUNCTION(BlueprintCallable)
+	class UPlayerInventoryWidget* GetPlayerInventoryWidget() const;
+	UFUNCTION(BlueprintCallable)
+	class USelectedItemWidget* GetSelectedItemWidget() const;
+	UFUNCTION(BlueprintCallable)
+	class UHoveredItemNameTag* GetHoveredItemNameTagWidget() const;
+	UFUNCTION(BlueprintCallable)
+	bool SelectedItemVisible() const;
+protected:
 	virtual void NativeConstruct() override;
 	virtual void NativeTick(const FGeometry& MyGeomentry, float InDeltaTime) override;
 
-	void Open();
-	void Close(bool ShouldCloseContainer = false);
-	
-	bool IsOpen() const;
-	UPlayerInventoryWidget* GetPlayerInventoryWidget() const;
-	USelectedItemWidget* GetSelectedItemWidget() const;
-	UHoveredItemNameTag* GetHoveredItemNameTagWidget() const;
-	bool SelectedItemVisible() const;
-
 private:
 	UPROPERTY(Meta = (BindWidget))
-	UHorizontalBox* InventoryHorizontalBox;
+	class UHorizontalBox* InventoryHorizontalBox;
 	
 	UPROPERTY(Meta = (BindWidget))
-	UPlayerInventoryWidget* PlayerInventoryWidget;
+	class UPlayerInventoryWidget* PlayerInventoryWidget;
 
 	UPROPERTY()
-	UInventoryWidget* OpenContainerWidget;
+	class UInventoryWidget* OpenContainerWidget;
 
 	UPROPERTY(Meta = (BindWidget))
-	USelectedItemWidget* SelectedItemWidget;
+	class USelectedItemWidget* SelectedItemWidget;
 
 	UPROPERTY(Meta = (BindWidget))
-	UHoveredItemNameTag* HoveredItemNameTagWidget;
+	class UHoveredItemNameTag* HoveredItemNameTagWidget;
 
 	UPROPERTY(Meta = (BindWidget))
-	UPanelWidget* ClothingInventoryPanel;
+	class UPanelWidget* ClothingInventoryPanel;
 
 	UFUNCTION()
-	void OnOpenContainerChanged(UInventoryComponent* OpenContainer);
+	void OnOpenContainerChanged(class UInventoryComponent* OpenContainer);
 
-	void CreateOpenContainerWidget(UInventoryComponent* OpenContainer);
+	void CreateOpenContainerWidget(class UInventoryComponent* OpenContainer);
 	void DestroyOpenContainerWidget();
 
 	void UpdateFollowMousePointerWidgets();
