@@ -7,12 +7,6 @@
 #include "InventorySlotWidget.h"
 #include "InventoryWidget.generated.h"
 
-class UTextBlock;
-class UUniformGridPanel;
-class UBorder;
-class UInventoryComponent;
-class UInventoryMenuWidget;
-
 UCLASS()
 class INVENTORY_API UInventoryWidget : public UUserWidget
 {
@@ -21,7 +15,7 @@ class INVENTORY_API UInventoryWidget : public UUserWidget
 public:
 	UInventoryWidget(const FObjectInitializer& ObjectInitializer);
 
-	virtual void Setup(UInventoryMenuWidget* InParentMenu, UInventoryComponent* InInventoryComponent);
+	virtual void Setup(class UInventoryMenuWidget* InParentMenu, class UInventoryComponent* InInventoryComponent);
 
 	UFUNCTION()
 	virtual void Refresh();
@@ -30,34 +24,39 @@ public:
 
 	void CreateSlots();
 
+	UFUNCTION(BlueprintCallable)
 	void Open();
+	UFUNCTION(BlueprintCallable)
 	void Close();
 
+	UFUNCTION(BlueprintCallable)
 	bool IsOpen() const;
 
-	UInventoryMenuWidget* GetParentMenu() const;
-	UInventoryComponent* GetInventoryComponent() const;
+	UFUNCTION(BlueprintCallable)
+	class UInventoryMenuWidget* GetParentMenu() const;
+	UFUNCTION(BlueprintCallable)
+	class UInventoryComponent* GetInventoryComponent() const;
 
 	UClass* GetSlotWidgetClass() const;
 
 protected:
 	UPROPERTY(meta = (BindWidget))
-	UTextBlock* InventoryName;
+	class UTextBlock* InventoryName;
 
 	UPROPERTY(meta = (BindWidget))
-	UUniformGridPanel* InventoryGridPanel;
+	class UUniformGridPanel* InventoryGridPanel;
 	
 	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<UInventorySlotWidget> SlotWidgetClass;
+	TSubclassOf<class UInventorySlotWidget> SlotWidgetClass;
 
 	UPROPERTY()
-	TArray<UInventorySlotWidget*> Slots;
+	TArray<class UInventorySlotWidget*> Slots;
 
 private:
 	UPROPERTY()
-	UInventoryMenuWidget* ParentMenu;
+	class UInventoryMenuWidget* ParentMenu;
 
 	UPROPERTY()
-	UInventoryComponent* InventoryComponent;
+	class UInventoryComponent* InventoryComponent;
 
 };
