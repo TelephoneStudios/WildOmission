@@ -571,16 +571,16 @@ void AWildOmissionCharacter::SetupEnhancedInputSubsystem()
 
 void AWildOmissionCharacter::SetupMesh()
 {
-	USkeletalMeshComponent* ThirdPersonMeshComponent = GetMesh();
-	if (ThirdPersonMeshComponent)
-	{
-		ThirdPersonMeshComponent->SetVisibility(!IsLocallyControlled());
-	}
+	//USkeletalMeshComponent* ThirdPersonMeshComponent = GetMesh();
+	//if (ThirdPersonMeshComponent)
+	//{
+	//	ThirdPersonMeshComponent->SetVisibility(!IsLocallyControlled());
+	//}
 
-	if (FirstPersonArmsMeshComponent)
-	{
-		FirstPersonArmsMeshComponent->SetVisibility(IsLocallyControlled());
-	}
+	//if (FirstPersonArmsMeshComponent)
+	//{
+	//	FirstPersonArmsMeshComponent->SetVisibility(IsLocallyControlled());
+	//}
 }
 
 void AWildOmissionCharacter::SetupGameMode()
