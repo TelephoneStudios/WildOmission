@@ -53,6 +53,15 @@
 			]
 		},
 		{
+			"Name": "CharacterCustomization",
+			"Type": "Runtime",
+			"LoadingPhase": "Default",
+			"AdditionalDependencies": [
+				"Engine",
+				"UMG"
+			]
+		},
+		{
 			"Name": "Clothing",
 			"Type": "Runtime",
 			"LoadingPhase": "Default",
