@@ -1,6 +1,9 @@
 // Copyright Telephone Studios. All Rights Reserved.
 
 #include "Components/CustomCharacterComponent.h"
+#include "JsonObjectConverter.h"
+#include "Misc/FileHelper.h"
+#include "Misc/Paths.h"
 
 UCustomCharacterComponent::UCustomCharacterComponent()
 {
@@ -41,10 +44,23 @@ void UCustomCharacterComponent::Apply(const FCustomCharacterData& InCharacterDat
 
 void UCustomCharacterComponent::SaveData(const FCustomCharacterData& InCharacterData)
 {
+	FString JsonString;
 
+	if (FJsonObjectConverter::UStructToJsonObjectString(InCharacterData, JsonString))
+	{
+		const FString SaveDir = FPaths::ProjectSavedDir() + TEXT("CustomCharacter/CharacterData.json");
+		FFileHelper::SaveStringToFile(JsonString, *SaveDir);
+	}
 }
 
 FCustomCharacterData UCustomCharacterComponent::LoadData()
 {
-	return FCustomCharacterData();
+	const FString LoadDir = FPaths::ProjectSavedDir() + TEXT("CustomCharacter/CharacterData.json");
+	FString JsonString;
+	FCustomCharacterData Data;
+	if (FFileHelper::LoadFileToString(JsonString, *LoadDir))
+	{
+		(void*)FJsonObjectConverter::JsonObjectStringToUStruct(JsonString, &Data, 0, 0);
+	}
+	return Data;
 }
