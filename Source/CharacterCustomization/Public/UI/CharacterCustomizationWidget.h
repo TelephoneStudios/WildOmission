@@ -6,6 +6,8 @@
 #include "Blueprint/UserWidget.h"
 #include "CharacterCustomizationWidget.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnCharacterCustomizationMenuBackButtonClickedSignature);
+
 UCLASS()
 class CHARACTERCUSTOMIZATION_API UCharacterCustomizationWidget : public UUserWidget
 {
@@ -13,9 +15,25 @@ class CHARACTERCUSTOMIZATION_API UCharacterCustomizationWidget : public UUserWid
 
 public:
 	UCharacterCustomizationWidget(const FObjectInitializer& ObjectInitializer);
+	
+	UFUNCTION()
+	void OnOpen();
+
+	FOnCharacterCustomizationMenuBackButtonClickedSignature OnBackButtonClicked;
 
 protected:
 	virtual void NativeConstruct() override;
+	
+	UPROPERTY(Meta = (BindWidget))
+	class UMultiOptionBox* GenderMultiOptionBox;
+	UPROPERTY(Meta = (BindWidget))
+	class UButton* BackButton;
 
 private:
+	UFUNCTION()
+	void OnSettingChange();
+
+	UFUNCTION()
+	void OnBackClicked();
+
 };

@@ -132,6 +132,8 @@ void UMainMenuWidget::NativeConstruct()
 
 	OptionsMenu->OnBackButtonClicked.AddDynamic(this, &UMainMenuWidget::OpenMainMenu);
 
+	CharacterCustomizationMenu->OnBackButtonClicked.AddDynamic(this, &UMainMenuWidget::OpenMainMenu);
+
 	WorkshopMenu->OnBackButtonClicked.AddDynamic(this, &UMainMenuWidget::OpenMainMenu);
 
 	CreditsMenu->OnBackButtonClicked.AddDynamic(this, &UMainMenuWidget::OpenMainMenu);
@@ -394,6 +396,7 @@ void UMainMenuWidget::OpenCharacterCustomizationMenu()
 	{
 		return;
 	}
+	CharacterCustomizationMenu->OnOpen();
 	MenuSwitcher->SetActiveWidget(CharacterCustomizationMenu);
 }
 
