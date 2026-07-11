@@ -14,6 +14,7 @@
 #include "ServerBrowserWidget.h"
 #include "SaveManager.h"
 #include "UI/OptionsWidget.h"
+#include "UI/CharacterCustomizationWidget.h"
 #include "UI/WorkshopMenuWidget.h"
 #include "CreditsWidget.h"
 #include "ErrorMessagePrompt.h"
@@ -60,6 +61,7 @@ UMainMenuWidget::UMainMenuWidget(const FObjectInitializer& ObjectInitializer) : 
 
 	PlayButton = nullptr;
 	OptionsButton = nullptr;
+	CharacterCustomizationButton = nullptr;
 	WorkshopButton = nullptr;
 	FeedbackButton = nullptr;
 	CreditsButton = nullptr;
@@ -83,6 +85,7 @@ UMainMenuWidget::UMainMenuWidget(const FObjectInitializer& ObjectInitializer) : 
 	ServerBrowserMenu = nullptr;
 	OptionsMenuPanel = nullptr;
 	OptionsMenu = nullptr;
+	CharacterCustomizationMenu = nullptr;
 	WorkshopMenu = nullptr;
 	CreditsMenuPanel = nullptr;
 	CreditsMenu = nullptr;
@@ -96,6 +99,7 @@ void UMainMenuWidget::NativeConstruct()
 
 	PlayButton->OnClicked.AddDynamic(this, &UMainMenuWidget::OpenPlayWorldSelectionMenu);
 	OptionsButton->OnClicked.AddDynamic(this, &UMainMenuWidget::OpenOptionsMenu);
+	CharacterCustomizationButton->OnClicked.AddDynamic(this, &UMainMenuWidget::OpenCharacterCustomizationMenu);
 	WorkshopButton->OnClicked.AddDynamic(this, &UMainMenuWidget::OpenWorkshopMenu);
 	FeedbackButton->OnClicked.AddDynamic(this, &UMainMenuWidget::OpenFeedbackPage);
 	CreditsButton->OnClicked.AddDynamic(this, &UMainMenuWidget::OpenCreditsMenu);
@@ -382,6 +386,15 @@ void UMainMenuWidget::OpenOptionsMenu()
 
 	MenuSwitcher->SetActiveWidget(OptionsMenuPanel);
 	OptionsMenu->Refresh();
+}
+
+void UMainMenuWidget::OpenCharacterCustomizationMenu()
+{
+	if (MenuSwitcher == nullptr || CharacterCustomizationMenu == nullptr)
+	{
+		return;
+	}
+	MenuSwitcher->SetActiveWidget(CharacterCustomizationMenu);
 }
 
 void UMainMenuWidget::OpenWorkshopMenu()

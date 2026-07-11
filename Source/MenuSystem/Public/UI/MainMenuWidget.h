@@ -39,6 +39,8 @@ public:
 	UFUNCTION()
 	void OpenOptionsMenu();
 	UFUNCTION()
+	void OpenCharacterCustomizationMenu();
+	UFUNCTION()
 	void OpenWorkshopMenu();
 	UFUNCTION()
 	void OpenFeedbackPage();
@@ -56,14 +58,16 @@ public:
 
 	IMenuInterface* GetMenuInterface() const;
 
-private:
-	UPROPERTY(Meta = (BindWidget))
+protected:
+	UPROPERTY(BlueprintReadOnly, Meta = (BindWidget))
 	class UWidgetSwitcher* MenuSwitcher;
 
 	UPROPERTY(Meta = (BindWidget))
 	class UButton* PlayButton;
 	UPROPERTY(Meta = (BindWidget))
 	class UButton* OptionsButton;
+	UPROPERTY(Meta = (BindWidget))
+	class UButton* CharacterCustomizationButton;
 	UPROPERTY(Meta = (BindWidget))
 	class UButton* WorkshopButton;
 	UPROPERTY(Meta = (BindWidget))
@@ -104,6 +108,8 @@ private:
 	class UWidget* OptionsMenuPanel;
 	UPROPERTY(Meta = (BindWidget))
 	class UOptionsWidget* OptionsMenu;
+	UPROPERTY(BlueprintReadOnly, Meta = (BindWidget))
+	class UCharacterCustomizationWidget* CharacterCustomizationMenu;
 	UPROPERTY(Meta = (BindWidget))
 	class UWorkshopMenuWidget* WorkshopMenu;
 	UPROPERTY(Meta = (BindWidget))
@@ -115,6 +121,9 @@ private:
 
 	UPROPERTY(Meta = (BindWidget))
 	class UWidget* InstallingWorkshopWorldsMenu;
+
+private:
+	
 
 	class IMenuInterface* MenuInterface;
 	
