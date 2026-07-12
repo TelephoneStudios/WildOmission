@@ -31,6 +31,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	bool SelectedItemVisible() const;
 protected:
+	UPROPERTY(Meta = (BindWidget))
+	class UImage* PlayerPreview;
+
 	virtual void NativeConstruct() override;
 	virtual void NativeTick(const FGeometry& MyGeomentry, float InDeltaTime) override;
 

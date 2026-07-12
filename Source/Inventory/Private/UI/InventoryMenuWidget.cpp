@@ -5,6 +5,7 @@
 #include "Components/HorizontalBox.h"
 #include "Components/HorizontalBoxSlot.h"
 #include "Components/CanvasPanelSlot.h"
+#include "Components/Image.h"
 #include "UI/PlayerInventoryWidget.h"
 #include "UI/SelectedItemWidget.h"
 #include "UI/HoveredItemNameTag.h"
@@ -15,6 +16,7 @@
 
 UInventoryMenuWidget::UInventoryMenuWidget(const FObjectInitializer& ObjectInitializer) : UUserWidget(ObjectInitializer)
 {
+	PlayerPreview = nullptr;
 	InventoryHorizontalBox = nullptr;
 	PlayerInventoryWidget = nullptr;
 	OpenContainerWidget = nullptr;
@@ -42,6 +44,11 @@ void UInventoryMenuWidget::NativeConstruct()
 void UInventoryMenuWidget::NativeTick(const FGeometry& MyGeomentry, float InDeltaTime)
 {
 	Super::NativeTick(MyGeomentry, InDeltaTime);
+
+	if (PlayerPreview)
+	{
+		PlayerPreview->SetVisibility(this->IsOpen() ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
+	}
 
 	UpdateFollowMousePointerWidgets();
 }

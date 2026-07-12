@@ -53,7 +53,22 @@ public:
 	bool IsChatMenuOpen() const;
 
 	class UInventoryMenuWidget* GetInventoryMenu() const;
+protected:
+	UPROPERTY(BlueprintReadOnly, Meta = (BindWidget))
+	class UInventoryMenuWidget* InventoryMenu;
 
+	UPROPERTY(BlueprintReadOnly, Meta = (BindWidget))
+	class UCraftingMenuWidget* CraftingMenu;
+
+	UPROPERTY(BlueprintReadOnly, Meta = (BindWidget))
+	class UCreativeMenuWidget* CreativeMenu;
+
+	UPROPERTY(BlueprintReadOnly, Meta = (BindWidget))
+	class UGameChatWidget* Chat;
+
+	UPROPERTY(BlueprintReadOnly, Meta = (BindWidget))
+	class UNotificationPanelWidget* NotificationPanel;
+	
 private:
 	UPROPERTY(Meta = (BindWidget))
 	class UBorder* MenuBackgroundBorder;
@@ -74,9 +89,6 @@ private:
 	class UTextBlock* OpenSecondaryButtonTextBlock;
 
 	UPROPERTY(Meta = (BindWidget))
-	class UInventoryMenuWidget* InventoryMenu;
-
-	UPROPERTY(Meta = (BindWidget))
 	UPanelWidget* CraftingPanel;
 
 	UPROPERTY(Meta = (BindWidget))
@@ -87,18 +99,6 @@ private:
 	
 	UPROPERTY(Meta = (BindWidget))
 	class UButton* CreativeOpenInventoryButton;
-
-	UPROPERTY(Meta = (BindWidget))
-	class UCraftingMenuWidget* CraftingMenu;
-
-	UPROPERTY(Meta = (BindWidget))
-	class UCreativeMenuWidget* CreativeMenu;
-
-	UPROPERTY(Meta = (BindWidget))
-	class UGameChatWidget* Chat;
-
-	UPROPERTY(Meta = (BindWidget))
-	class UNotificationPanelWidget* NotificationPanel;
 
 	UPROPERTY(Meta = (BindWidget))
 	class UTextBlock* BrandingTextBlock;
