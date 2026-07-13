@@ -53,7 +53,8 @@ void UCustomCharacterComponent::Apply(const FCustomCharacterData& InCharacterDat
 	AffectingMeshComponent->SetSkeletalMesh(
 		InCharacterData.bIsFemale ? FemaleMesh : MaleMesh
 	);
-	// TODO clothing
+
+	// TODO colors
 }
 
 void UCustomCharacterComponent::SaveData(const FCustomCharacterData& InCharacterData)
