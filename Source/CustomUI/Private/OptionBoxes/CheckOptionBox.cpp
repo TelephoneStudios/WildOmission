@@ -33,6 +33,8 @@ UCheckOptionBox::UCheckOptionBox(const FObjectInitializer& ObjectInitializer) : 
 
 void UCheckOptionBox::NativeConstruct()
 {
+	Super::NativeConstruct();
+
 	Button->OnClicked.AddDynamic(this, &UCheckOptionBox::OnClicked);
 	RefreshState();
 }

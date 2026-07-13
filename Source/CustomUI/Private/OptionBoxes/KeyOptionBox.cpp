@@ -17,6 +17,8 @@ UKeyOptionBox::UKeyOptionBox(const FObjectInitializer& ObjectInitializer) : UUse
 
 void UKeyOptionBox::NativeConstruct()
 {
+	Super::NativeConstruct();
+
 	Border->SetBrushColor(FLinearColor(0.0f, 0.0f, 0.0f, 0.0f));
 	AwaitingInput = false;
 	SelectedKey = EKeys::Semicolon;

@@ -16,6 +16,8 @@ USliderOptionBox::USliderOptionBox(const FObjectInitializer& ObjectInitializer) 
 
 void USliderOptionBox::NativeConstruct()
 {
+	Super::NativeConstruct();
+
 	Slider->OnValueChanged.AddDynamic(this, &USliderOptionBox::OnSliderValueChanged);
 }
 
