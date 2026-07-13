@@ -34,6 +34,7 @@
 #include "WildOmissionGameUserSettings.h"
 #include "Deployables/ItemContainerBase.h"
 #include "Ragdolls/LootableRagdoll.h"
+#include "Components/CustomCharacterComponent.h"
 
 // Engine Stuff
 #include "Kismet/GameplayStatics.h"
@@ -98,6 +99,8 @@ AWildOmissionCharacter::AWildOmissionCharacter()
 	CraftingComponent = CreateDefaultSubobject<UCraftingComponent>(TEXT("CraftingComponent"));
 
 	BuilderComponent = CreateDefaultSubobject<UBuilderComponent>(TEXT("BuilderComponent"));
+
+	CustomCharacterComponent = CreateDefaultSubobject<UCustomCharacterComponent>(TEXT("CustomCharacterComponent"));
 
 	InteractionComponent = CreateDefaultSubobject<UInteractionComponent>(TEXT("InteractionComponent"));
 	InteractionComponent->SetupAttachment(FirstPersonCameraComponent);
@@ -367,7 +370,7 @@ void AWildOmissionCharacter::BeginPlay()
 	Super::BeginPlay();
 	
 	SetupEnhancedInputSubsystem();
-	SetupMesh();
+	SetupCharacter();
 	SetupPlayerHUD();
 	SetupGameMode();
 	ApplyInputSettings();
@@ -444,7 +447,7 @@ void AWildOmissionCharacter::PossessedBy(AController* NewController)
 	Super::PossessedBy(NewController);
 	
 	SetupEnhancedInputSubsystem();
-	SetupMesh();
+	SetupCharacter();
 	SetupPlayerHUD();
 	SetupGameMode();
 	ApplyInputSettings();
@@ -569,18 +572,19 @@ void AWildOmissionCharacter::SetupEnhancedInputSubsystem()
 	Subsystem->AddMappingContext(DefaultMappingContext, 0);
 }
 
-void AWildOmissionCharacter::SetupMesh()
+void AWildOmissionCharacter::SetupCharacter()
 {
-	//USkeletalMeshComponent* ThirdPersonMeshComponent = GetMesh();
-	//if (ThirdPersonMeshComponent)
-	//{
-	//	ThirdPersonMeshComponent->SetVisibility(!IsLocallyControlled());
-	//}
+	if (CustomCharacterComponent == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Cannot setup custom character, Mesh Component was nullptr"));
+		return;
+	}
+	
+	// Setup the mesh component
+	CustomCharacterComponent->Setup(GetMesh());
 
-	//if (FirstPersonArmsMeshComponent)
-	//{
-	//	FirstPersonArmsMeshComponent->SetVisibility(IsLocallyControlled());
-	//}
+	// Apply the loaded custom character
+	CustomCharacterComponent->Apply(UCustomCharacterComponent::LoadData());
 }
 
 void AWildOmissionCharacter::SetupGameMode()

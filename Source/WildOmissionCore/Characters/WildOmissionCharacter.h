@@ -148,6 +148,9 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	class UPhysicsHandleComponent* PhysicsHandleComponent;
 
+	UPROPERTY(VisibleAnywhere)
+	class UCustomCharacterComponent* CustomCharacterComponent;
+
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UCameraShakeBase> WalkCameraShake;
 	
@@ -426,7 +429,7 @@ private:
 
 	void SetupEnhancedInputSubsystem();
 	
-	void SetupMesh();
+	void SetupCharacter();
 	
 	void SetupGameMode();
 

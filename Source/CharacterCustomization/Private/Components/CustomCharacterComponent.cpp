@@ -4,6 +4,7 @@
 #include "JsonObjectConverter.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
+#include "Net/UnrealNetwork.h"
 
 UCustomCharacterComponent::UCustomCharacterComponent()
 {
@@ -22,6 +23,13 @@ UCustomCharacterComponent::UCustomCharacterComponent()
 
 }
 
+void UCustomCharacterComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(UCustomCharacterComponent, CurrentData);
+}
+
 void UCustomCharacterComponent::Setup(USkeletalMeshComponent* InMeshComponent)
 {
 	AffectingMeshComponent = InMeshComponent;
@@ -30,6 +38,13 @@ void UCustomCharacterComponent::Setup(USkeletalMeshComponent* InMeshComponent)
 
 void UCustomCharacterComponent::Apply(const FCustomCharacterData& InCharacterData)
 {
+	CurrentData = InCharacterData;
+
+	if (!GetOwner()->HasAuthority())
+	{
+		Server_UpdateCharacterData(InCharacterData);
+	}
+
 	if (AffectingMeshComponent == nullptr)
 	{
 		return;
@@ -38,7 +53,6 @@ void UCustomCharacterComponent::Apply(const FCustomCharacterData& InCharacterDat
 	AffectingMeshComponent->SetSkeletalMesh(
 		InCharacterData.bIsFemale ? FemaleMesh : MaleMesh
 	);
-
 	// TODO clothing
 }
 
@@ -63,4 +77,14 @@ FCustomCharacterData UCustomCharacterComponent::LoadData()
 		(void*)FJsonObjectConverter::JsonObjectStringToUStruct(JsonString, &Data, 0, 0);
 	}
 	return Data;
+}
+
+void UCustomCharacterComponent::OnRep_CurrentData()
+{
+	this->Apply(CurrentData);
+}
+
+void UCustomCharacterComponent::Server_UpdateCharacterData_Implementation(const FCustomCharacterData& InCharacterData)
+{
+	Apply(InCharacterData);
 }

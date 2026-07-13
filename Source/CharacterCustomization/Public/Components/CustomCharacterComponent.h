@@ -15,6 +15,8 @@ class CHARACTERCUSTOMIZATION_API UCustomCharacterComponent : public UActorCompon
 public:
 	UCustomCharacterComponent();
 
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
 	void Setup(class USkeletalMeshComponent* InMeshComponent);
 
 	void Apply(const FCustomCharacterData& InCharacterData);
@@ -24,9 +26,18 @@ public:
 protected:
 	class USkeletalMeshComponent* AffectingMeshComponent;
 
+	UPROPERTY(Replicated, ReplicatedUsing = OnRep_CurrentData)
+	FCustomCharacterData CurrentData;
+	
 	UPROPERTY(EditDefaultsOnly)
 	class USkeletalMesh* MaleMesh;
 	UPROPERTY(EditDefaultsOnly)
 	class USkeletalMesh* FemaleMesh;
+
+	UFUNCTION()
+	void OnRep_CurrentData();
+
+	UFUNCTION(Server, Reliable)
+	void Server_UpdateCharacterData(const FCustomCharacterData& InCharacterData);
 
 };
