@@ -27,6 +27,11 @@ void UColorOptionBox::SetColor(const FLinearColor& NewColor)
 	
 }
 
+FLinearColor UColorOptionBox::GetSelectedColor() const
+{
+	return CurrentColor;
+}
+
 void UColorOptionBox::UpdateColorFromPicker(const FLinearColor& NewColor)
 {
 	ColorPreview->SetBackgroundColor(NewColor);

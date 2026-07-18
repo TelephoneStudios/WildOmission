@@ -27,6 +27,14 @@ protected:
 	UPROPERTY(Meta = (BindWidget))
 	class UMultiOptionBox* GenderMultiOptionBox;
 	UPROPERTY(Meta = (BindWidget))
+	class UColorOptionBox* SkinColorOptionBox;
+	UPROPERTY(Meta = (BindWidget))
+	class UColorOptionBox* ShirtColorOptionBox;
+	UPROPERTY(Meta = (BindWidget))
+	class UColorOptionBox* PantsColorOptionBox;
+	UPROPERTY(Meta = (BindWidget))
+	class UColorOptionBox* ShoeColorOptionBox;
+	UPROPERTY(Meta = (BindWidget))
 	class UButton* BackButton;
 
 private:
