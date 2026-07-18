@@ -24,18 +24,15 @@ void UColorOptionBox::NativeConstruct()
 
 void UColorOptionBox::SetColor(const FLinearColor& NewColor)
 {
-	
+	// do this so the alpha isn't transparent
+	FLinearColor FixedColor = FLinearColor(NewColor.R, NewColor.G, NewColor.B, 1.0f);
+	ColorPreview->SetBackgroundColor(FixedColor);
+	CurrentColor = FixedColor;
 }
 
 FLinearColor UColorOptionBox::GetSelectedColor() const
 {
 	return CurrentColor;
-}
-
-void UColorOptionBox::UpdateColorFromPicker(const FLinearColor& NewColor)
-{
-	ColorPreview->SetBackgroundColor(NewColor);
-	CurrentColor = NewColor;
 }
 
 void UColorOptionBox::OnColorPreviewClicked()

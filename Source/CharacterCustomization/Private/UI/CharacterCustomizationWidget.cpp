@@ -26,7 +26,10 @@ void UCharacterCustomizationWidget::NativeConstruct()
 	GenderMultiOptionBox->AddOption(TEXT("Male"));
 	GenderMultiOptionBox->AddOption(TEXT("Female"));
 	GenderMultiOptionBox->OnValueChangedNoParams.AddDynamic(this, &UCharacterCustomizationWidget::OnSettingChange);
-
+	SkinColorOptionBox->OnColorChangedNoParams.AddDynamic(this, &UCharacterCustomizationWidget::OnSettingChange);
+	ShirtColorOptionBox->OnColorChangedNoParams.AddDynamic(this, &UCharacterCustomizationWidget::OnSettingChange);
+	PantsColorOptionBox->OnColorChangedNoParams.AddDynamic(this, &UCharacterCustomizationWidget::OnSettingChange);
+	ShoeColorOptionBox->OnColorChangedNoParams.AddDynamic(this, &UCharacterCustomizationWidget::OnSettingChange);
 	BackButton->OnClicked.AddDynamic(this, &UCharacterCustomizationWidget::OnBackClicked);
 }
 

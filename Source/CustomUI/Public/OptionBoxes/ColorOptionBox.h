@@ -22,11 +22,10 @@ public:
 	FOnColorOptionBoxValueChangedSignature OnColorChanged;
 	FOnColorOptionBoxValueChangedNoParamsSignature OnColorChangedNoParams;
 
+	UFUNCTION(BlueprintCallable)
 	void SetColor(const FLinearColor& NewColor);
 	FLinearColor GetSelectedColor() const;
 
-	UFUNCTION(BlueprintCallable)
-	void UpdateColorFromPicker(const FLinearColor& NewColor);
 
 protected:
 	UPROPERTY(BlueprintReadOnly, Meta = (BindWidget))
@@ -39,10 +38,12 @@ protected:
 	bool bColorPickerMenuOpen;
 	FLinearColor CurrentColor;
 
+	UFUNCTION(BlueprintCallable)
+	void BroadcastColorChange();
+
 private:
 	UFUNCTION()
 	void OnColorPreviewClicked();
 
-	UFUNCTION()
-	void BroadcastColorChange();
+
 };

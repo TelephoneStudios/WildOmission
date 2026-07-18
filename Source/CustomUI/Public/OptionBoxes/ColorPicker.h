@@ -29,10 +29,6 @@ public:
 
 protected:
 	UPROPERTY(BlueprintReadOnly, Meta = (BindWidget))
-	class USliderOptionBox* HueSlider;
-	UPROPERTY(BlueprintReadOnly, Meta = (BindWidget))
-	class USliderOptionBox* SaturationSlider;
-	UPROPERTY(BlueprintReadOnly, Meta = (BindWidget))
 	class USliderOptionBox* LightnessSlider;
 
 private:
