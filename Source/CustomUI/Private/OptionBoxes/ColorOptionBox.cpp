@@ -23,7 +23,9 @@ void UColorOptionBox::NativeConstruct()
 }
 
 void UColorOptionBox::SetColor(const FLinearColor& NewColor)
-{}
+{
+	
+}
 
 void UColorOptionBox::UpdateColorFromPicker(const FLinearColor& NewColor)
 {
