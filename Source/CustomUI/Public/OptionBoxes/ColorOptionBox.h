@@ -17,7 +17,6 @@ class CUSTOMUI_API UColorOptionBox : public UUserWidget
 public:
 	UColorOptionBox(const FObjectInitializer& ObjectInitializer);
 
-	virtual void NativeConstruct() override;
 
 	FOnColorOptionBoxValueChangedSignature OnColorChanged;
 	FOnColorOptionBoxValueChangedNoParamsSignature OnColorChangedNoParams;
@@ -28,6 +27,9 @@ public:
 
 
 protected:
+	virtual void NativeConstruct() override;
+	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
+
 	UPROPERTY(BlueprintReadOnly, Meta = (BindWidget))
 	class UButton* ColorPreview;
 	UPROPERTY(BlueprintReadOnly, Meta = (BindWidget))

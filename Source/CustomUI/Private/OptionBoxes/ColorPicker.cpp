@@ -18,7 +18,7 @@ void UColorPicker::NativeConstruct()
 	LightnessSlider->SetValue(255.0f);
 	LightnessSlider->SetRoundAfterValueChanged(false);
 
-	SetSelectedColor(FLinearColor::Red);
+	SetSelectedColor(FLinearColor::White);
 }
 
 void UColorPicker::SetSelectedColor(const FLinearColor& InColor)

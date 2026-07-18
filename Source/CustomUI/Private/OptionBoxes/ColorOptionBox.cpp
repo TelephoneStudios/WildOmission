@@ -22,11 +22,16 @@ void UColorOptionBox::NativeConstruct()
 	ColorPickerMenu->SetVisibility(ESlateVisibility::Collapsed);
 }
 
+void UColorOptionBox::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
+{
+	Super::NativeTick(MyGeometry, InDeltaTime);
+}
+
 void UColorOptionBox::SetColor(const FLinearColor& NewColor, bool bUpdateUI)
 {
 	// do this so the alpha isn't transparent
+	ColorPreview->SetBackgroundColor(CurrentColor);
 	FLinearColor FixedColor = FLinearColor(NewColor.R, NewColor.G, NewColor.B, 1.0f);
-	ColorPreview->SetBackgroundColor(FixedColor);
 	CurrentColor = FixedColor;
 
 	if (bUpdateUI)

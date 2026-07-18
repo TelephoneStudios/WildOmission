@@ -19,7 +19,9 @@ public:
 
 	virtual void NativeConstruct() override;
 
+	UPROPERTY(BlueprintAssignable)
 	FOnSliderOptionBoxValueChangedSignature OnValueChanged;
+	UPROPERTY(BlueprintAssignable)
 	FOnSliderOptionBoxValueChangedNoParamsSignature OnValueChangedNoParams;
 
 	UFUNCTION(BlueprintCallable)

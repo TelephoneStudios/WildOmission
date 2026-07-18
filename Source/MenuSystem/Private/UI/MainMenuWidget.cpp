@@ -396,8 +396,8 @@ void UMainMenuWidget::OpenCharacterCustomizationMenu()
 	{
 		return;
 	}
-	CharacterCustomizationMenu->OnOpen();
 	MenuSwitcher->SetActiveWidget(CharacterCustomizationMenu);
+	CharacterCustomizationMenu->OnOpen();
 }
 
 void UMainMenuWidget::OpenWorkshopMenu()

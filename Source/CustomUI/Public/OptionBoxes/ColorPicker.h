@@ -17,7 +17,6 @@ class CUSTOMUI_API UColorPicker : public UUserWidget
 public:
 	UColorPicker(const FObjectInitializer& ObjectInitializer);
 
-	virtual void NativeConstruct() override;
 
 	UPROPERTY(BlueprintAssignable)
 	FOnColorPickerColorSelectionChangedSignature OnColorChanged;
@@ -29,6 +28,8 @@ public:
 	void SetSelectedColor(const FLinearColor& InColor);
 
 protected:
+	virtual void NativeConstruct() override;
+
 	UPROPERTY(BlueprintReadOnly, Meta = (BindWidget))
 	class USliderOptionBox* LightnessSlider;
 
