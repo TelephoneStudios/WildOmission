@@ -41,10 +41,10 @@ void UCharacterCustomizationWidget::OnOpen()
 	GenderMultiOptionBox->SetSelectedOption(LoadedData.bIsFemale ? TEXT("Female") : TEXT("Male"));
 
 	// Colors
-	SkinColorOptionBox->SetColor(LoadedData.SkinColor);
-	ShirtColorOptionBox->SetColor(LoadedData.ShirtColor);
-	PantsColorOptionBox->SetColor(LoadedData.PantsColor);
-	ShoeColorOptionBox->SetColor(LoadedData.ShoeColor);
+	SkinColorOptionBox->SetColor(LoadedData.SkinColor, true);
+	ShirtColorOptionBox->SetColor(LoadedData.ShirtColor, true);
+	PantsColorOptionBox->SetColor(LoadedData.PantsColor, true);
+	ShoeColorOptionBox->SetColor(LoadedData.ShoeColor, true);
 
 }
 

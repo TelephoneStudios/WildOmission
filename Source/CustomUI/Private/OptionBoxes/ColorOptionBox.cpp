@@ -22,12 +22,17 @@ void UColorOptionBox::NativeConstruct()
 	ColorPickerMenu->SetVisibility(ESlateVisibility::Collapsed);
 }
 
-void UColorOptionBox::SetColor(const FLinearColor& NewColor)
+void UColorOptionBox::SetColor(const FLinearColor& NewColor, bool bUpdateUI)
 {
 	// do this so the alpha isn't transparent
 	FLinearColor FixedColor = FLinearColor(NewColor.R, NewColor.G, NewColor.B, 1.0f);
 	ColorPreview->SetBackgroundColor(FixedColor);
 	CurrentColor = FixedColor;
+
+	if (bUpdateUI)
+	{
+		ColorPickerMenu->SetSelectedColor(NewColor);
+	}
 }
 
 FLinearColor UColorOptionBox::GetSelectedColor() const

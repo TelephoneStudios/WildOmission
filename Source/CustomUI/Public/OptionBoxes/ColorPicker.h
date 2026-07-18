@@ -25,11 +25,15 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FOnColorPickerColorSelectionChangedNoParamsSignature OnColorChangedNoParams;
 
+	UFUNCTION()
 	void SetSelectedColor(const FLinearColor& InColor);
 
 protected:
 	UPROPERTY(BlueprintReadOnly, Meta = (BindWidget))
 	class USliderOptionBox* LightnessSlider;
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void UpdateColorWheel(const FLinearColor& InColor);
 
 private:
 

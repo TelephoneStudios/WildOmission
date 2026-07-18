@@ -23,7 +23,7 @@ public:
 	FOnColorOptionBoxValueChangedNoParamsSignature OnColorChangedNoParams;
 
 	UFUNCTION(BlueprintCallable)
-	void SetColor(const FLinearColor& NewColor);
+	void SetColor(const FLinearColor& NewColor, bool bUpdateUI = false);
 	FLinearColor GetSelectedColor() const;
 
 

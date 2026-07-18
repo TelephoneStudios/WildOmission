@@ -26,4 +26,6 @@ void UColorPicker::SetSelectedColor(const FLinearColor& InColor)
 	uint8 H = 0, S = 0, V = 0;
 	InColor.FGetHSV(H, S, V);
 	LightnessSlider->SetValue(V);
+	UpdateColorWheel(InColor);
+
 }
