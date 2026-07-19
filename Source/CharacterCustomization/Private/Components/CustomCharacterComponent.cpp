@@ -70,7 +70,6 @@ void UCustomCharacterComponent::Apply(const FCustomCharacterData& InCharacterDat
 		InCharacterData.bIsFemale ? FemaleMesh : MaleMesh
 	);
 
-	// TODO colors
 	DynamicMaterial->SetVectorParameterValue(TEXT("Skin Color"), FVector4(InCharacterData.SkinColor.R,
 		InCharacterData.SkinColor.G, InCharacterData.SkinColor.B, 1.0f));
 	DynamicMaterial->SetVectorParameterValue(TEXT("Shirt Color"), FVector4(InCharacterData.ShirtColor.R,
