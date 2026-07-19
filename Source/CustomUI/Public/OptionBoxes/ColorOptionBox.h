@@ -18,7 +18,9 @@ public:
 	UColorOptionBox(const FObjectInitializer& ObjectInitializer);
 
 
+	UPROPERTY(BlueprintAssignable)
 	FOnColorOptionBoxValueChangedSignature OnColorChanged;
+	UPROPERTY(BlueprintAssignable)
 	FOnColorOptionBoxValueChangedNoParamsSignature OnColorChangedNoParams;
 
 	UFUNCTION(BlueprintCallable)
@@ -34,10 +36,15 @@ protected:
 	class UButton* ColorPreview;
 	UPROPERTY(BlueprintReadOnly, Meta = (BindWidget))
 	class UTextBlock* ExpandTextBlock;
-	UPROPERTY(BlueprintReadWrite, Meta = (BindWidget))
-	class UColorPicker* ColorPickerMenu;
+	UPROPERTY(BlueprintReadOnly, Meta = (BindWidget))
+	class UWidget* ColorMenu;
 
-	bool bColorPickerMenuOpen;
+	// TODO Color Wheel
+	UPROPERTY(BlueprintReadOnly, Meta = (BindWidget))
+	class USliderOptionBox* LightnessSlider;
+
+
+	bool bColorMenuOpen;
 	FLinearColor CurrentColor;
 
 	UFUNCTION(BlueprintCallable)

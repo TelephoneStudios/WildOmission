@@ -10,8 +10,11 @@ UColorOptionBox::UColorOptionBox(const FObjectInitializer& ObjectInitializer) : 
 {
 	ColorPreview = nullptr;
 	ExpandTextBlock = nullptr;
-	ColorPickerMenu = nullptr;
-	bColorPickerMenuOpen = false;
+	bColorMenuOpen = false;
+	ColorMenu = nullptr;
+
+	LightnessSlider = nullptr;
+
 }
 
 void UColorOptionBox::NativeConstruct()
@@ -19,7 +22,7 @@ void UColorOptionBox::NativeConstruct()
 	Super::NativeConstruct();
 	ColorPreview->OnClicked.AddDynamic(this, &UColorOptionBox::OnColorPreviewClicked);
 	ExpandTextBlock->SetText(FText::FromString(TEXT("<")));
-	ColorPickerMenu->SetVisibility(ESlateVisibility::Collapsed);
+	ColorMenu->SetVisibility(ESlateVisibility::Collapsed);
 }
 
 void UColorOptionBox::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
@@ -36,7 +39,7 @@ void UColorOptionBox::SetColor(const FLinearColor& NewColor, bool bUpdateUI)
 
 	if (bUpdateUI)
 	{
-		ColorPickerMenu->SetSelectedColor(NewColor);
+		//ColorMenu->SetSelectedColor(NewColor);
 	}
 }
 
@@ -47,17 +50,17 @@ FLinearColor UColorOptionBox::GetSelectedColor() const
 
 void UColorOptionBox::OnColorPreviewClicked()
 {
-	if (bColorPickerMenuOpen == false)
+	if (bColorMenuOpen == false)
 	{
 		ExpandTextBlock->SetText(FText::FromString(TEXT("v")));
-		ColorPickerMenu->SetVisibility(ESlateVisibility::Visible);
-		bColorPickerMenuOpen = true;
+		ColorMenu->SetVisibility(ESlateVisibility::Visible);
+		bColorMenuOpen = true;
 	}
 	else
 	{
 		ExpandTextBlock->SetText(FText::FromString(TEXT("<")));
-		ColorPickerMenu->SetVisibility(ESlateVisibility::Collapsed);
-		bColorPickerMenuOpen = false;
+		ColorMenu->SetVisibility(ESlateVisibility::Collapsed);
+		bColorMenuOpen = false;
 	}
 }
 
