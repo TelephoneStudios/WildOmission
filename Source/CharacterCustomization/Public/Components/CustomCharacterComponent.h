@@ -34,6 +34,12 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	class USkeletalMesh* FemaleMesh;
 
+	UPROPERTY(EditDefaultsOnly)
+	class UMaterialInterface* CharacterMaterial;
+
+	UPROPERTY()
+	UMaterialInstanceDynamic* DynamicMaterial;
+
 	UFUNCTION()
 	void OnRep_CurrentData();
 
