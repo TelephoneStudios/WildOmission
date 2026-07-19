@@ -2,7 +2,8 @@
 
 
 #include "OptionBoxes/ColorOptionBox.h"
-#include "OptionBoxes/ColorPicker.h"
+#include "OptionBoxes/SliderOptionBox.h"
+#include "Color/ColorWheel.h"
 #include "Components/Button.h"
 #include "Components/TextBlock.h"
 
@@ -12,7 +13,7 @@ UColorOptionBox::UColorOptionBox(const FObjectInitializer& ObjectInitializer) : 
 	ExpandTextBlock = nullptr;
 	bColorMenuOpen = false;
 	ColorMenu = nullptr;
-
+	ColorWheel = nullptr;
 	LightnessSlider = nullptr;
 
 }
@@ -20,6 +21,14 @@ UColorOptionBox::UColorOptionBox(const FObjectInitializer& ObjectInitializer) : 
 void UColorOptionBox::NativeConstruct()
 {
 	Super::NativeConstruct();
+
+	LightnessSlider->SetMaxValue(255.0f);
+	LightnessSlider->SetMinValue(0.0f);
+	LightnessSlider->SetValue(255.0f);
+	LightnessSlider->SetRoundAfterValueChanged(false);
+	LightnessSlider->OnValueChanged.AddDynamic(this, &UColorOptionBox::OnLightnessSliderValueChanged);
+	ColorWheel->OnColorChanged.AddDynamic(this, &UColorOptionBox::OnColorWheelValueChanged);
+	
 	ColorPreview->OnClicked.AddDynamic(this, &UColorOptionBox::OnColorPreviewClicked);
 	ExpandTextBlock->SetText(FText::FromString(TEXT("<")));
 	ColorMenu->SetVisibility(ESlateVisibility::Collapsed);
@@ -33,19 +42,21 @@ void UColorOptionBox::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 void UColorOptionBox::SetColor(const FLinearColor& NewColor, bool bUpdateUI)
 {
 	// do this so the alpha isn't transparent
-	ColorPreview->SetBackgroundColor(CurrentColor);
 	FLinearColor FixedColor = FLinearColor(NewColor.R, NewColor.G, NewColor.B, 1.0f);
-	CurrentColor = FixedColor;
+	
+	ColorWheel->SetColor(NewColor);
+	LightnessSlider->SetValue(NewColor.LinearRGBToHSV().B * 255.0f);
+	ColorWheel->SetLightness(NewColor.LinearRGBToHSV().B);
 
 	if (bUpdateUI)
 	{
-		//ColorMenu->SetSelectedColor(NewColor);
+		// TODO update color wheel
 	}
 }
 
 FLinearColor UColorOptionBox::GetSelectedColor() const
 {
-	return CurrentColor;
+	return ColorWheel->GetCurrentColor();
 }
 
 void UColorOptionBox::OnColorPreviewClicked()
@@ -64,11 +75,24 @@ void UColorOptionBox::OnColorPreviewClicked()
 	}
 }
 
+void UColorOptionBox::OnColorWheelValueChanged(const FLinearColor& NewColor)
+{
+	const FLinearColor FixedColor = FLinearColor(NewColor.R, NewColor.G, NewColor.B, 1.0f);
+	ColorPreview->SetBackgroundColor(FixedColor);
+
+	BroadcastColorChange();
+}
+
+void UColorOptionBox::OnLightnessSliderValueChanged(float Value)
+{
+	ColorWheel->SetLightness(Value / 255.0f);
+}
+
 void UColorOptionBox::BroadcastColorChange()
 {
 	if (OnColorChanged.IsBound())
 	{
-		OnColorChanged.Broadcast(CurrentColor);
+		OnColorChanged.Broadcast(GetSelectedColor());
 	}
 
 	if (OnColorChangedNoParams.IsBound())

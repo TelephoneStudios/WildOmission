@@ -14,7 +14,6 @@ UColorWheel::UColorWheel(const FObjectInitializer& ObjectInitializer) : UUserWid
 void UColorWheel::SetLightness(float InLightness)
 {
 	Lightness = InLightness;
-
 }
 
 void UColorWheel::NativeConstruct()
@@ -32,14 +31,14 @@ void UColorWheel::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 
 	// Update wheel tint
 	FSynth2DSliderStyle CurrentStyle = Wheel->WidgetStyle;
-	FLinearColor NewTintColor = CurrentStyle.BackgroundImage.TintColor.GetSpecifiedColor() * Lightness;
-	CurrentStyle.BackgroundImage.TintColor = FSlateColor(NewTintColor);
+	CurrentStyle.BackgroundImage.TintColor = FSlateColor(FLinearColor(Lightness, Lightness, Lightness, 1.0f));
 	Wheel->WidgetStyle = CurrentStyle;
-	Wheel->SynchronizeProperties();
 
 	// Update handle color
 	FLinearColor NewHandleColor = GetCurrentColor();
 	Wheel->SetSliderHandleColor(NewHandleColor);
+
+	Wheel->SynchronizeProperties();
 }
 
 void UColorWheel::SetColor(const FLinearColor& InColor)
@@ -58,23 +57,27 @@ FLinearColor UColorWheel::GetCurrentColor() const
 	
 	FLinearColor ReturnColor;
 	
-	ReturnColor.R = UKismetMathLibrary::ClampAxis(
-		UKismetMathLibrary::DegAtan2(WheelValue.Y - 0.5f, WheelValue.X - 0.5f));
-	ReturnColor.G = FMath::Clamp((FVector2D::Distance(FVector2D(0.5f, 0.5f), WheelValue) * 2.0f), 0.0f, 1.0f);
-	ReturnColor.B = Lightness;
-	ReturnColor.HSVToLinearRGB();
+	float H = UKismetMathLibrary::ClampAxis(UKismetMathLibrary::DegAtan2(WheelValue.Y - 0.5f, WheelValue.X - 0.5f));
+	float S = FMath::Clamp((FVector2D::Distance(FVector2D(0.5f, 0.5f), WheelValue) * 2.0f), 0.0f, 1.0f);
+	UE_LOG(LogTemp, Warning, TEXT("Color Wheel Current Color H: %f"), ReturnColor.R);
+	ReturnColor = FLinearColor::MakeFromHSV8(H, S * 255.0f, Lightness * 255.0f);
 
+	//FLinearColor::HSV
 	return ReturnColor;
 }
 
 void UColorWheel::ClampSliderHandle()
 {
-	const float MaxX = UKismetMathLibrary::DegCos(GetAngle() * 0.5f + 0.5f);
-	const float MaxY = UKismetMathLibrary::DegSin(GetAngle() * 0.5f + 0.5f);
+	const float MaxX = (UKismetMathLibrary::DegCos(GetAngle()) * 0.5f) + 0.5f;
+	const float MaxY = (UKismetMathLibrary::DegSin(GetAngle()) * 0.5f) + 0.5f;
 
 	if (!IsInRadius())
 	{
 		Wheel->SetValue(FVector2D(MaxX, MaxY));
+	}
+	else
+	{
+		Wheel->SetValue(Wheel->GetValue());
 	}
 }
 

@@ -39,7 +39,8 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Meta = (BindWidget))
 	class UWidget* ColorMenu;
 
-	// TODO Color Wheel
+	UPROPERTY(BlueprintReadOnly, Meta = (BindWidget))
+	class UColorWheel* ColorWheel;
 	UPROPERTY(BlueprintReadOnly, Meta = (BindWidget))
 	class USliderOptionBox* LightnessSlider;
 
@@ -53,6 +54,10 @@ protected:
 private:
 	UFUNCTION()
 	void OnColorPreviewClicked();
+	UFUNCTION()
+	void OnColorWheelValueChanged(const FLinearColor& NewColor);
+	UFUNCTION()
+	void OnLightnessSliderValueChanged(float Value);
 
 
 };
