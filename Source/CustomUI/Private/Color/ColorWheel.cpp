@@ -55,15 +55,10 @@ FLinearColor UColorWheel::GetCurrentColor() const
 {
 	const FVector2D WheelValue = Wheel->GetValue();
 	
-	FLinearColor ReturnColor;
-	
-	float H = UKismetMathLibrary::ClampAxis(UKismetMathLibrary::DegAtan2(WheelValue.Y - 0.5f, WheelValue.X - 0.5f));
-	float S = FMath::Clamp((FVector2D::Distance(FVector2D(0.5f, 0.5f), WheelValue) * 2.0f), 0.0f, 1.0f);
-	UE_LOG(LogTemp, Warning, TEXT("Color Wheel Current Color H: %f"), ReturnColor.R);
-	ReturnColor = FLinearColor::MakeFromHSV8(H, S * 255.0f, Lightness * 255.0f);
-
-	//FLinearColor::HSV
-	return ReturnColor;
+	const float H = UKismetMathLibrary::ClampAxis(UKismetMathLibrary::DegAtan2(WheelValue.Y - 0.5f, WheelValue.X - 0.5f));
+	const float S = FMath::Clamp((FVector2D::Distance(FVector2D(0.5f, 0.5f), WheelValue) * 2.0f), 0.0f, 1.0f);
+	//UE_LOG(LogTemp, Warning, TEXT("Color Wheel Current Color H: %f"), ReturnColor.R);
+	return UKismetMathLibrary::HSVToRGB(H, S, Lightness, 1.0f);
 }
 
 void UColorWheel::ClampSliderHandle()
