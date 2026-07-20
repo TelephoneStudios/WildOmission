@@ -43,7 +43,7 @@ void UColorOptionBox::SetColor(const FLinearColor& NewColor, bool bUpdateUI)
 {
 	// do this so the alpha isn't transparent
 	FLinearColor FixedColor = FLinearColor(NewColor.R, NewColor.G, NewColor.B, 1.0f);
-	
+	ColorPreview->SetBackgroundColor(FixedColor);
 	ColorWheel->SetColor(NewColor);
 	LightnessSlider->SetValue(NewColor.LinearRGBToHSV().B * 255.0f);
 	ColorWheel->SetLightness(NewColor.LinearRGBToHSV().B);
@@ -86,6 +86,9 @@ void UColorOptionBox::OnColorWheelValueChanged(const FLinearColor& NewColor)
 void UColorOptionBox::OnLightnessSliderValueChanged(float Value)
 {
 	ColorWheel->SetLightness(Value / 255.0f);
+	ColorPreview->SetBackgroundColor(ColorWheel->GetCurrentColor());
+
+	BroadcastColorChange();
 }
 
 void UColorOptionBox::BroadcastColorChange()

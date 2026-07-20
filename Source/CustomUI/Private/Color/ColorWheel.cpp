@@ -43,12 +43,16 @@ void UColorWheel::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 
 void UColorWheel::SetColor(const FLinearColor& InColor)
 {
-	const FLinearColor HSVColor = InColor.LinearRGBToHSV();
-	
-	const float X = UKismetMathLibrary::DegCos(HSVColor.R) * HSVColor.G + 0.5f;
-	const float Y = UKismetMathLibrary::DegSin(HSVColor.R) * HSVColor.G + 0.5f;
+	// TODO this might cause the wrong color to be displayed, so about using kismet math library function instead
+	float H = 0.0f, S = 0.0f, V = 0.0f, A = 0.0f;
+	UKismetMathLibrary::RGBToHSV(InColor, H, S, V, A);
+
+	const float X = (UKismetMathLibrary::DegCos(H) * (S*.5f)) + 0.5f;
+	const float Y = (UKismetMathLibrary::DegSin(H) * (S*.5f)) + 0.5f;
 
 	Wheel->SetValue(FVector2D(X, Y));
+
+	OnColorWheelValueChanged(0.0f);
 }
 
 FLinearColor UColorWheel::GetCurrentColor() const
