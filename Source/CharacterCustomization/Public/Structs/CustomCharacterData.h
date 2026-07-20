@@ -15,15 +15,20 @@ struct CHARACTERCUSTOMIZATION_API FCustomCharacterData
 	bool bIsFemale = false;
 
 	UPROPERTY()
-	FLinearColor SkinColor = FLinearColor::White;
+	FLinearColor SkinColor = GetDefaultSkinColor();
 	
 	UPROPERTY()
-	FLinearColor ShirtColor = FLinearColor::White;
+	FLinearColor ShirtColor = GetDefaultShirtColor();
 	
 	UPROPERTY()
-	FLinearColor PantsColor = FLinearColor::White;
+	FLinearColor PantsColor = GetDefaultPantsColor();
 	
 	UPROPERTY()
-	FLinearColor ShoeColor = FLinearColor::White;
+	FLinearColor ShoeColor = GetDefaultShoeColor();
+
+	FLinearColor GetDefaultSkinColor() const;
+	FLinearColor GetDefaultShirtColor() const;
+	FLinearColor GetDefaultPantsColor() const;
+	FLinearColor GetDefaultShoeColor() const;
 
 };

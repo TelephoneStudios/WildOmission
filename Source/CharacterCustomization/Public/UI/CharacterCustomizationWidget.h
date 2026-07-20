@@ -35,7 +35,17 @@ protected:
 	UPROPERTY(Meta = (BindWidget))
 	class UColorOptionBox* ShoeColorOptionBox;
 	UPROPERTY(Meta = (BindWidget))
+	class UButton* ResetButton;
+	UPROPERTY(Meta = (BindWidget))
 	class UButton* BackButton;
+
+	// Reset Menu
+	UPROPERTY(Meta = (BindWidget))
+	class UWidget* ResetMenu;
+	UPROPERTY(Meta = (BindWidget))
+	class UButton* ResetBackButton;
+	UPROPERTY(Meta = (BindWidget))
+	class UButton* ResetConfirmButton;
 
 private:
 	UFUNCTION()
@@ -43,5 +53,14 @@ private:
 
 	UFUNCTION()
 	void OnBackClicked();
+
+	UFUNCTION()
+	void CloseResetMenu();
+
+	UFUNCTION()
+	void OpenResetMenu();
+
+	UFUNCTION()
+	void ResetSettings();
 
 };

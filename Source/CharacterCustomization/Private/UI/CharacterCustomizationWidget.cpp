@@ -18,11 +18,20 @@ UCharacterCustomizationWidget::UCharacterCustomizationWidget(const FObjectInitia
 	ShirtColorOptionBox = nullptr;
 	PantsColorOptionBox = nullptr;
 	ShoeColorOptionBox = nullptr;
+	ResetButton = nullptr;
+	BackButton = nullptr;
+
+	ResetMenu = nullptr;
+	ResetBackButton = nullptr;
+	ResetConfirmButton = nullptr;
 }
 
 void UCharacterCustomizationWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
+
+	CloseResetMenu();
+
 	GenderMultiOptionBox->AddOption(TEXT("Male"));
 	GenderMultiOptionBox->AddOption(TEXT("Female"));
 	GenderMultiOptionBox->OnValueChangedNoParams.AddDynamic(this, &UCharacterCustomizationWidget::OnSettingChange);
@@ -30,7 +39,11 @@ void UCharacterCustomizationWidget::NativeConstruct()
 	ShirtColorOptionBox->OnColorChangedNoParams.AddDynamic(this, &UCharacterCustomizationWidget::OnSettingChange);
 	PantsColorOptionBox->OnColorChangedNoParams.AddDynamic(this, &UCharacterCustomizationWidget::OnSettingChange);
 	ShoeColorOptionBox->OnColorChangedNoParams.AddDynamic(this, &UCharacterCustomizationWidget::OnSettingChange);
+	ResetButton->OnClicked.AddDynamic(this, &UCharacterCustomizationWidget::OpenResetMenu);
 	BackButton->OnClicked.AddDynamic(this, &UCharacterCustomizationWidget::OnBackClicked);
+
+	ResetBackButton->OnClicked.AddDynamic(this, &UCharacterCustomizationWidget::CloseResetMenu);
+	ResetConfirmButton->OnClicked.AddDynamic(this, &UCharacterCustomizationWidget::ResetSettings);
 }
 
 void UCharacterCustomizationWidget::OnOpen()
@@ -79,4 +92,22 @@ void UCharacterCustomizationWidget::OnBackClicked()
 	{
 		OnBackButtonClicked.Broadcast();
 	}
+}
+
+void UCharacterCustomizationWidget::CloseResetMenu()
+{
+	ResetMenu->SetVisibility(ESlateVisibility::Collapsed);
+}
+
+void UCharacterCustomizationWidget::OpenResetMenu()
+{
+	ResetMenu->SetVisibility(ESlateVisibility::Visible);
+}
+
+void UCharacterCustomizationWidget::ResetSettings()
+{
+	UCustomCharacterComponent::ResetDefaults();
+	CloseResetMenu();
+
+	this->OnOpen();
 }

@@ -104,6 +104,11 @@ FCustomCharacterData UCustomCharacterComponent::LoadData()
 	return Data;
 }
 
+void UCustomCharacterComponent::ResetDefaults()
+{
+	SaveData(FCustomCharacterData());
+}
+
 void UCustomCharacterComponent::OnRep_CurrentData()
 {
 	this->Apply(CurrentData);

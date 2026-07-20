@@ -23,6 +23,8 @@ public:
 
 	static void SaveData(const FCustomCharacterData& InCharacterData);
 	static FCustomCharacterData LoadData();
+	static void ResetDefaults();
+
 protected:
 	class USkeletalMeshComponent* AffectingMeshComponent;
 
