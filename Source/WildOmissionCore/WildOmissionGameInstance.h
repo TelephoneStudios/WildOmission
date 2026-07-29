@@ -87,7 +87,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	FString GetVersion() const;
 
+	UFUNCTION(BlueprintCallable)
 	UMainMenuWidget* GetMainMenuWidget() const;
+	UFUNCTION(BlueprintCallable)
 	UGameplayMenuWidget* GetGameplayMenuWidget() const;
 
 private:

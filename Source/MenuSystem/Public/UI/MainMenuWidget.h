@@ -58,6 +58,9 @@ public:
 
 	IMenuInterface* GetMenuInterface() const;
 
+	UFUNCTION(BlueprintCallable)
+	bool CharacterCustomizationMenuOpen() const;
+
 protected:
 	UPROPERTY(BlueprintReadOnly, Meta = (BindWidget))
 	class UWidgetSwitcher* MenuSwitcher;

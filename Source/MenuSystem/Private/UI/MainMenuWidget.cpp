@@ -210,6 +210,11 @@ IMenuInterface* UMainMenuWidget::GetMenuInterface() const
 	return MenuInterface;
 }
 
+bool UMainMenuWidget::CharacterCustomizationMenuOpen() const
+{
+	return MenuSwitcher->GetActiveWidget() == CharacterCustomizationMenu;
+}
+
 void UMainMenuWidget::RefreshSplashText()
 {
 	const int32 Index = FMath::RandRange(0, SPLASH_MESSAGES.Num() - 1);
