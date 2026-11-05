@@ -8,7 +8,7 @@ public class WildOmissionServerTarget : TargetRules
 	public WildOmissionServerTarget(TargetInfo Target) : base(Target)
 	{
 		Type = TargetType.Server;
-		DefaultBuildSettings = BuildSettingsVersion.V6;
+		DefaultBuildSettings = BuildSettingsVersion.V7;
 		IncludeOrderVersion = EngineIncludeOrderVersion.Latest;
         
 		bUseLoggingInShipping = true;

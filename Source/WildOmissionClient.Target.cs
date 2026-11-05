@@ -8,7 +8,7 @@ public class WildOmissionClientTarget : TargetRules
 	public WildOmissionClientTarget(TargetInfo Target) : base(Target)
 	{
 		Type = TargetType.Client;
-		DefaultBuildSettings = BuildSettingsVersion.V6;
+		DefaultBuildSettings = BuildSettingsVersion.V7;
 		IncludeOrderVersion = EngineIncludeOrderVersion.Latest;
 		
 		bUsesSteam = true;
