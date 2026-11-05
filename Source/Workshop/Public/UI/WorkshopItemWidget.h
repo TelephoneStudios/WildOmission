@@ -7,7 +7,7 @@
 #include "WorkshopManager.h"
 #include "Interfaces/IHttpRequest.h"
 #include "Interfaces/IHttpResponse.h"
-#include "ThirdParty/Steamworks/sdk/public/steam/steam_api.h"
+#include "steam/steam_api.h"
 #include "WorkshopItemWidget.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWorkshopItemButtonClickedSignature, const FSteamWorkshopItemDetails&, Details);

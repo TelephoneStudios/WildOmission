@@ -2,7 +2,7 @@
 
 
 #include "SteamHelperFunctionLibrary.h"
-#include "ThirdParty/Steamworks/sdk/public/steam/steam_api.h"
+#include "steam/steam_api.h"
 #include "Log.h"
 
 static const int32 Game_App_ID = 2348700;

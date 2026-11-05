@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
 #pragma warning(disable: 4996)
-#include "ThirdParty/Steamworks/sdk/public/steam/steam_api.h"
+#include "steam/steam_api.h"
 #include "WorkshopManager.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnWorkshopItemSubmittedSignature);
