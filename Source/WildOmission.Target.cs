@@ -11,7 +11,6 @@ public class WildOmissionTarget : TargetRules
 		DefaultBuildSettings = BuildSettingsVersion.V7;
 		IncludeOrderVersion = EngineIncludeOrderVersion.Latest;
 
-		bUsesSteam = true;
 		ExtraModuleNames.AddRange( new string[] { "WildOmissionCore" } );
 
 		bOverrideBuildEnvironment = true;

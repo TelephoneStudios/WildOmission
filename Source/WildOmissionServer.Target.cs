@@ -12,7 +12,6 @@ public class WildOmissionServerTarget : TargetRules
 		IncludeOrderVersion = EngineIncludeOrderVersion.Latest;
         
 		bUseLoggingInShipping = true;
-		bUsesSteam = true;
 		ExtraModuleNames.AddRange( new string[] { "WildOmissionCore" } );
 
         // The name of your game as you set it on the Steamworks webpage.
