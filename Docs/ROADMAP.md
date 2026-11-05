@@ -1,4 +1,4 @@
-﻿# Wild Omission → Rust-Styled Survival: Development Roadmap
+# Wild Omission → Rust-Styled Survival: Development Roadmap
 
 _Draft v1 – 2026-11-04. Based on: Steam store page, discussions, guides and patch notes; the local source fork; and `Rust to Wild Omission.pdf`._
 
@@ -83,8 +83,8 @@ Source: UE C++ project with ~40 modules, 644 source files. Already present:
 | Need | Status |
 |---|---|
 | Unreal Engine **5.8.4** (`C:\Program Files\Epic Games\UE_5.8`) | ✅ Installed |
-| Project targets UE **5.3** → must be upgraded to 5.8 (Phase 0) | ⏳ |
-| Visual Studio 2022 Build Tools (C++ / Game dev workload, Win11 SDK) | ⏳ Installing via winget |
+| Project targets UE **5.3** → upgraded to **5.8.4** (`feature/p0-ue58-upgrade`) | ✅ Built & Linked |
+| Visual Studio 2022 Build Tools + .NET Framework 4.8.1 SDK | ✅ Installed |
 | Blender 5.2 (`C:\Program Files\Blender Foundation\Blender 5.2`) | ✅ Installed; scripted via `blender -b -P` |
 | git / gh / git-lfs | ✅ (LFS not configured in repo: 550 MB of `.uasset` committed as plain binaries; see Phase 0) |
 | Python 3.14 | ✅ for tooling scripts |
