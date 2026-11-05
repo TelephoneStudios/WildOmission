@@ -7,7 +7,7 @@ public class Deployables : ModuleRules
     public Deployables(ReadOnlyTargetRules Target) : base(Target)
     {
         PublicDependencyModuleNames.AddRange(new string[] { "Engine", "UMG", "EquipableItems", "Durability", "Inventory", "SavableObject" });
-        PrivateDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "NetCore", "InputCore", "SlateCore", "NavigationSystem",
+        PrivateDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "CoreOnline", "InputCore", "SlateCore", "NavigationSystem",
             "Niagara", "Crafting", "Despawner", "GatherableResources", "Interaction", "Locks", "Weather", "WorldGeneration", "TimeOfDay" });
     }
 }
