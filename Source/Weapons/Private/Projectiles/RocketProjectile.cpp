@@ -2,6 +2,7 @@
 
 
 #include "Projectiles/RocketProjectile.h"
+#include "Engine/OverlapResult.h"
 #include "NiagaraSystem.h"
 #include "NiagaraFunctionLibrary.h"
 #include "Engine/DamageEvents.h"

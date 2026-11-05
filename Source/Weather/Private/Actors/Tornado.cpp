@@ -2,6 +2,7 @@
 
 
 #include "Actors/Tornado.h"
+#include "Engine/OverlapResult.h"
 #include "Components/WindSuckerComponent.h"
 #include "Components/ChunkInvokerComponent.h"
 #include "Interfaces/DamagedByWind.h"

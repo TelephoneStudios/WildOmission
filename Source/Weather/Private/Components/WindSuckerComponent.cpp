@@ -2,6 +2,7 @@
 
 
 #include "WindSuckerComponent.h"
+#include "Engine/OverlapResult.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Engine/DamageEvents.h"
 
