@@ -1,0 +1,30 @@
+﻿{
+  "name": "Wild Omission Low-Poly Flat Palette",
+  "description": "Shared 24-color palette for untextured flat-shaded low-poly assets",
+  "colors": {
+    "Wood_Light": "#C89D66",
+    "Wood_Medium": "#9E6B3B",
+    "Wood_Dark": "#5C3A1E",
+    "Twig_Dry": "#B59B72",
+    "Stone_Light": "#9BA0A5",
+    "Stone_Medium": "#6E7378",
+    "Stone_Dark": "#45494E",
+    "Metal_Rusted": "#8C4A2F",
+    "Metal_Sheet": "#7A8288",
+    "Metal_HQM": "#A8B4C0",
+    "Metal_Armored": "#2E343B",
+    "Sulfur_Yellow": "#D9C24D",
+    "Charcoal_Black": "#242426",
+    "Foliage_Pine": "#2D5A27",
+    "Foliage_Light": "#4D8037",
+    "Cloth_Burlap": "#B8A27E",
+    "Hazmat_Yellow": "#E0A82E",
+    "Hazard_Red": "#C93B2B",
+    "Medical_White": "#E8ECEF",
+    "Tech_Blue": "#3B78A8",
+    "Copper_Wire": "#B86535",
+    "Brass_Casing": "#C9A145",
+    "Bone_OffWhite": "#DCD5C5",
+    "Glass_Tint": "#88B0C0"
+  }
+}
