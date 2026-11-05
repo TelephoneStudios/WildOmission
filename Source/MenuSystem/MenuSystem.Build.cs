@@ -8,7 +8,7 @@ public class MenuSystem: ModuleRules
     {
         PublicDependencyModuleNames.AddRange(new string[] { "Engine", "UMG" });
         PrivateDependencyModuleNames.AddRange(new string[] { 
-            "Core", "CoreUObject", "InputCore", "Slate", "SlateCore",
+            "Core", "CoreUObject", "NetCore", "InputCore", "Slate", "SlateCore",
             "Achievements", "CustomUI", "DedicatedServer", "GameSettings", "SaveSystem",
             "OnlineSubsystem", "OnlineSubsystemSteam", "SteamHelpers", "Workshop" });
     }
