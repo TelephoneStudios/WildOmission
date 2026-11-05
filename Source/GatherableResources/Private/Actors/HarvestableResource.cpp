@@ -22,7 +22,7 @@ AHarvestableResource::AHarvestableResource()
 	PrimaryActorTick.bCanEverTick = false;
 	bReplicates = true;
 	bAlwaysRelevant = false;
-	NetUpdateFrequency = 5.0f;
+	SetNetUpdateFrequency(5.0f);
 	NetDormancy = ENetDormancy::DORM_DormantAll;
 
 	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMeshComponent"));
