@@ -1,4 +1,4 @@
-﻿"""
+"""
 Headless Blender batch exporter for Wild Omission.
 Usage:
   "C:\Program Files\Blender Foundation\Blender 5.2\blender.exe" -b <file.blend> -P Art/Blender/export_fbx.py -- <output.fbx>
