@@ -8,7 +8,7 @@
 #include "Structure.generated.h"
 
 UCLASS()
-class WORLDGENERATION_API AStructure : public AActor, public ISavableObject
+class STRUCTURES_API AStructure : public AActor, public ISavableObject
 {
 	GENERATED_BODY()
 	
