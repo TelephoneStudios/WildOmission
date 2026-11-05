@@ -15,10 +15,10 @@ public class WildOmissionCore : ModuleRules
 			"CreativeMode", "CustomUI", "DedicatedServer", "Deployables", "Despawner", "Durability",
 			"EquipableItems", "GameChat", "GameMusic", "GameSettings", "GatherableResources",
 			"Interaction", "Inventory", "Locks", "MenuSystem", "Maps", "Monsters", "Notifications", "Ragdoll", "SavableObject",
-			"SaveSystem", "SurfaceProperties", "TimeOfDay", "Vitals", "Weapons", "Weather",
+			"SaveSystem", "Structures", "SurfaceProperties", "TimeOfDay", "Vitals", "Weapons", "Weather",
 			"WildOmissionAI", "WorldGeneration", "PhysicsGrabber", "Workshop"
 		});
 
-		PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore", "OnlineSubsystem", "OnlineSubsystemSteam" });
+		PrivateDependencyModuleNames.AddRange(new string[] { "CoreOnline", "Slate", "SlateCore", "OnlineSubsystem", "OnlineSubsystemSteam" });
     }
 }
